@@ -1,0 +1,6 @@
+export * from './Home'
+export * from './Login'
+export * from './Pieces'
+export * from './Register'
+export * from './Users'
+export * from './Status'

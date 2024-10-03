@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ts-1727879048681",
+    "role": 0,
+    "type": 0,
+    "filePath": "files\\sample-hello2.png",
+    "fileHash": "07788c901a5cf2ad3e842c0be055dfa3",
+    "assetIds": [],
+    "updatedAt": 1727879048
+  },
+  {
+    "id": "ts-1727879048685",
+    "role": 0,
+    "type": 0,
+    "filePath": "files\\sample-hello.png",
+    "fileHash": "07788c901a5cf2ad3e842c0be055dfa3",
+    "assetIds": [],
+    "updatedAt": 1727879048
+  },
+  {
+    "id": "ts-1727879048697",
+    "role": 0,
+    "type": 0,
+    "filePath": "files\\hello2.png",
+    "fileHash": "91d418a415156e89cb16701ff9b35f45",
+    "assetIds": [],
+    "updatedAt": 1727879048
+  },
+  {
+    "id": "ts-1727879874913",
+    "role": 0,
+    "type": 0,
+    "filePath": "C:\\Users\\cuhuak\\Work\\test-react-nestjs-electron\\files\\another-hello.png",
+    "fileHash": "07788c901a5cf2ad3e842c0be055dfa3",
+    "assetIds": [],
+    "updatedAt": 1727879874
+  },
+  {
+    "id": "ts-1727987321826",
+    "role": 0,
+    "type": 0,
+    "filePath": "files\\another-hello.png",
+    "fileHash": "07788c901a5cf2ad3e842c0be055dfa3",
+    "assetIds": [],
+    "updatedAt": 1727987321
+  }
+]

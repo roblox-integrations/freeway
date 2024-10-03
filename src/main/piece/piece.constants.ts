@@ -1,0 +1,1 @@
+export const PIECE_OPTIONS = 'PIECE_OPTIONS'

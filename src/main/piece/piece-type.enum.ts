@@ -1,5 +1,5 @@
 export enum PieceTypeEnum {
-  image,
-  mesh,
-  meshtexturepack,
+  image = "image",
+  mesh = "mesh",
+  meshtexturepack = "meshtexturepack",
 }

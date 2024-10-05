@@ -28,6 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@render': join(__dirname, 'src/render'),
+      '@components': join(__dirname, 'src/render/components'),
       '@main': join(__dirname, 'src/main'),
     },
   },

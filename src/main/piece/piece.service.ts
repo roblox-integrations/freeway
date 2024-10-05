@@ -6,6 +6,8 @@ import chokidar from "chokidar";
 import { glob, IOptions } from "glob";
 import { PIECE_OPTIONS } from "./piece.constants";
 import { Piece } from "./piece.ts";
+import { Window } from '@doubleshot/nest-electron'
+import type { BrowserWindow } from 'electron'
 
 @Injectable()
 export class PieceService {
@@ -13,7 +15,7 @@ export class PieceService {
   private readonly path: any;
   private readonly data: Piece[];
 
-  constructor(@Inject(PIECE_OPTIONS) options: PieceModuleOptions) {
+  constructor(@Inject(PIECE_OPTIONS) options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.path = options.metadataPath;
     this.data = [];
     this.watchPath = options.filesPath;
@@ -146,6 +148,7 @@ export class PieceService {
       .on("change", (path, stat) => {
         log(`File ${path} has been changed`);
         log(JSON.stringify(stat));
+        this.mainWin.webContents.send("piece:updated")
       })
       .on("unlink", (path) => log(`File ${path} has been removed`));
 

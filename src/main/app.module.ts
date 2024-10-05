@@ -1,16 +1,19 @@
 import { join } from 'node:path'
-import { ElectronModule } from '@doubleshot/nest-electron'
+import { ElectronModule, ELECTRON_WINDOW_DEFAULT_NAME } from '@doubleshot/nest-electron'
 import { AuthModule } from '@main/auth/auth.module'
 import { TestModule } from '@main/test/test.module'
-import { Module } from '@nestjs/common'
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { app, BrowserWindow } from 'electron'
 import { configuration } from './_config/configuration'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { PieceModule } from './piece/piece.module.ts'
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 const electronModule = ElectronModule.registerAsync({
+  name:  ELECTRON_WINDOW_DEFAULT_NAME,
+  isGlobal: true,
   useFactory: async () => {
     const isDev = !app.isPackaged
 
@@ -47,7 +50,8 @@ const electronModule = ElectronModule.registerAsync({
 
     await browserWindow.loadURL(URL)
 
-    return { win: browserWindow, URL }
+    // return { win: browserWindow, URL }
+    return browserWindow
   },
 })
 
@@ -69,4 +73,8 @@ const electronModule = ElectronModule.registerAsync({
   providers: [AppService],
 })
 export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware).forRoutes('/')
+  }
 }

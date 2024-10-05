@@ -56,7 +56,18 @@ async function bootstrap() {
 async function bootstrap2() {
   try {
     await electronAppInit()
-    const app = await NestFactory.create(AppModule)
+    const app = await NestFactory.create(AppModule,  { cors: {
+        "origin": "*",
+        "methods": "*",
+        "preflightContinue": false,
+        "optionsSuccessStatus": 204
+      }
+    })
+
+    app.use(function (req, res, next) {
+      console.log('global middleware');
+      next();
+    })
 
     app.connectMicroservice<MicroserviceOptions>({
       strategy: new ElectronIpcTransport('IpcTransport'),

@@ -1,28 +1,25 @@
-import type { PieceModuleOptions } from "./piece.module.options.ts";
+import type {PieceModuleOptions} from "./piece.module.options.ts";
 import fs from "node:fs/promises";
-import path from "node:path";
-import { Inject, Injectable } from "@nestjs/common";
+import {join} from "node:path";
+import {Inject, Injectable} from "@nestjs/common";
 import chokidar from "chokidar";
-import { glob, IOptions } from "glob";
-import { PIECE_OPTIONS } from "./piece.constants";
-import { Piece } from "./piece.ts";
-import { Window } from '@doubleshot/nest-electron'
-import type { BrowserWindow } from 'electron'
+import {glob} from "glob";
+import {PIECE_OPTIONS} from "./piece.constants";
+import {Piece} from "./piece.ts";
+import {Window} from '@doubleshot/nest-electron'
+import type {BrowserWindow} from 'electron'
 
 @Injectable()
 export class PieceService {
-  private readonly watchPath: string;
-  private readonly path: any;
   private readonly data: Piece[];
 
-  constructor(@Inject(PIECE_OPTIONS) options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
-    this.path = options.metadataPath;
+  constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.data = [];
-    this.watchPath = options.filesPath;
 
     console.log(
+      '[PieceService]',
       options.metadataPath,
-      options.filesPath
+      options.defaultWatchPath
     );
 
     this.init();
@@ -38,53 +35,47 @@ export class PieceService {
 
   async read() {
     try {
-      await fs.access(this.path); // TODO stat?
+      await fs.access(this.options.metadataPath); // TODO stat?
       // TODO handle we can read and write
-    }
-    catch (accessErr) {
+    } catch (accessErr) {
       if (accessErr.code === "ENOENT") {
         // no file
-        await fs.writeFile(this.path, "[]"); // create empty-array file
-      }
-      else {
+        await fs.writeFile(this.options.metadataPath, "[]"); // create empty-array file
+      } else {
         throw accessErr;
       }
     }
 
     let data = null;
     try {
-      data = await fs.readFile(this.path, { encoding: "utf8" });
-    }
-    catch (readErr) {
+      data = await fs.readFile(this.options.metadataPath, {encoding: "utf8"});
+    } catch (readErr) {
       console.error(readErr);
-      throw new Error(`File ${this.path} does not exist`);
+      throw new Error(`File ${this.options.metadataPath} does not exist`);
     }
 
     try {
       data = JSON.parse(data);
-    }
-    catch (parseErr) {
+    } catch (parseErr) {
       console.error(parseErr);
-      throw new Error(`Cannot parse JSON file ${this.path}`);
+      throw new Error(`Cannot parse JSON file ${this.options.metadataPath}`);
     }
 
     if (Array.isArray(data)) {
       for (const x of data) {
         this.data.push(Piece.fromObject(x));
       }
-    }
-    else {
+    } else {
       throw new TypeError("Invalid metadata data format");
     }
   }
 
   async write() {
     try {
-      await fs.writeFile(this.path, JSON.stringify(this.data, null, 2), { encoding: "utf8", flush: true });
-    }
-    catch (writeErr) {
+      await fs.writeFile(this.options.metadataPath, JSON.stringify(this.data, null, 2), {encoding: "utf8", flush: true});
+    } catch (writeErr) {
       console.error(writeErr);
-      throw new Error(`File ${this.path} cannot write file`);
+      throw new Error(`File ${this.options.metadataPath} cannot write file`);
     }
     return null;
   }
@@ -106,9 +97,9 @@ export class PieceService {
   }
 
   async generate() {
-    const pattern = `${this.watchPath}/**/*.png`;
+    const pattern = `${this.options.defaultWatchPath}/**/*.png`;
 
-    const files = await (glob(pattern, { ignore: "node_modules/**", posix: false } as IOptions, null) as unknown as Promise<string[]>);
+    const files = await (glob(pattern, {ignore: "node_modules/**", posix: false, cwd: this.options.defaultWatchPath, absolute: true}) as unknown as Promise<string[]>);
 
     for (const file of files) {
       await this.generateFor(file);
@@ -129,10 +120,11 @@ export class PieceService {
   }
 
   watch() {
-    const watcher = chokidar.watch(this.watchPath, {
+    const watcher = chokidar.watch(this.options.defaultWatchPath, {
       ignored: /(^|[/\\])\../, // ignore dotfiles
       persistent: true,
-      ignoreInitial: true
+      ignoreInitial: true,
+      cwd: this.options.defaultWatchPath,
     });
 
     // Something to use when events are received.
@@ -141,16 +133,21 @@ export class PieceService {
     // Add event listeners.
     watcher
       .on("add", async (path) => {
-        log(`File ${path} has been added`);
-        await this.generateFor(path);
+        const absPath = join(this.options.defaultWatchPath, path);
+        log(`File ${absPath} has been added`);
+        await this.generateFor(absPath);
         await this.write();
       })
       .on("change", (path, stat) => {
-        log(`File ${path} has been changed`);
+        const absPath = join(this.options.defaultWatchPath, path);
+        log(`File ${absPath} has been changed`);
         log(JSON.stringify(stat));
         this.mainWin.webContents.send("piece:updated")
       })
-      .on("unlink", (path) => log(`File ${path} has been removed`));
+      .on("unlink", (path) => {
+        const absPath = join(this.options.defaultWatchPath, path);
+        log(`File ${absPath} has been removed`)
+      });
 
     watcher
       .on("addDir", (path) => log(`Directory ${path} has been added`))

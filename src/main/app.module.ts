@@ -65,7 +65,7 @@ const electronModule = ElectronModule.registerAsync({
       isGlobal: true,
       load: [configuration],
     }),
-    PieceModule.register({
+    PieceModule.registerAsync({
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
       defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')
     }),
@@ -73,6 +73,7 @@ const electronModule = ElectronModule.registerAsync({
   controllers: [AppController],
   providers: [AppService],
 })
+
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer

@@ -26,6 +26,7 @@
     "axios": "^1.7.7",
     "chokidar": "^4.0.1",
     "framer-motion": "^11.5.5",
+    "fs-extra": "^11.2.0",
     "glob": "^11.0.0",
     "jwt-decode": "^4.0.0",
     "keytar": "^7.9.0",

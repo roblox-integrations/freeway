@@ -15,14 +15,6 @@ export class PieceService {
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.data = [];
-
-    console.log(
-      '[PieceService]',
-      options.metadataPath,
-      options.defaultWatchPath
-    );
-
-    this.init();
   }
 
   async init() {

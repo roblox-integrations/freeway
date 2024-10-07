@@ -79,7 +79,7 @@ export default function Simple() {
             <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
               <NavLink href={ROOT_PATH}>Home</NavLink>
               <NavLink href={STATUS_PATH}>Status</NavLink>
-              <NavLink href={PIECES_PATH}>Pieses</NavLink>
+              <NavLink href={PIECES_PATH}>Pieces</NavLink>
             </HStack>
           </HStack>
           {isAuthenticated && (

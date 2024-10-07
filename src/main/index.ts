@@ -56,7 +56,8 @@ async function bootstrap() {
 async function bootstrap2() {
   try {
     await electronAppInit()
-    const app = await NestFactory.create(AppModule,  { cors: {
+    const app = await NestFactory.create(AppModule,  {
+      cors: {
         "origin": "*",
         "methods": "*",
         "preflightContinue": false,
@@ -64,7 +65,7 @@ async function bootstrap2() {
       }
     })
 
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
       console.log('global middleware');
       next();
     })

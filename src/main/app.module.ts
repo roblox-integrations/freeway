@@ -17,7 +17,7 @@ const electronModule = ElectronModule.registerAsync({
   useFactory: async () => {
     const isDev = !app.isPackaged
 
-    const width = isDev ? 1024 + 300 : 1024 // make window a bit wider when dev
+    const width = isDev ? 1024 + 500 : 1024 // make window a bit wider when dev
     const height = 768
 
     const browserWindow = new BrowserWindow({
@@ -27,7 +27,7 @@ const electronModule = ElectronModule.registerAsync({
       icon: join(__dirname, '../../resources/icon.ico'),
       title: 'Roblox Integration Hub',
 
-      // autoHideMenuBar: true,
+      autoHideMenuBar: isDev,
       webPreferences: {
         contextIsolation: true,
         preload: join(__dirname, '../preload/index.js'),
@@ -38,10 +38,6 @@ const electronModule = ElectronModule.registerAsync({
       browserWindow.destroy()
     })
 
-    if (isDev) {
-      browserWindow.webContents.openDevTools() // open dev tools when dev
-    }
-
     const URL = isDev
       ? process.env.DS_RENDERER_URL
       : `file://${join(app.getAppPath(), 'dist/render/index.html')}`
@@ -49,6 +45,11 @@ const electronModule = ElectronModule.registerAsync({
     console.log(`[app] path: ${app.getAppPath()}`)
 
     await browserWindow.loadURL(URL)
+
+    if (isDev) {
+      browserWindow.webContents.openDevTools() // open dev tools when dev
+      browserWindow.maximize()
+    }
 
     // return { win: browserWindow, URL }
     return browserWindow

@@ -1,4 +1,4 @@
-import {Box} from '@chakra-ui/react'
+import {Box, Stack} from '@chakra-ui/react'
 import { useEffect, useState } from "react";
 import PieceItem from "@render/pages/Pieces/PieceItem.tsx";
 
@@ -16,14 +16,16 @@ function Pieces() {
 
   return (
     <Box p={4}>
-      {list &&
-        list.map((item) => (
-          <PieceItem
-            key={item.id}
-            item={item}
-          />
-        ))
-      }
+      <Stack gap='2'>
+        {list &&
+          list.map((item) => (
+            <PieceItem
+              key={item.id}
+              item={item}
+            />
+          ))
+        }
+      </Stack>
     </Box>
   )
 }

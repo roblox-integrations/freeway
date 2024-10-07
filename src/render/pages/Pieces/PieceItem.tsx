@@ -1,4 +1,4 @@
-import {Image, Card, Stack, CardBody, Heading, CardFooter, Button, Text} from '@chakra-ui/react'
+import {Image, Card, Stack, CardBody, Heading, CardFooter, Button, Text, Badge, Flex} from '@chakra-ui/react'
 
 export default function PieceItem({item}) {
   function onReveal () {
@@ -20,17 +20,23 @@ export default function PieceItem({item}) {
 
       <Stack>
         <CardBody>
+          <Flex gap='2' my='2'>
+            <Badge colorScheme='blue'>{item.role}</Badge>
+            <Badge colorScheme='green'>{item.type}</Badge>
+          </Flex>
           <Heading size='sm'>{item.filePath}</Heading>
-          <Text py='2'>
-            id {item.id} <br/>
-            role {item.role} <br/>
-            type {item.type} <br/>
-            hash: {item.fileHash} <br/>
+          <Text>
+            id {item.id}
+          </Text>
+          <Text>
+            hash: {item.fileHash}
+          </Text>
+          <Text>
             updated: {item.updatedAt}
           </Text>
         </CardBody>
 
-        <CardFooter>
+        <CardFooter gap='2'>
           <Button variant='outline' colorScheme='blue' size='sm'>
             Action
           </Button>

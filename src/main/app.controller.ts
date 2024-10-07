@@ -60,6 +60,11 @@ export class AppController {
     shell.openExternal(url);
   }
 
+  @IpcOn("reveal")
+  public reveal(@Payload() path: string): void {
+    shell.showItemInFolder(path);
+  }
+
   @IpcHandle("profile")
   public handleGetAccount() {
     return of(this.authService.getProfile());

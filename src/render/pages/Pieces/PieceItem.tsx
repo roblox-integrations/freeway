@@ -1,6 +1,9 @@
 import {Image, Card, Stack, CardBody, Heading, CardFooter, Button, Text} from '@chakra-ui/react'
 
 export default function PieceItem({item}) {
+  function onReveal () {
+    window.electron.reveal(item.filePath);
+  }
   return (
     <Card
       size='sm'
@@ -30,6 +33,10 @@ export default function PieceItem({item}) {
         <CardFooter>
           <Button variant='outline' colorScheme='blue' size='sm'>
             Action
+          </Button>
+
+          <Button variant='outline' colorScheme='blue' size='sm' onClick={onReveal}>
+            Show in explorer (finder)
           </Button>
         </CardFooter>
       </Stack>

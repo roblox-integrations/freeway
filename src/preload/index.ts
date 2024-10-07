@@ -3,6 +3,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 contextBridge.exposeInMainWorld(
   'electron',
   {
+    reveal: (path: string): void => ipcRenderer.send('reveal', path),
+
     login: (): void => ipcRenderer.send('auth:login'),
     logout: (): void => ipcRenderer.send('auth:logout'),
     openExternal: (url: string): void => ipcRenderer.send('open:external', url),

@@ -2,7 +2,7 @@ import { join } from 'node:path'
 import { ElectronModule, ELECTRON_WINDOW_DEFAULT_NAME } from '@doubleshot/nest-electron'
 import { AuthModule } from '@main/auth/auth.module'
 import { TestModule } from '@main/test/test.module'
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { app, BrowserWindow } from 'electron'
 import { configuration } from './_config/configuration'
@@ -45,10 +45,12 @@ const electronModule = ElectronModule.registerAsync({
     console.log(`[app] path: ${app.getAppPath()}`)
 
     await browserWindow.loadURL(URL)
+    // browserWindow.loadURL(URL)
 
     if (isDev) {
       browserWindow.webContents.openDevTools() // open dev tools when dev
       browserWindow.maximize()
+      // await new Promise((resolve) => setTimeout(resolve, 1000))
     }
 
     // return { win: browserWindow, URL }

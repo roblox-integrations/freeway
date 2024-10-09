@@ -91,6 +91,10 @@ export class PieceService {
     return this.data.find((x) => x.filePath === filePath);
   }
 
+  getPieceById(id: string) {
+    return this.data.find((x) => x.id === id);
+  }
+
   add(piece: Piece): void {
     this.data.push(piece);
   }

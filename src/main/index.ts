@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { app } from 'electron'
 import { AppModule } from './app.module'
+import {ConfigurationCors} from './_config/configuration'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -31,44 +32,24 @@ async function electronAppInit() {
   await app.whenReady()
 }
 
+async function main() {
+  try {
+    await electronAppInit()
+    const app = await NestFactory.create(AppModule);
+
+    const config = app.get(ConfigService)
+
+    app.enableCors(config.get<ConfigurationCors>('cors'))
+
+
+
 /*
-async function bootstrap() {
-  try {
-    await electronAppInit()
-
-    const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-      AppModule,
-      {
-        strategy: new ElectronIpcTransport('IpcTransport'),
-      },
-    )
-
-    await nestApp.listen()
-  }
-  catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error)
-    app.quit()
-  }
-}
-*/
-
-async function bootstrap2() {
-  try {
-    await electronAppInit()
-    const app = await NestFactory.create(AppModule,  {
-      cors: {
-        "origin": "*",
-        "methods": "*",
-        "preflightContinue": false,
-        "optionsSuccessStatus": 204
-      }
-    })
-
+    // global middleware
     app.use((req, res, next) => {
       console.log('global middleware');
       next();
     })
+*/
 
     app.connectMicroservice<MicroserviceOptions>({
       strategy: new ElectronIpcTransport('IpcTransport'),
@@ -76,9 +57,9 @@ async function bootstrap2() {
 
     await app.startAllMicroservices()
 
-    const config = app.get(ConfigService)
     const port = config.get<number>('port');
     await app.listen(port)
+
     console.log(`[app] started on ${port}`);
   }
   catch (error) {
@@ -88,4 +69,4 @@ async function bootstrap2() {
   }
 }
 
-bootstrap2()
+main()

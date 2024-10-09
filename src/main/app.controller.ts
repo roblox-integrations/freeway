@@ -65,11 +65,6 @@ export class AppController {
     shell.showItemInFolder(path);
   }
 
-  @IpcHandle("profile")
-  public handleGetAccount() {
-    return of(this.authService.getProfile());
-  }
-
   @Get("/")
   public root() {
     return {message: "hello"};

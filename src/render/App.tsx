@@ -1,12 +1,17 @@
 import { HashRouter } from 'react-router-dom'
-import { NavBar } from './components'
 import { AuthProvider } from './providers'
 import { Router } from './router'
-import {Avatar, Button, ChakraProvider, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList} from "@chakra-ui/react";
-import {useRoutePaths, useSession} from "@render/hooks";
+import {ChakraProvider} from "@chakra-ui/react";
+// import {useRoutePaths, useSession} from "@render/hooks";
+import { emitCustomEvent } from 'react-custom-events'
 
 function App() {
-  const { isAuthenticated, user, signOut, signIn } = useSession()
+
+  window.electron.onIpcMessage(message => {
+    emitCustomEvent('message', message)
+  });
+
+  // const { isAuthenticated, user, signOut, signIn } = useSession()
 
   return (
     <ChakraProvider>

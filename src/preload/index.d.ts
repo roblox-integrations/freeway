@@ -8,6 +8,7 @@ declare global {
       getAccount: () => Promise<object>
       sendMsg: (msg: string) => Promise<string>
       onReplyMsg: (cb: (msg: string) => any) => void
+      onIpcMessage: (cb: (msg: string) => any) => void
     }
   }
 }

@@ -14,5 +14,10 @@ contextBridge.exposeInMainWorld(
     onReplyMsg: (cb: (msg: string) => any) => ipcRenderer.on('reply-msg', (_, msg: string) => {
       cb(msg)
     }),
+
+    onIpcMessage: (cb: (msg: string) => any) => ipcRenderer.on('message', (_, msg: string) => {
+      cb(msg)
+    }),
+
   },
 )

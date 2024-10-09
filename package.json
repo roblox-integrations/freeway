@@ -32,6 +32,7 @@
     "keytar": "^7.9.0",
     "nookies": "^2.5.2",
     "react": "^18.3.1",
+    "react-custom-events": "^1.1.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^4.0.13",
     "react-router-dom": "^6.26.2",

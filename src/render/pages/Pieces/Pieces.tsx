@@ -10,8 +10,13 @@ function Pieces() {
     setList(json);
   };
 
-  useCustomEventListener('message', (data) => {
-    console.log('message for IPC', data)
+  useCustomEventListener<any>('piece:updated', () => {
+    getApiPieces()
+  })
+  useCustomEventListener<any>('piece:created', () => {
+    getApiPieces()
+  })
+  useCustomEventListener<any>('piece:deleted', () => {
     getApiPieces()
   })
 

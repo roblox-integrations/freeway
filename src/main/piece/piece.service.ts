@@ -64,8 +64,6 @@ export class PieceService {
     }
   }
 
-
-
   async _write() {
     try {
       const data = JSON.stringify(this.data, null, 2);
@@ -207,6 +205,6 @@ export class PieceService {
   }
 
   emitEvent(name: string, data: any) {
-    this.mainWin.webContents.send("message", {name, data})
+    this.mainWin.webContents.send("ipc-message", {name, data})
   }
 }

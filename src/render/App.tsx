@@ -8,7 +8,7 @@ import { emitCustomEvent } from 'react-custom-events'
 function App() {
 
   window.electron.onIpcMessage(message => {
-    emitCustomEvent('message', message)
+    emitCustomEvent(message.name || 'unknown-message', message.data)
   });
 
   // const { isAuthenticated, user, signOut, signIn } = useSession()

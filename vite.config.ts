@@ -10,13 +10,13 @@ export default defineConfig({
     react(),
     VitePluginDoubleshot({
       type: 'electron',
-      main: 'dist/main/index.js',
+      main: 'dist/main/index.cjs',
       entry: 'src/main/index.ts',
       outDir: 'dist/main',
       external: ['electron'],
       electron: {
         build: {
-          config: './electron-builder.config.js',
+          config: './electron-builder.config.cjs',
         },
         preload: {
           entry: 'src/preload/index.ts',

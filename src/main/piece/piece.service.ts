@@ -12,6 +12,7 @@ import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 import Queue from 'better-queue'
+//import PQueue = require('p-queue');
 
 interface QueueFileTask {
   id: string
@@ -50,6 +51,9 @@ export class PieceService {
       console.log('-------------------> drain');
       this.flush()
     })
+
+
+    // const pqueue = new PQueue.default({concurrency: 1});
   }
 
   async init() {

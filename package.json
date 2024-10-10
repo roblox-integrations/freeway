@@ -2,8 +2,9 @@
   "name": "roblox-integration-hub",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "This app connects Roblox Studio with other apps and tools",
-  "main": "dist/main/index.js",
+  "main": "dist/main/index.cjs",
   "scripts": {
     "dev": "rimraf dist && vite",
     "debug": "rimraf dist && vite -- --dsb-debug",
@@ -76,8 +77,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.11",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8",
     "vite-plugin-doubleshot": "^0.0.17"
   },
   "simple-git-hooks": {

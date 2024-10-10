@@ -19,7 +19,7 @@ function AuthProvider(props: Props) {
 
   // const token = getToken()
   // const isAuthenticated = Boolean(token)
-  const [isAuthenticated, setIdAuthenticated] = useState<boolean>(false)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   async function signIn() {
     console.log('[AuthProvider] signIn');
@@ -30,7 +30,7 @@ function AuthProvider(props: Props) {
     // removeSessionCookies()
     setUser(undefined)
     setLoadingUserData(false)
-    setIdAuthenticated(false)
+    setIsAuthenticated(false)
     navigate(paths.LOGIN_PATH)
     window.electron.logout()
   }
@@ -55,15 +55,15 @@ function AuthProvider(props: Props) {
         if (account) {
           setUser(account)
           console.log('[AuthProvider] getUserData()', account);
-          setIdAuthenticated(true)
+          setIsAuthenticated(true)
         }
         else {
           console.log('[AuthProvider] getUserData()', null  );
-          setIdAuthenticated(false)
+          setIsAuthenticated(false)
         }
       } catch (error) {
         console.error(error)
-        setIdAuthenticated(false)
+        setIsAuthenticated(false)
       } finally {
         setLoadingUserData(false)
       }

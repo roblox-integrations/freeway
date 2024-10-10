@@ -1,14 +1,16 @@
 import type {PieceModuleOptions} from "./piece.module.options.ts";
 import fs from "node:fs/promises";
+import {parse} from "node:path";
 import {Inject, Injectable, Logger} from "@nestjs/common";
 import chokidar from "chokidar";
 import {PIECE_OPTIONS} from "./piece.constants";
 import {Piece, PieceEditable} from "./piece.ts";
 import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {getHash, imageToRbxImageJimp, imageToRbxImagePngjs, now} from "@main/piece/utils.ts";
+import {getHash, dumpToRbxImage, now, dumpToRbxMesh} from "@main/piece/utils.ts";
 import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
+import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 
 
 @Injectable()
@@ -73,7 +75,7 @@ export class PieceService {
     return null;
   }
 
-  async write() {
+  async flush() {
     return this._write();
   }
 
@@ -93,16 +95,19 @@ export class PieceService {
     return this.data.find((x) => x.id === id);
   }
 
-  public async getPieceByIdEditableJimp(id: string, round: number) {
+  public async getPieceByIdDumped(id: string, round: number) {
     const piece = this.getPieceById(id) as PieceEditable
-    piece.data = await imageToRbxImageJimp(piece.filePath, round)
+    piece.data = await this.getDump(piece, round)
     return piece
   }
 
-  public async getPieceByIdEditablePngjs(id: string) {
-    const piece = this.getPieceById(id) as PieceEditable
-    piece.data = await imageToRbxImagePngjs(piece.filePath)
-    return piece
+  public async getDump(piece: Piece, round: number) {
+    if (piece.type === PieceTypeEnum.image) {
+      return await dumpToRbxImage(piece.filePath, round)
+    }
+    else if (piece.type === PieceTypeEnum.mesh) {
+      return await dumpToRbxMesh(piece.filePath)
+    }
   }
 
   add(piece: Piece): void {
@@ -122,11 +127,16 @@ export class PieceService {
     return piece;
   }
 
-  async createFromFile(filePath: string, role = PieceRoleEnum.asset, type = PieceTypeEnum.image) {
+  async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
     const id = `ts-${Date.now()}` // TODO better uuid
     const hash = await getHash(filePath)
+
+    const parsed = parse(filePath);
+    const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum;
+
     const piece = new Piece(id, role, type, filePath, hash);
     piece.isDirty = false;
+
     return piece;
   }
 
@@ -142,14 +152,14 @@ export class PieceService {
     )
   }
 
-  async createPiece (filePath: string) {
+  async createPiece(filePath: string) {
     const newPiece = await this.createFromFile(filePath);
     this.add(newPiece);
 
     return newPiece;
   }
 
-  async updatePiece (piece: Piece) {
+  async updatePiece(piece: Piece) {
     piece.isDirty = false;
     piece.deletedAt = null;
 
@@ -164,9 +174,24 @@ export class PieceService {
 
   watch() {
     const watcher = chokidar.watch(this.options.defaultWatchPath, {
-      ignored: /(^|[/\\])\../, // ignore dotfiles
+      ignored: (filePath, stats) => {
+        const parsed = parse(filePath);
+
+        if (stats?.isFile()) {
+          if (parsed.name[0] == '.' || parsed.name[0] === '_') {
+            // ignore .files and _files
+            return true;
+          }
+
+          if (!['.png', '.jpg', 'jpeg', '.obj'].includes(parsed.ext)) {
+            return true;
+          }
+
+          return false;
+        }
+      },
+      ignoreInitial: false,
       persistent: true,
-      // ignoreInitial: true,
       // cwd: this.options.defaultWatchPath,
     });
 
@@ -174,9 +199,8 @@ export class PieceService {
       .on("add", async (path) => {
         if (!this.isReady) {
           await this.onWatcherInit(path);
-        }
-        else {
-          await this.onWatcherAdd(path);
+        } else {
+          await this.onWatcherChange(path);
         }
       })
       .on("change", this.onWatcherChange.bind(this))
@@ -190,7 +214,7 @@ export class PieceService {
     // .on('raw', (event, path, details) => { log('Raw event info:', event, path, details) })
   }
 
-  async onWatcherInit(filePath: string/*, stat*/) {
+  async onWatcherInit(filePath: string) {
     const piece = this.getPiece(filePath);
     if (!piece) {
       await this.createPiece(filePath);
@@ -199,7 +223,7 @@ export class PieceService {
     }
   }
 
-  async onWatcherAdd(filePath: string/*, stat*/) {
+  async onWatcherChange(filePath: string) {
     const piece = this.getPiece(filePath);
     if (!piece) {
       await this.createPiece(filePath);
@@ -208,23 +232,7 @@ export class PieceService {
       await this.updatePiece(piece);
       this.emitEvent("piece:updated", piece);
     }
-    await this.write(); // throttle?
-  }
-
-  async onWatcherChange(filePath: string/*, stat*/) {
-    const piece = this.getPiece(filePath);
-    if (!piece) {
-      // almost impossible
-      // unknown piece, just add it
-      const newPiece = await this.createFromFile(filePath);
-      this.add(newPiece);
-    } else {
-      await this.updatePiece(piece);
-    }
-
-    this.emitEvent("piece:updated", piece);
-
-    await this.write(); // throttle?
+    await this.flush(); // throttle?
   }
 
   async onUnlink(path: string) {
@@ -238,9 +246,9 @@ export class PieceService {
   }
 
   async onWatcherReady() {
-    this.logger.log("Initial scan complete. Watching for changes...");
+    this.logger.log("Ready. Initial scan complete. Watching for changes...");
     this.isReady = true;
-    await this.write();
+    await this.flush();
   }
 
   emitEvent(name: string, data: any) {

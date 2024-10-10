@@ -1,6 +1,11 @@
 import {PieceTypeEnum, PieceRoleEnum} from "./enum";
 import {now} from "@main/piece/utils.ts";
 
+export interface PieceSnapshot {
+  assetId: string,
+  fileHash: string,
+}
+
 export class Piece {
   constructor(
     public id: string,

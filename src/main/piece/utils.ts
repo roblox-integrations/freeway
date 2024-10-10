@@ -35,7 +35,7 @@ export interface RbxImage {
   p: number[]
 }
 
-export async function imageToRbxImageJimp(imagePath: string, round = 0): Promise<RbxImage> {
+export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxImage> {
   const image = await Jimp.read(imagePath)
 
   image.bitmap.data
@@ -58,6 +58,11 @@ export async function imageToRbxImageJimp(imagePath: string, round = 0): Promise
 
   return {h, w, p}
 }
+
+export async function dumpToRbxMesh(objectPath: string): Promise<string> {
+  return fs.readFile(objectPath, 'utf-8');
+}
+
 
 /*
 import {createReadStream} from 'fs';

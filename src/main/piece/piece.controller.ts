@@ -14,8 +14,8 @@ export class PieceController {
     return this.pieceService.getPieceById(id);
   }
 
-  @Get("/:id/pngjs")
-  getPngjs (@Param('id') id: string) {
-    return this.pieceService.getPieceByIdEditablePngjs(id);
+  @Get("/:id/dumped")
+  getJimp (@Param('id') id: string, @Query('r') round: number) {
+    return this.pieceService.getPieceByIdDumped(id, +round);
   }
 }

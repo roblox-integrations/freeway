@@ -23,6 +23,12 @@ importers:
       '@emotion/styled':
         specifier: ^11.13.0
         version: 11.13.0(@emotion/react@11.13.3(@types/react@18.3.11)(react@18.3.1))(@types/react@18.3.11)(react@18.3.1)
+      '@esm2cjs/p-limit':
+        specifier: ^4.0.0
+        version: 4.0.0
+      '@esm2cjs/p-queue':
+        specifier: ^7.3.0
+        version: 7.3.0
       '@nestjs/common':
         specifier: ^10.3.8
         version: 10.4.4(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -68,9 +74,6 @@ importers:
       nookies:
         specifier: ^2.5.2
         version: 2.5.2
-      p-queue:
-        specifier: ^7.4.1
-        version: 7.4.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1022,6 +1025,18 @@ packages:
     resolution: {integrity: sha512-MkZMZSxrSC/6yUuAw6Azc56XOgwHQQIsNDlO/zgFmOcycJBhRwRuc/gdYUUOFNZIh7y+f0JSIxkNdJPFvJ5W0w==}
     engines: {node: '>=12'}
 
+  '@esm2cjs/p-limit@4.0.0':
+    resolution: {integrity: sha512-t2YIlQHsgMy8vyC8oSxIyGuhc99KPjjPI808IENcvWaKWlFEANu8VEO3tMN9jqaqJQp/WpLx+SLqm3vC6Ve9pQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  '@esm2cjs/p-queue@7.3.0':
+    resolution: {integrity: sha512-2sLG0pX2KlvRRv/UXOoZ1tg9w1V2FAerm514BWq1ykNlJPHaIpz0GfbaBWFgCFSlfcaHmxjvs7ZlHtPrPUXWMg==}
+    engines: {node: '>=12'}
+
+  '@esm2cjs/p-timeout@5.1.0':
+    resolution: {integrity: sha512-QW2sTVKgqiK1nirBD8Sq39izyYj3IINfzwtxn/rpcFjMan7qXovQG3X2SzTsLKxw/phftc2M9Qh4lPtBfb2Bzg==}
+    engines: {node: '>=12'}
+
   '@esm2cjs/path-key@4.0.0':
     resolution: {integrity: sha512-fKzZ3uIIP4j+7WfyG0MEkomGHL0hUXWCx1kY2Zct3GTdl4pyY+3k5lCUxjgdDa2Ld1BCjMNorXnRHiBP6jW6CQ==}
     engines: {node: '>=12'}
@@ -1029,6 +1044,10 @@ packages:
   '@esm2cjs/strip-final-newline@3.0.1-cjs.0':
     resolution: {integrity: sha512-o41riCGPiOEStayoikBCAqwa6igbv9L9rP+k5UCfQ24EJD/wGrdDs/KTNwkHG5JzDK3T60D5dMkWkLKEPy8gjA==}
     engines: {node: '>=12'}
+
+  '@esm2cjs/yocto-queue@1.0.0':
+    resolution: {integrity: sha512-bDqljAQBEJji4mZ4uuH27Zhr5OOoB6YWe/ccG8lt2ZTwZAeOAoS3wugsGQzVUZcxkBYonbXqi/1+rizbuU833A==}
+    engines: {node: '>=12.20'}
 
   '@gar/promisify@1.1.3':
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
@@ -3315,6 +3334,9 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  eventemitter3@4.0.7:
+    resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
+
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
@@ -4824,14 +4846,6 @@ packages:
   p-map@4.0.0:
     resolution: {integrity: sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==}
     engines: {node: '>=10'}
-
-  p-queue@7.4.1:
-    resolution: {integrity: sha512-vRpMXmIkYF2/1hLBKisKeVYJZ8S2tZ0zEAmIJgdVKP2nq0nh4qCdf8bgw+ZgKrkh71AOCaqzwbJJk1WtdcF3VA==}
-    engines: {node: '>=12'}
-
-  p-timeout@5.1.0:
-    resolution: {integrity: sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==}
-    engines: {node: '>=12'}
 
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
@@ -7338,9 +7352,22 @@ snapshots:
     dependencies:
       '@esm2cjs/mimic-fn': 4.0.0
 
+  '@esm2cjs/p-limit@4.0.0':
+    dependencies:
+      '@esm2cjs/yocto-queue': 1.0.0
+
+  '@esm2cjs/p-queue@7.3.0':
+    dependencies:
+      '@esm2cjs/p-timeout': 5.1.0
+      eventemitter3: 4.0.7
+
+  '@esm2cjs/p-timeout@5.1.0': {}
+
   '@esm2cjs/path-key@4.0.0': {}
 
   '@esm2cjs/strip-final-newline@3.0.1-cjs.0': {}
+
+  '@esm2cjs/yocto-queue@1.0.0': {}
 
   '@gar/promisify@1.1.3': {}
 
@@ -10193,6 +10220,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  eventemitter3@4.0.7: {}
+
   eventemitter3@5.0.1: {}
 
   events@3.3.0: {}
@@ -12208,13 +12237,6 @@ snapshots:
   p-map@4.0.0:
     dependencies:
       aggregate-error: 3.1.0
-
-  p-queue@7.4.1:
-    dependencies:
-      eventemitter3: 5.0.1
-      p-timeout: 5.1.0
-
-  p-timeout@5.1.0: {}
 
   p-try@2.2.0: {}
 

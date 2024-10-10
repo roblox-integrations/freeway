@@ -12,7 +12,9 @@ import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 import Queue from 'better-queue'
-//import PQueue = require('p-queue');
+
+import useQueue from './piece-queue.ts'
+
 
 interface QueueFileTask {
   id: string
@@ -30,8 +32,8 @@ export class PieceService {
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.data = [];
-    this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
 
+    this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
       console.log(`-------------------> task start ${input.filePath}`);
 
       input.method.call(this, input.filePath)
@@ -53,7 +55,12 @@ export class PieceService {
     })
 
 
-    // const pqueue = new PQueue.default({concurrency: 1});
+
+    // this.queue = useQueue({concurrency: 1});
+    // this.queue.on('idle', async () => {
+    //   await this.flush()
+    // })
+
   }
 
   async init() {
@@ -207,45 +214,69 @@ export class PieceService {
   watch() {
     const watcher = chokidar.watch(this.options.defaultWatchPath, {
       ignored: (filePath, stats) => {
-        const parsed = parse(filePath);
+        if (stats?.isDirectory()) {
+          return false;
+        }
 
         if (stats?.isFile()) {
+          const parsed = parse(filePath);
           if (parsed.name[0] == '.' || parsed.name[0] === '_') {
             // ignore .dot-files and _underscore-files
             return true;
           }
 
-          return !['.png', '.jpg', 'jpeg', '.obj'].includes(parsed.ext);
+          return !PieceExtTypeMap.has(parsed.ext);
         }
       },
       ignoreInitial: false,
       persistent: true,
-      // cwd: this.options.defaultWatchPath,
+      usePolling: true,
+      awaitWriteFinish: true,
+      depth: 99,
+      alwaysStat: true,
     });
 
     watcher
       .on("add", (filePath) => {
+        this.logger.log('add', filePath);
         if (!this.isReady) {
+          // this.queue.add(async () => {
+          //   await this.onWatcherInit(filePath);
+          // });
           this.queue.push({id: filePath, filePath, method: this.onWatcherInit})
         } else {
+          // this.queue.add(async () => {
+          //   await this.onWatcherChange(filePath);
+          // });
           this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
         }
       })
       .on("change", filePath => {
+        this.logger.log('change', filePath);
+        // this.queue.add(async () => {
+        //   await this.onWatcherInit(filePath);
+        // });
         this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
       })
       .on("unlink", filePath => {
+        this.logger.log('unlink')
+        // this.queue.add(async () => {
+        //   await this.onUnlink(filePath);
+        // });
         this.queue.push({id: filePath, filePath, method: this.onUnlink})
       })
       .on("ready", () => {
         this.onWatcherReady()
+      })
+      .on('raw', (event, path, details) => {
+        this.logger.log('Raw event info:', event, path, details)
       })
 
     // watcher
     // .on("addDir", (path) => log(`Directory ${path} has been added`))
     // .on("unlinkDir", (path) => log(`Directory ${path} has been removed`))
     // .on("error", (error) => log(`Watcher error: ${error}`))
-    // .on('raw', (event, path, details) => { log('Raw event info:', event, path, details) })
+
   }
 
   async onWatcherInit(filePath: string) {

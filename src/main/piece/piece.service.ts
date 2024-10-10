@@ -11,16 +11,45 @@ import {getHash, dumpToRbxImage, now, dumpToRbxMesh} from "@main/piece/utils.ts"
 import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
+import Queue from 'better-queue'
+
+interface QueueFileTask {
+  id: string
+  filePath: string
+  method: Function
+}
 
 
 @Injectable()
 export class PieceService {
   private readonly data: Piece[];
   private isReady: boolean;
+  private queue: Queue;
   private readonly logger = new Logger(PieceService.name);
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.data = [];
+    this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
+
+      console.log(`-------------------> task start ${input.filePath}`);
+
+      input.method.call(this, input.filePath)
+        .then((result) => {
+          cb(null, result);
+      })
+        .catch((err) => {
+          console.error(err);
+          cb(err)
+        })
+        .then(() => {
+          console.log(`-------------------> task end ${input.filePath}`);
+        })
+      })
+
+    this.queue.on('drain', () => {
+      console.log('-------------------> drain');
+      this.flush()
+    })
   }
 
   async init() {
@@ -104,8 +133,7 @@ export class PieceService {
   public async getDump(piece: Piece, round: number) {
     if (piece.type === PieceTypeEnum.image) {
       return await dumpToRbxImage(piece.filePath, round)
-    }
-    else if (piece.type === PieceTypeEnum.mesh) {
+    } else if (piece.type === PieceTypeEnum.mesh) {
       return await dumpToRbxMesh(piece.filePath)
     }
   }
@@ -179,15 +207,11 @@ export class PieceService {
 
         if (stats?.isFile()) {
           if (parsed.name[0] == '.' || parsed.name[0] === '_') {
-            // ignore .files and _files
+            // ignore .dot-files and _underscore-files
             return true;
           }
 
-          if (!['.png', '.jpg', 'jpeg', '.obj'].includes(parsed.ext)) {
-            return true;
-          }
-
-          return false;
+          return !['.png', '.jpg', 'jpeg', '.obj'].includes(parsed.ext);
         }
       },
       ignoreInitial: false,
@@ -196,16 +220,22 @@ export class PieceService {
     });
 
     watcher
-      .on("add", async (path) => {
+      .on("add", (filePath) => {
         if (!this.isReady) {
-          await this.onWatcherInit(path);
+          this.queue.push({id: filePath, filePath, method: this.onWatcherInit})
         } else {
-          await this.onWatcherChange(path);
+          this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
         }
       })
-      .on("change", this.onWatcherChange.bind(this))
-      .on("unlink", this.onUnlink.bind(this))
-      .on("ready", this.onWatcherReady.bind(this))
+      .on("change", filePath => {
+        this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
+      })
+      .on("unlink", filePath => {
+        this.queue.push({id: filePath, filePath, method: this.onUnlink})
+      })
+      .on("ready", () => {
+        this.onWatcherReady()
+      })
 
     // watcher
     // .on("addDir", (path) => log(`Directory ${path} has been added`))
@@ -245,10 +275,9 @@ export class PieceService {
     this.emitEvent("piece:deleted", piece);
   }
 
-  async onWatcherReady() {
+  onWatcherReady() {
     this.logger.log("Ready. Initial scan complete. Watching for changes...");
     this.isReady = true;
-    await this.flush();
   }
 
   emitEvent(name: string, data: any) {

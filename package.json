@@ -24,6 +24,7 @@
     "@nestjs/microservices": "^10.3.8",
     "@nestjs/platform-express": "^10.4.3",
     "axios": "^1.7.7",
+    "better-queue": "^3.8.12",
     "chokidar": "^4.0.1",
     "framer-motion": "^11.5.5",
     "fs-extra": "^11.2.0",

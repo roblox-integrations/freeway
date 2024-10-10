@@ -1,21 +1,21 @@
 import type {PieceModuleOptions} from "./piece.module.options.ts";
 import fs from "node:fs/promises";
-import {Inject, Injectable} from "@nestjs/common";
+import {Inject, Injectable, Logger} from "@nestjs/common";
 import chokidar from "chokidar";
 import {PIECE_OPTIONS} from "./piece.constants";
-import {Piece} from "./piece.ts";
+import {Piece, PieceEditable} from "./piece.ts";
 import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {getHash} from "@main/piece/utils.ts";
-import {PieceRoleEnum} from "@main/piece/piece-role.enum.ts";
-import {PieceTypeEnum} from "@main/piece/piece-type.enum.ts";
-
+import {getHash, imageToRbxImageJimp, imageToRbxImagePngjs, now} from "@main/piece/utils.ts";
+import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
+import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 
 
 @Injectable()
 export class PieceService {
   private readonly data: Piece[];
   private isReady: boolean;
+  private readonly logger = new Logger(PieceService.name);
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
     this.data = [];
@@ -29,10 +29,8 @@ export class PieceService {
   async load() {
     try {
       await fs.access(this.options.metadataPath);
-      // TODO handle we can read and write
     } catch (accessErr) {
       if (accessErr.code === "ENOENT") {
-        // no file
         await fs.writeFile(this.options.metadataPath, "[]"); // create empty-array file
       } else {
         throw accessErr;
@@ -60,11 +58,11 @@ export class PieceService {
         this.data.push(this.createFromObject(x));
       }
     } else {
-      throw new TypeError("Invalid metadata data format");
+      throw new TypeError("Invalid metadata format");
     }
   }
 
-  async _write() {
+  async _write(): Promise<any> {
     try {
       const data = JSON.stringify(this.data, null, 2);
       await fs.writeFile(this.options.metadataPath, data, {encoding: "utf8", flush: true});
@@ -75,24 +73,36 @@ export class PieceService {
     return null;
   }
 
-  async write () {
+  async write() {
     return this._write();
   }
 
-  hasPiece(file: string) {
+  hasPiece(file: string): boolean {
     return !!this.getPiece(file);
   }
 
-  getAll() {
+  getAll(): Piece[] {
     return this.data;
   }
 
-  getPiece(filePath: string) {
+  getPiece(filePath: string): Piece {
     return this.data.find((x) => x.filePath === filePath);
   }
 
-  getPieceById(id: string) {
+  getPieceById(id: string): Piece {
     return this.data.find((x) => x.id === id);
+  }
+
+  public async getPieceByIdEditableJimp(id: string, round: number) {
+    const piece = this.getPieceById(id) as PieceEditable
+    piece.data = await imageToRbxImageJimp(piece.filePath, round)
+    return piece
+  }
+
+  public async getPieceByIdEditablePngjs(id: string) {
+    const piece = this.getPieceById(id) as PieceEditable
+    piece.data = await imageToRbxImagePngjs(piece.filePath)
+    return piece
   }
 
   add(piece: Piece): void {
@@ -132,6 +142,26 @@ export class PieceService {
     )
   }
 
+  async createPiece (filePath: string) {
+    const newPiece = await this.createFromFile(filePath);
+    this.add(newPiece);
+
+    return newPiece;
+  }
+
+  async updatePiece (piece: Piece) {
+    piece.isDirty = false;
+    piece.deletedAt = null;
+
+    const hash = await getHash(piece.filePath);
+    if (hash !== piece.fileHash) {
+      piece.fileHash = hash;
+      piece.updatedAt = now();
+    }
+
+    return piece;
+  }
+
   watch() {
     const watcher = chokidar.watch(this.options.defaultWatchPath, {
       ignored: /(^|[/\\])\../, // ignore dotfiles
@@ -141,10 +171,17 @@ export class PieceService {
     });
 
     watcher
-      .on("add", this.onAdd.bind(this))
-      .on("change", this.onChange.bind(this))
+      .on("add", async (path) => {
+        if (!this.isReady) {
+          await this.onWatcherInit(path);
+        }
+        else {
+          await this.onWatcherAdd(path);
+        }
+      })
+      .on("change", this.onWatcherChange.bind(this))
       .on("unlink", this.onUnlink.bind(this))
-      .on("ready", this.onReady.bind(this))
+      .on("ready", this.onWatcherReady.bind(this))
 
     // watcher
     // .on("addDir", (path) => log(`Directory ${path} has been added`))
@@ -153,28 +190,28 @@ export class PieceService {
     // .on('raw', (event, path, details) => { log('Raw event info:', event, path, details) })
   }
 
-  async onAdd(filePath: string, stat) {
+  async onWatcherInit(filePath: string/*, stat*/) {
     const piece = this.getPiece(filePath);
-
     if (!piece) {
-      // unknown file, just add it
-      const newPiece = await this.createFromFile(filePath);
-      this.add(newPiece);
-      if (this.isReady) {
-        this.emitEvent("piece:created", piece)
-      }
+      await this.createPiece(filePath);
     } else {
-      // known file, mark in as known
-      piece.isDirty = false;
-    }
-
-    if (this.isReady) {
-      // write only if ready, do not spam on startup, see onReady() method
-      await this.write(); // throttle?
+      await this.updatePiece(piece);
     }
   }
 
-  async onChange(filePath: string, stat) {
+  async onWatcherAdd(filePath: string/*, stat*/) {
+    const piece = this.getPiece(filePath);
+    if (!piece) {
+      await this.createPiece(filePath);
+      this.emitEvent("piece:created", piece);
+    } else {
+      await this.updatePiece(piece);
+      this.emitEvent("piece:updated", piece);
+    }
+    await this.write(); // throttle?
+  }
+
+  async onWatcherChange(filePath: string/*, stat*/) {
     const piece = this.getPiece(filePath);
     if (!piece) {
       // almost impossible
@@ -182,14 +219,12 @@ export class PieceService {
       const newPiece = await this.createFromFile(filePath);
       this.add(newPiece);
     } else {
-      piece.isDirty = false;
-      piece.fileHash = await getHash(filePath);
-      piece.touch();
+      await this.updatePiece(piece);
     }
 
-    await this.write(); // throttle?
-
     this.emitEvent("piece:updated", piece);
+
+    await this.write(); // throttle?
   }
 
   async onUnlink(path: string) {
@@ -197,13 +232,13 @@ export class PieceService {
 
     if (!piece) return
 
-    piece.deletedAt = Math.floor(Date.now() / 1000);
+    piece.deletedAt = now();
 
     this.emitEvent("piece:deleted", piece);
   }
 
-  async onReady() {
-    console.log("Initial scan complete. Watching for changes...");
+  async onWatcherReady() {
+    this.logger.log("Initial scan complete. Watching for changes...");
     this.isReady = true;
     await this.write();
   }

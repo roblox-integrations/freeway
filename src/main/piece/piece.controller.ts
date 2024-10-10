@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { PieceService } from "@main/piece/piece.service.ts";
 
 @Controller('api/pieces')
@@ -12,5 +12,10 @@ export class PieceController {
   @Get("/:id")
   get (@Param('id') id: string) {
     return this.pieceService.getPieceById(id);
+  }
+
+  @Get("/:id/pngjs")
+  getPngjs (@Param('id') id: string) {
+    return this.pieceService.getPieceByIdEditablePngjs(id);
   }
 }

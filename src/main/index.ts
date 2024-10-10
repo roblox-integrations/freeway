@@ -1,9 +1,9 @@
-import type { MicroserviceOptions } from '@nestjs/microservices'
-import { ElectronIpcTransport } from '@doubleshot/nest-electron'
-import { NestFactory } from '@nestjs/core'
-import { ConfigService } from '@nestjs/config'
-import { app } from 'electron'
-import { AppModule } from './app.module'
+import type {MicroserviceOptions} from '@nestjs/microservices'
+import {ElectronIpcTransport} from '@doubleshot/nest-electron'
+import {NestFactory} from '@nestjs/core'
+import {ConfigService} from '@nestjs/config'
+import {app} from 'electron'
+import {AppModule} from './app.module'
 import {ConfigurationCors} from './_config/configuration'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -21,8 +21,7 @@ async function electronAppInit() {
         if (data === 'graceful-exit')
           app.quit()
       })
-    }
-    else {
+    } else {
       process.on('SIGTERM', () => {
         app.quit()
       })
@@ -41,15 +40,11 @@ async function main() {
 
     app.enableCors(config.get<ConfigurationCors>('cors'))
 
-
-
-/*
     // global middleware
-    app.use((req, res, next) => {
-      console.log('global middleware');
-      next();
-    })
-*/
+    // app.use((req, res, next) => {
+    //   console.log('global middleware');
+    //   next();
+    // })
 
     app.connectMicroservice<MicroserviceOptions>({
       strategy: new ElectronIpcTransport('IpcTransport'),
@@ -59,10 +54,7 @@ async function main() {
 
     const port = config.get<number>('port');
     await app.listen(port)
-
-    console.log(`[app] started on ${port}`);
-  }
-  catch (error) {
+  } catch (error) {
     // eslint-disable-next-line no-console
     console.log(error)
     app.quit()

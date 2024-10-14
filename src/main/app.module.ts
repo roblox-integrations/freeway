@@ -42,8 +42,6 @@ const electronModule = ElectronModule.registerAsync({
       ? process.env.DS_RENDERER_URL
       : `file://${join(app.getAppPath(), 'dist/render/index.html')}`
 
-    console.log(`[app] path: ${app.getAppPath()}`)
-
     await browserWindow.loadURL(URL)
     // browserWindow.loadURL(URL)
 

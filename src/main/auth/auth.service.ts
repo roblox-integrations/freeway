@@ -13,6 +13,7 @@ export class AuthService {
   private refreshToken: string = null;
   private profile = null;
   private codeVerifier: string = null;
+  private refreshTokenPromise: Promise<any> = null;
 
   private readonly logger = new Logger(AuthService.name);
 
@@ -21,7 +22,12 @@ export class AuthService {
 
   async getProfile() {
     if (!this.profile) {
-      await this.refreshTokens();
+      if (!this.refreshTokenPromise) {
+        this.refreshTokenPromise = this.refreshTokens();
+      }
+
+      await this.refreshTokenPromise
+      this.refreshTokenPromise = null
     }
 
     return this.profile;
@@ -72,6 +78,7 @@ export class AuthService {
 
         if (!response.ok) {
           await this.logout();
+          // console.log(await response.json())
           throw new Error(`Cannot refresh tokens. Status: ${response.status}`);
         }
 

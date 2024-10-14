@@ -5,9 +5,12 @@
 const config = {
   appId: "com.roblox.RobloxIntegrationHub",
   icon: 'resources/icon.ico',
+  extraResources: [
+    "static/**/*"
+  ],
   directories: {
     output: 'dist/electron',
-    "buildResources": "resources",
+    buildResources: "resources",
   },
   publish: null,
   npmRebuild: false,

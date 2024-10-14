@@ -16,7 +16,7 @@ export default defineConfig({
       external: ['electron'],
       electron: {
         build: {
-          config: './electron-builder.config.cjs',
+          config: './electron-builder.config.cjs'
         },
         preload: {
           entry: 'src/preload/index.ts',

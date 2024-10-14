@@ -15,8 +15,8 @@ contextBridge.exposeInMainWorld(
       cb(msg)
     }),
 
-    onIpcMessage: (cb: (msg: string) => any) => ipcRenderer.on('ipc-message', (_, msg: {name: string, data: any}) => {
-      cb(msg)
+    onIpcMessage: (cb: (event: {name: string, data: any}) => any) => ipcRenderer.on('ipc-message', (_, event: {name: string, data: any}) => {
+      cb(event)
     }),
 
   },

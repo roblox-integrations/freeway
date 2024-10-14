@@ -13,7 +13,7 @@ import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 import Queue from 'better-queue'
 
-import useQueue from './piece-queue.ts'
+// import useQueue from './piece-queue.ts'
 
 
 interface QueueFileTask {
@@ -39,7 +39,7 @@ export class PieceService {
       input.method.call(this, input.filePath)
         .then((result) => {
           cb(null, result);
-      })
+        })
         .catch((err) => {
           console.error(err);
           cb(err)
@@ -47,13 +47,12 @@ export class PieceService {
         .then(() => {
           // console.log(`-------------------> task end ${input.filePath}`);
         })
-      })
+    })
 
     this.queue.on('drain', () => {
       // console.log('-------------------> drain');
       this.flush()
     })
-
 
 
     // this.queue = useQueue({concurrency: 1});
@@ -153,21 +152,9 @@ export class PieceService {
     this.data.push(piece);
   }
 
-  async generateFor(filePath: string) {
-    const piece = this.getPiece(filePath);
-    if (piece) {
-
-      return;
-    }
-
-    const newPiece = await this.createFromFile(filePath);
-    this.add(newPiece);
-
-    return piece;
-  }
-
   async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
-    const id = `ts-${Date.now()}` // TODO better uuid
+
+    const id = this.generateUniqId()
     const hash = await getHash(filePath)
 
     const parsed = parse(filePath);
@@ -318,4 +305,25 @@ export class PieceService {
   emitEvent(name: string, data: any) {
     this.mainWin.webContents.send("ipc-message", {name, data})
   }
+
+  private generateUniqId() {
+    for (let i = 0; ; i++) {
+      const id = generateAlphabeticalId(Math.floor(i / 10 + 4));
+      if (!this.getPieceById(id)) {
+        return id;
+      }
+    }
+  }
+}
+
+export function generateAlphabeticalId(length: number) {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const charactersLength = characters.length;
+  let counter = 0;
+  while (counter < length) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
+  }
+  return result;
 }

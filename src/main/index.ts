@@ -1,6 +1,7 @@
 import type {MicroserviceOptions} from '@nestjs/microservices'
 import {ElectronIpcTransport} from '@doubleshot/nest-electron'
 import {NestFactory} from '@nestjs/core'
+import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {app} from 'electron'
 import {AppModule} from './app.module'
@@ -39,6 +40,12 @@ async function main() {
     const config = app.get(ConfigService)
 
     app.enableCors(config.get<ConfigurationCors>('cors'))
+
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+      }),
+    );
 
     // global middleware
     // app.use((req, res, next) => {

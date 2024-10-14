@@ -37,6 +37,8 @@ export class AppController {
         console.log(err.stack);
       }
     });
+
+    this.mainWin.webContents.send("ipc-message", {name: 'ready'})
   }
 
   @IpcHandle("msg")

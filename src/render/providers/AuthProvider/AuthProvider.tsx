@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext, User } from '@render/contexts'
 import { paths } from '@render/router'
+import {useCustomEventListener} from "react-custom-events";
 // import { api, setAuthorizationHeader } from '@render/services'
 // import { createSessionCookies, getToken, removeSessionCookies } from '@render/utils'
 
@@ -46,29 +47,36 @@ function AuthProvider(props: Props) {
   }, [navigate, pathname, token])
 */
 
-  useEffect(() => {
-    async function getUserData() {
-      setLoadingUserData(true)
+  async function getUserData() {
+    setLoadingUserData(true)
 
-      try {
-        const account = await window.electron.getAccount() as User
-        if (account) {
-          setUser(account)
-          console.log('[AuthProvider] getUserData()', account);
-          setIsAuthenticated(true)
-        }
-        else {
-          console.log('[AuthProvider] getUserData()', null  );
-          setIsAuthenticated(false)
-        }
-      } catch (error) {
-        console.error(error)
-        setIsAuthenticated(false)
-      } finally {
-        setLoadingUserData(false)
+    try {
+      const account = await window.electron.getAccount() as User
+      if (account) {
+        setUser(account)
+        console.log('[AuthProvider] getUserData()', account);
+        setIsAuthenticated(true)
       }
+      else {
+        console.log('[AuthProvider] getUserData()', null  );
+        setIsAuthenticated(false)
+      }
+    } catch (error) {
+      console.error(error)
+      setIsAuthenticated(false)
+    } finally {
+      setLoadingUserData(false)
     }
-    getUserData()
+  }
+
+
+  useCustomEventListener<any>('ready', async () => {
+    console.log('[AuthProvider] ready')
+    await getUserData()
+  })
+
+  useEffect(() => {
+    // getUserData()
   }, [])
 
   return (

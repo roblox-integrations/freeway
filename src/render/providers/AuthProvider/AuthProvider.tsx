@@ -71,12 +71,13 @@ function AuthProvider(props: Props) {
 
 
   useCustomEventListener<any>('ready', async () => {
-    console.log('[AuthProvider] ready')
+    console.log('[AuthProvider] ready getUserData')
     await getUserData()
   })
 
   useEffect(() => {
-    // getUserData()
+    console.log('[AuthProvider] effect getUserData')
+    getUserData()
   }, [])
 
   return (

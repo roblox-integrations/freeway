@@ -34,7 +34,7 @@ export class PieceService {
     this.data = [];
 
     this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
-      console.log(`-------------------> task start ${input.filePath}`);
+      // console.log(`-------------------> task start ${input.filePath}`);
 
       input.method.call(this, input.filePath)
         .then((result) => {
@@ -45,12 +45,12 @@ export class PieceService {
           cb(err)
         })
         .then(() => {
-          console.log(`-------------------> task end ${input.filePath}`);
+          // console.log(`-------------------> task end ${input.filePath}`);
         })
       })
 
     this.queue.on('drain', () => {
-      console.log('-------------------> drain');
+      // console.log('-------------------> drain');
       this.flush()
     })
 

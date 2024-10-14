@@ -1,157 +1,173 @@
 import crypto from "node:crypto";
-import os from "node:os";
-import url from "node:url";
-import {Injectable} from "@nestjs/common";
-import axios from "axios";
+import {URL} from "node:url";
+import {Injectable, Logger} from "@nestjs/common";
 import {jwtDecode} from "jwt-decode";
 import keytar from "keytar";
 import {ConfigService} from "@nestjs/config";
-
-const redirectUri = "http://localhost:3000/oauth/callback";
-
-const keytarService = "roblox-integration-hub";
-const keytarAccount = os.userInfo().username;
-
-// store this value in the service
-let accessToken = null;
-let profile = null;
-let refreshToken = null;
-// create a random code verifier
-const code_verifier = base64URLEncode(crypto.randomBytes(32));
-// generate a challenge from the code verifier
-const code_challenge = base64URLEncode(sha256(code_verifier));
-const state = "aaaBBB211";
+import {KEYTAR_ACCOUNT, KEYTAR_SERVICE, REDIRECT_URI} from "@main/auth/auth.constants.ts";
+import {ConfigurationRoblox} from "@main/_config/configuration.ts";
 
 @Injectable()
 export class AuthService {
+  private accessToken: string = null;
+  private refreshToken: string = null;
+  private profile = null;
+  private codeVerifier: string = null;
+
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(private config: ConfigService) {
   }
 
-  getAccessToken() {
-    return accessToken;
-  }
-
   async getProfile() {
-    if (!profile) {
+    if (!this.profile) {
       await this.refreshTokens();
     }
-    return profile;
+
+    return this.profile;
   }
 
   getClientId() {
-    return this.config.get("roblox.clientId");
+    return this.config.get<ConfigurationRoblox>("roblox").clientId;
   }
 
-  getAuthenticationURL() {
-    const params = `${new URLSearchParams({
+  getAuthenticationURL(): string {
+    if (!this.codeVerifier) {
+      this.codeVerifier = crypto.randomBytes(32).toString('base64url');
+    }
+
+    const params = new URLSearchParams({
       client_id: this.getClientId(),
-      code_challenge,
+      code_challenge: crypto.createHash("sha256").update(this.codeVerifier).digest('base64url'),
       code_challenge_method: "S256",
-      redirect_uri: redirectUri,
+      redirect_uri: REDIRECT_URI,
       scope: "openid profile asset:read asset:write",
       response_type: "code",
-      state
-    }).toString()}`;
+      state: 'aaaBBB211' // TODO remove this ?
+    }).toString();
 
     return `https://apis.roblox.com/oauth/v1/authorize?${params}`;
   }
 
   async refreshTokens() {
-    const storedRefreshToken = await keytar.getPassword(keytarService, keytarAccount);
+    this.refreshToken = await keytar.getPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT);
+    const clientId = this.getClientId();
 
-    if (storedRefreshToken) {
-      const data = new URLSearchParams({
-        grant_type: "refresh_token",
-        client_id: this.getClientId(),
-        refresh_token: storedRefreshToken
-      });
-
-      const refreshOptions = {
-        method: "POST",
-        url: `https://apis.roblox.com/oauth/v1/token`,
-        headers: {
-          "content-Type": "application/x-www-form-urlencoded"
-        },
-        data
-      };
-
+    if (this.refreshToken) {
       try {
-        const response = await axios(refreshOptions);
-        await this._setAuthState({responseData: response.data});
-      }
-      catch (error) {
-        await this.logout();
-        throw error;
+        const input = 'https://apis.roblox.com/oauth/v1/token';
+        const init = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            grant_type: "refresh_token",
+            client_id: clientId,
+            refresh_token: this.refreshToken
+          })
+        };
+
+        const response = await fetch(input, init);
+
+        if (!response.ok) {
+          await this.logout();
+          throw new Error(`Cannot refresh tokens. Status: ${response.status}`);
+        }
+
+        let json = await response.json()
+        await this._setAuthState({responseData: json});
+        return json;
+      } catch (err) {
+        this.logger.error(err.message);
+        throw err;
       }
     }
-    else {
-      throw new Error("No available refresh token.");
+  }
+
+  async getAuthorizedResources() {
+    try {
+      const response = await fetch('https://apis.roblox.com/oauth/v1/token/resources', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          client_id: this.getClientId(),
+          token: this.accessToken
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Cannot get authorized resources. Status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      this.logger.error(err.message);
+      throw err;
     }
   }
 
   async _setAuthState({responseData}: { responseData: any }) {
-    accessToken = responseData.access_token;
-    refreshToken = responseData.refresh_token;
-    profile = jwtDecode(responseData.id_token);
+    this.accessToken = responseData.access_token;
+    this.refreshToken = responseData.refresh_token;
+    this.profile = jwtDecode(responseData.id_token);
 
-    if (refreshToken) {
-      await keytar.setPassword(keytarService, keytarAccount, refreshToken);
+    if (this.refreshToken) {
+      await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, this.refreshToken);
     }
   }
 
-  async loadTokens(callbackURL: string) {
-    const urlParts = new url.URL(callbackURL);
-    const code = urlParts.searchParams.get("code");
-    const data = new URLSearchParams({
-      code,
-      code_verifier,
-      grant_type: "authorization_code",
-      client_id: this.getClientId()
-    });
+  getCodeFromCallbackUrl(url: string) {
+    const parsed = new URL(url);
+    return parsed.searchParams.get("code");
+  }
 
-    const options = {
-      method: "POST",
-      url: `https://apis.roblox.com/oauth/v1/token`,
-      headers: {
-        "content-Type": "application/x-www-form-urlencoded"
-      },
-      data
-    };
-
+  async loadTokens(callbackUrl: string) {
     try {
-      const response = await axios(options);
-      await this._setAuthState({responseData: response.data});
-    }
-    catch (error) {
+      const code = this.getCodeFromCallbackUrl(callbackUrl);
+      const clientId = this.getClientId();
+
+      const input = 'https://apis.roblox.com/oauth/v1/token';
+      const init = {
+        method: "POST",
+        headers: {
+          "content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code,
+          code_verifier: this.codeVerifier,
+          client_id: clientId
+        })
+      };
+
+      const response = await fetch(input, init);
+
+      if (!response.ok) {
+        throw new Error(`Cannot load tokens. Status: ${response.status}`);
+      }
+
+      let json = await response.json()
+
+      await this._setAuthState({responseData: json})
+      this.codeVerifier = null;
+
+      return json;
+    } catch (err) {
+      this.logger.error(err.message);
       await this.logout();
-      throw error;
+      throw err;
     }
   }
 
   async logout() {
-    await keytar.deletePassword(keytarService, keytarAccount);
-    accessToken = null;
-    profile = null;
-    refreshToken = null;
+    await keytar.deletePassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT);
+    this.accessToken = null;
+    this.profile = null;
+    this.refreshToken = null;
     // TODO: logout from roblox?
     // TODO: invalidate refresh_token and access_token
   }
-
-  getLogOutUrl() {
-    // TODO: wrong url
-    return `https://roblox.com/logout`;
-  }
-}
-
-// base64URL encode the verifier and challenge
-function base64URLEncode(str) {
-  return str.toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "");
-}
-
-// create sha256 hash from code verifier
-function sha256(buffer) {
-  return crypto.createHash("sha256").update(buffer).digest(`base64`);
 }

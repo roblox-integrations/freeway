@@ -12,6 +12,11 @@ export class AuthController {
     return this.authService.getProfile();
   }
 
+  @Get("/resources")
+  public resources() {
+    return this.authService.getAuthorizedResources();
+  }
+
   @IpcHandle("profile")
   public handleGetAccount() {
     return of(this.authService.getProfile());

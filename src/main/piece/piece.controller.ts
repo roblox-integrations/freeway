@@ -1,10 +1,11 @@
-import {Controller, Get, Param, Query, StreamableFile, Res} from "@nestjs/common";
+import {Controller, Get, Param, Query, StreamableFile, Patch, Body} from "@nestjs/common";
 import {PieceService} from "@main/piece/piece.service.ts";
 import {createReadStream} from 'fs';
 import {lookup} from 'mime-types';
 import {PieceTypeEnum} from "@main/piece/enum";
 import {join} from "node:path";
 import {app} from 'electron'
+import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
 
 @Controller('api/pieces')
 export class PieceController {
@@ -49,4 +50,15 @@ export class PieceController {
       type: lookup(piece.filePath) || 'application/octet-stream'
     });
   }
+
+  @Patch("/:id")
+  async update(@Param('id') id: string, @Body() updatePieceDto: UpdatePieceDto) {
+    const piece = this.pieceService.getPieceById(id);
+
+    this.pieceService.update(piece, updatePieceDto);
+    await this.pieceService.flush();
+
+    return piece;
+  }
+
 }

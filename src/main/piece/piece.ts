@@ -13,10 +13,11 @@ export class Piece {
     public type: PieceTypeEnum,
     public filePath: string,
     public fileHash: string,
-    public assetIds: string[] = [],
+    public assetIds: PieceSnapshot[] = [],
     public updatedAt: number = null,
     public deletedAt: number = null,
     public isDirty: boolean = true,
+    public isAutoSave: boolean = false,
   ) {
     if (!this.updatedAt) {
       this.updatedAt = now();

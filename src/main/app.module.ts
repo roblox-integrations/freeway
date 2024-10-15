@@ -58,13 +58,13 @@ const electronModule = ElectronModule.registerAsync({
 
 @Module({
   imports: [
-    electronModule,
-    AuthModule,
-    TestModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
     }),
+    electronModule,
+    AuthModule,
+    TestModule,
     PieceModule.registerAsync({
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
       defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')

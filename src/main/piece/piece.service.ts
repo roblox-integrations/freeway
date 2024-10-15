@@ -12,6 +12,7 @@ import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 import Queue from 'better-queue'
+import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
 
 // import useQueue from './piece-queue.ts'
 
@@ -178,14 +179,14 @@ export class PieceService {
     )
   }
 
-  async createPiece(filePath: string) {
+  async addFromFile(filePath: string) {
     const newPiece = await this.createFromFile(filePath);
     this.add(newPiece);
 
     return newPiece;
   }
 
-  async updatePiece(piece: Piece) {
+  async updateFromFile(piece: Piece) {
     piece.isDirty = false;
     piece.deletedAt = null;
 
@@ -248,9 +249,9 @@ export class PieceService {
       .on("unlink", filePath => {
         this.logger.log('unlink')
         // this.queue.add(async () => {
-        //   await this.onUnlink(filePath);
+        //   await this.onWatcherUnlink(filePath);
         // });
-        this.queue.push({id: filePath, filePath, method: this.onUnlink})
+        this.queue.push({id: filePath, filePath, method: this.onWatcherUnlink})
       })
       .on("ready", () => {
         this.onWatcherReady()
@@ -269,25 +270,25 @@ export class PieceService {
   async onWatcherInit(filePath: string) {
     const piece = this.getPiece(filePath);
     if (!piece) {
-      await this.createPiece(filePath);
+      await this.addFromFile(filePath);
     } else {
-      await this.updatePiece(piece);
+      await this.updateFromFile(piece);
     }
   }
 
   async onWatcherChange(filePath: string) {
     const piece = this.getPiece(filePath);
     if (!piece) {
-      await this.createPiece(filePath);
+      await this.addFromFile(filePath);
       this.emitEvent("piece:created", piece);
     } else {
-      await this.updatePiece(piece);
+      await this.updateFromFile(piece);
       this.emitEvent("piece:updated", piece);
     }
     await this.flush(); // throttle?
   }
 
-  async onUnlink(path: string) {
+  async onWatcherUnlink(path: string) {
     const piece = this.getPiece(path);
 
     if (!piece) return
@@ -313,6 +314,11 @@ export class PieceService {
         return id;
       }
     }
+  }
+
+  update(piece: Piece, updatePieceDto: UpdatePieceDto) {
+    piece.isAutoSave = updatePieceDto.isAutoSave;
+    return piece;
   }
 }
 

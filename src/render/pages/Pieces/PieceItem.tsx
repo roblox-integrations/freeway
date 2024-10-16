@@ -8,7 +8,7 @@ export default function PieceItem({item}) {
     window.electron.reveal(item.filePath);
   }
 
-  const updatePieceItem = async () => {
+  const updatePieceItem = async ({isAutoSave}) => {
     console.log('[PieceItem] before', isAutoSave)
 
     const res = await fetch(`http://localhost:3000/api/pieces/${item.id}`, {
@@ -22,15 +22,22 @@ export default function PieceItem({item}) {
     console.log('[PieceItem] updated', json)
   };
 
-  async function onChangeIsAuthSave () {
-    setIsAutoSave(!isAutoSave)
-    //console.log('[PieceItem] onChange', isAutoSave)
-    //await updatePieceItem()
-  }
+  const onCreateAsset = async () => {
+    const res = await fetch(`http://localhost:3000/api/pieces/${item.id}/asset`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    const json = await res.json();
+    console.log('[PieceItem] asset', json)
+  };
 
-  useEffect(() => {
-    updatePieceItem();
-  }, [isAutoSave]);
+  async function onChangeIsAuthSave () {
+    const newIsAutoSave = !isAutoSave;
+    setIsAutoSave(newIsAutoSave);
+    updatePieceItem({isAutoSave: newIsAutoSave});
+  }
 
   return (
     <Card
@@ -71,6 +78,10 @@ export default function PieceItem({item}) {
 
           <Button variant='outline' colorScheme='blue' size='sm' onClick={onReveal}>
             Show in explorer (finder)
+          </Button>
+
+          <Button variant='outline' colorScheme='blue' size='sm' onClick={onCreateAsset}>
+            Create Asset
           </Button>
 
         </CardFooter>

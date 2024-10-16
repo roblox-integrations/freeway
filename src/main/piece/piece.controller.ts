@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Query, StreamableFile, Patch, Body} from "@nestjs/common";
+import {Controller, Get, Post, Patch, Param, Query, Body, StreamableFile} from "@nestjs/common";
 import {PieceService} from "@main/piece/piece.service.ts";
 import {createReadStream} from 'fs';
 import {lookup} from 'mime-types';
@@ -6,10 +6,11 @@ import {PieceTypeEnum} from "@main/piece/enum";
 import {join} from "node:path";
 import {app} from 'electron'
 import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
+import {AuthService} from "@main/auth/auth.service.ts";
 
 @Controller('api/pieces')
 export class PieceController {
-  constructor(private readonly pieceService: PieceService) {
+  constructor(private readonly pieceService: PieceService, private readonly authService: AuthService) {
   }
 
   @Get("/")
@@ -61,4 +62,22 @@ export class PieceController {
     return piece;
   }
 
+  @Post("/:id/asset")
+  async createAsset(@Param('id') id: string) {
+    const piece = this.pieceService.getPieceById(id);
+    await this.authService.createAsset(piece)
+    return piece;
+  }
+
+
+  @Get("/:id/operation")
+  async getOperation(@Param('id') id: string) {
+    return this.authService.getAssetOperationResultRetry(id)
+  }
+
+
+  @Get("/:id/decal")
+  async getFromDecal(@Param('id') id: string) {
+    return this.authService.getImageFromDecal(id)
+  }
 }

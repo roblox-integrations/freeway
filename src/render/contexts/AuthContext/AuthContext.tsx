@@ -4,7 +4,7 @@ import { createContext } from 'react'
 export type User = {
   name: string
   nickname: string
-  preferred_username: string
+  preferredUsername: string
   profile: string
   picture: string
 

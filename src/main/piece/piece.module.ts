@@ -4,6 +4,7 @@ import { DynamicModule, Module } from '@nestjs/common'
 import { PieceController } from './piece.controller'
 import { PieceService } from './piece.service'
 import {ensureDir} from 'fs-extra'
+import {AuthModule} from "@main/auth/auth.module.ts";
 
 @Module({})
 export class PieceModule {
@@ -33,6 +34,7 @@ export class PieceModule {
           inject: [pieceServiceInstanceProviderName, PIECE_OPTIONS]
         },
       ],
+      imports: [AuthModule],
       exports: [PieceService],
     }
   }

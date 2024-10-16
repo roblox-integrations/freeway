@@ -22,7 +22,7 @@ function Router() {
         element={
           <PrivateRoute redirectTo={LOGIN_PATH}>
             <NavBar />
-            <Home />
+            <Pieces />
           </PrivateRoute>
         }
       />

@@ -168,15 +168,7 @@ export class PieceService {
   }
 
   createFromObject(object: any): Piece {
-    return new Piece(
-      object.id,
-      object.role,
-      object.type,
-      object.filePath,
-      object.fileHash,
-      object.assetIds,
-      object.updatedAt
-    )
+    return Piece.createFromObject(object);
   }
 
   async addFromFile(filePath: string) {

@@ -19,6 +19,7 @@
     "@emotion/styled": "^11.13.0",
     "@esm2cjs/p-limit": "^4.0.0",
     "@esm2cjs/p-queue": "^7.3.0",
+    "p-retry": "^4.6.2",
     "@nestjs/common": "^10.3.8",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.3.8",

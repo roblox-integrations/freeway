@@ -1,6 +1,16 @@
 import {Image, Card, Stack, CardBody, Heading, CardFooter, Button, Text, Badge, Flex, Switch, FormLabel} from '@chakra-ui/react'
 import {useState, useEffect} from "react";
 
+function CurrentAssetId ({item}) {
+  const found = item?.uploads?.find(x => x.fileHash === item.fileHash);
+
+  if (!found) {
+    return null
+  }
+
+  return <>assetId: {found.assetId}</>
+}
+
 export default function PieceItem({item}) {
   const [isAutoSave, setIsAutoSave] = useState(item.isAutoSave);
 
@@ -70,7 +80,7 @@ export default function PieceItem({item}) {
             updated: {item.updatedAt}
           </Text>
           <Text>
-            uploads: {item.uploads.length}
+            uploads: {item.uploads.length}, <CurrentAssetId item={item}></CurrentAssetId>
           </Text>
 
         </CardBody>

@@ -1,25 +1,43 @@
 import {PieceRoleEnum, PieceTypeEnum} from "./enum";
 import {now} from "@main/utils";
+import {PartialType} from '@nestjs/mapped-types';
 
-export interface PieceSnapshot {
-  assetId: string,
-  fileHash: string,
-  operationId?: string,
+
+export class PieceUpload {
+  public assetId: string
+  public decalId: string
+  public fileHash: string
+  public operationId?: string
+
+  constructor() {
+    //
+  }
+
+  static fromObject(obj: CreatePieceUploadDto) {
+    const piece = new PieceUpload();
+    Object.assign(piece, obj);
+    return piece;
+  }
+}
+
+export class CreatePieceUploadDto extends PartialType(PieceUpload) {
+  //
 }
 
 export class Piece {
-  constructor(
-    public id: string,
-    public role: PieceRoleEnum,
-    public type: PieceTypeEnum,
-    public filePath: string,
-    public fileHash: string = '',
-    public assetIds: PieceSnapshot[] = [],
-    public isAutoSave: boolean = false,
-    public updatedAt: number = null,
-    public deletedAt: number = null,
-    public isDirty: boolean = true,
-  ) {
+  public id: string
+  public role: PieceRoleEnum
+  public type: PieceTypeEnum
+  public filePath: string
+  public fileHash: string = ''
+  public uploads: PieceUpload[] = []
+  public isAutoSave: boolean = false
+  public updatedAt: number = null
+  public deletedAt: number = null
+  public uploadedAt: number = null
+  public isDirty: boolean = true
+
+  constructor() {
     if (!this.updatedAt) {
       this.updatedAt = now();
     }
@@ -30,21 +48,40 @@ export class Piece {
     return object;
   }
 
-  static createFromObject (obj: Piece) {
-    return new Piece(
-      obj.id,
-      obj.role,
-      obj.type,
-      obj.filePath,
-      obj.fileHash,
-      obj.assetIds,
-      obj.isAutoSave,
-      obj.updatedAt,
-      obj.deletedAt
-    );
+  static fromObject(obj: CreatePieceDto) {
+    const piece = new Piece();
+    Object.assign(piece, obj);
+    return piece;
   }
+}
+
+export class CreatePieceDto extends PartialType(Piece) {
+  //
 }
 
 export class PieceEditable extends Piece {
   public data: any;
 }
+
+
+/*
+class Entry {
+  id: string;
+  file: EntryFile;
+  assets: EntryAsset[];
+  assetedAt: number;
+  deletedAt: number;
+}
+
+class EntryFile {
+  hash: string;
+  path: string;
+}
+
+class EntryAsset {
+  hash: string;
+  operationId: string;
+  decalId: string;
+  assetId: string;
+}
+*/

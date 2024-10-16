@@ -56,7 +56,7 @@ export class PieceController {
   async update(@Param('id') id: string, @Body() updatePieceDto: UpdatePieceDto) {
     const piece = this.pieceService.getPieceById(id);
 
-    this.pieceService.update(piece, updatePieceDto);
+    await this.pieceService.update(piece, updatePieceDto);
     await this.pieceService.flush();
 
     return piece;
@@ -65,16 +65,15 @@ export class PieceController {
   @Post("/:id/asset")
   async createAsset(@Param('id') id: string) {
     const piece = this.pieceService.getPieceById(id);
-    await this.authService.createAsset(piece)
+    await this.pieceService.uploadAsset(piece);
+    await this.pieceService.flush();
     return piece;
   }
-
 
   @Get("/:id/operation")
   async getOperation(@Param('id') id: string) {
     return this.authService.getAssetOperationResultRetry(id)
   }
-
 
   @Get("/:id/decal")
   async getFromDecal(@Param('id') id: string) {

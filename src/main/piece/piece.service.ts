@@ -4,15 +4,17 @@ import {parse} from "node:path";
 import {Inject, Injectable, Logger} from "@nestjs/common";
 import chokidar from "chokidar";
 import {PIECE_OPTIONS} from "./piece.constants";
-import {Piece, PieceEditable} from "./piece.ts";
+import {Piece, PieceEditable, PieceUpload} from "./piece.ts";
 import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {getHash, dumpToRbxImage, now, dumpToRbxMesh} from "@main/utils";
+import {dumpToRbxImage, dumpToRbxMesh, getHash, now} from "@main/utils";
 import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
 import Queue from 'better-queue'
 import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
+import {AuthService} from "@main/auth/auth.service.ts";
+import {PieceEventEnum} from "@main/piece/enum/piece-event.enum.ts";
 
 // import useQueue from './piece-queue.ts'
 
@@ -31,7 +33,7 @@ export class PieceService {
   private queue: Queue;
   private readonly logger = new Logger(PieceService.name);
 
-  constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow) {
+  constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow, private readonly authService: AuthService) {
     this.data = [];
 
     this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
@@ -97,7 +99,7 @@ export class PieceService {
 
     if (Array.isArray(data)) {
       for (const x of data) {
-        this.data.push(this.createFromObject(x));
+        this.data.push(Piece.fromObject(x));
       }
     } else {
       throw new TypeError("Invalid metadata format");
@@ -154,21 +156,13 @@ export class PieceService {
   }
 
   async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
-
     const id = this.generateUniqId()
-    const hash = await getHash(filePath)
-
+    const fileHash = await getHash(filePath)
     const parsed = parse(filePath);
     const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum;
+    const isDirty = false;
 
-    const piece = new Piece(id, role, type, filePath, hash);
-    piece.isDirty = false;
-
-    return piece;
-  }
-
-  createFromObject(object: any): Piece {
-    return Piece.createFromObject(object);
+    return Piece.fromObject({id, role, type, filePath, fileHash, isDirty});
   }
 
   async addFromFile(filePath: string) {
@@ -272,12 +266,49 @@ export class PieceService {
     const piece = this.getPiece(filePath);
     if (!piece) {
       await this.addFromFile(filePath);
-      this.emitEvent("piece:created", piece);
+      this.emitEvent(PieceEventEnum.created, piece);
     } else {
       await this.updateFromFile(piece);
-      this.emitEvent("piece:updated", piece);
+      this.emitEvent(PieceEventEnum.updated, piece);
     }
+
+    if (piece.isAutoSave) {
+      // TODO: queue this action
+      await this.uploadAsset(piece);
+    }
+
     await this.flush(); // throttle?
+  }
+
+  async uploadAsset(piece: Piece) {
+    const upload = piece.uploads.find(x => x.fileHash === piece.fileHash);
+    if (upload) {
+      // no need to upload asset actually, just update timestamp
+      piece.uploadedAt = now();
+      return piece;
+    }
+
+    // TODO: make upload incremental - step by step with saving results on each
+    const uploadDto = await this.authService.createAsset(
+      piece.filePath,
+      "decal", // TODO: make enum? or rename existing PieceEnum key to decal
+      `Piece #${piece.id}`,
+      `hash:${piece.fileHash}`
+    );
+
+    const newUpload = PieceUpload.fromObject({
+      fileHash: piece.fileHash,
+      decalId: uploadDto.decalId,
+      assetId: uploadDto.assetId,
+      operationId: uploadDto.operationId
+    });
+
+    piece.uploads.push(newUpload);
+    piece.uploadedAt = now();
+
+    this.emitEvent(PieceEventEnum.updated, piece);
+
+    return piece;
   }
 
   async onWatcherUnlink(path: string) {
@@ -287,7 +318,7 @@ export class PieceService {
 
     piece.deletedAt = now();
 
-    this.emitEvent("piece:deleted", piece);
+    this.emitEvent(PieceEventEnum.deleted, piece);
   }
 
   onWatcherReady() {
@@ -308,8 +339,17 @@ export class PieceService {
     }
   }
 
-  update(piece: Piece, updatePieceDto: UpdatePieceDto) {
+  async update(piece: Piece, updatePieceDto: UpdatePieceDto) {
     piece.isAutoSave = updatePieceDto.isAutoSave;
+
+
+    if (piece.isAutoSave) {
+      // TODO: queue this action
+      await this.uploadAsset(piece);
+    }
+
+    this.emitEvent(PieceEventEnum.updated, piece);
+
     return piece;
   }
 }

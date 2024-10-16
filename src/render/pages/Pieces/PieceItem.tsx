@@ -69,6 +69,10 @@ export default function PieceItem({item}) {
           <Text>
             updated: {item.updatedAt}
           </Text>
+          <Text>
+            uploads: {item.uploads.length}
+          </Text>
+
         </CardBody>
 
         <CardFooter gap='2' alignItems='center'>

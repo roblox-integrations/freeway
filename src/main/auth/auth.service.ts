@@ -186,22 +186,21 @@ export class AuthService {
     // TODO: invalidate refresh_token and access_token
   }
 
-  async createAssetOperationId(piece: Piece) {
-    const filePath = piece.filePath;
+  async createAssetOperationId(filePath : string, assetType = "decal", name = "Test name", description = "Test description") {
     const profile = await this.getProfile();
     const userId = profile.id;
 
     const formData = new FormData()
 
     const request = {
-      assetType: "decal",
-      displayName: `Piece #${piece.id}`,
-      description: "test description",
+      assetType,
+      displayName: name,
+      description: description,
       creationContext: {creator: {userId: userId}}
     }
-    formData.append('request', JSON.stringify(request))
+    formData.append('request', JSON.stringify(request));
 
-    let fileData = await fs.readFile(piece.filePath);
+    let fileData = await fs.readFile(filePath);
     formData.append('fileContent', new Blob([fileData], {type: getMime(filePath)}));
 
     let url = 'https://apis.roblox.com/assets/v1/assets'
@@ -222,16 +221,16 @@ export class AuthService {
     return json.operationId;
   }
 
-  async createAsset(piece: Piece) {
+  async createAsset(filePath : string, assetType = "decal", name = "Test name", description = "Test description") {
     try {
-      let operationId = await this.createAssetOperationId(piece);
+      let operationId = await this.createAssetOperationId(filePath, assetType, name, description);
       await delay(500);
-      const resultingAssetId = await this.getAssetOperationResultRetry(operationId)
-      const imageAssetId = await this.getImageFromDecal(resultingAssetId)
-      this.logger.log(imageAssetId)
-      return imageAssetId
+      const decalId = await this.getAssetOperationResultRetry(operationId)
+      const assetId = await this.getImageFromDecal(decalId)
+      this.logger.log(assetId)
+      return {assetId, decalId, operationId}
     } catch (err) {
-      this.logger.error("Cannot create asset for Piece", err);
+      this.logger.error(`Cannot create asset for file ${filePath}`, err);
       throw err;
     }
   }
@@ -250,7 +249,7 @@ export class AuthService {
       })
     }
     catch (err) {
-      throw new Error("Unable to fetch assetid in time, please try again")
+      throw new Error("Unable to fetch assetId in time, please try again")
     }
   }
 
@@ -277,7 +276,7 @@ export class AuthService {
     return operationJson.response.assetId;
   }
 
-  async getImageFromDecal(decalId: string): Promise<number> {
+  async getImageFromDecal(decalId: string): Promise<string> {
     const DECAL_CAPTURE_REGEX = new RegExp('<Content name="Texture">\\s*<url>[^0-9]+(\\d+)</url>\\s*</Content>');
 
     let response = await fetch(`https://assetdelivery.roblox.com/v1/asset/?id=${decalId}`)
@@ -300,7 +299,7 @@ export class AuthService {
       throw new Error(`Cannot getImageFromDecal. Failed to parse image number: ${imageId}`);
     }
 
-    return imageId;
+    return String(imageId)
   }
 }
 

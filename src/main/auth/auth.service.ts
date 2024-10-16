@@ -11,6 +11,7 @@ import {ProfileOauthDto, ProfileDto} from "@main/auth/dto";
 import {Piece} from "@main/piece/piece.ts";
 import {setTimeout as delay} from 'timers/promises';
 import {default as pRetry} from 'p-retry'
+import {getMime} from '@main/utils'
 
 
 @Injectable()
@@ -186,6 +187,7 @@ export class AuthService {
   }
 
   async createAssetOperationId(piece: Piece) {
+    const filePath = piece.filePath;
     const profile = await this.getProfile();
     const userId = profile.id;
 
@@ -200,7 +202,7 @@ export class AuthService {
     formData.append('request', JSON.stringify(request))
 
     let fileData = await fs.readFile(piece.filePath);
-    formData.append('fileContent', new Blob([fileData], {type: piece.mimeType}));
+    formData.append('fileContent', new Blob([fileData], {type: getMime(filePath)}));
 
     let url = 'https://apis.roblox.com/assets/v1/assets'
     let response = await fetch(url, {
@@ -292,7 +294,7 @@ export class AuthService {
       throw new Error(`Cannot getImageFromDecal. Failed to get contentId from asset: ${text}`);
     }
 
-    const imageId = parseInt(match[1]);
+    const imageId = parseInt(match[1]); // to MAX: why?
 
     if (typeof imageId !== 'number') {
       throw new Error(`Cannot getImageFromDecal. Failed to parse image number: ${imageId}`);

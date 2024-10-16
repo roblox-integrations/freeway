@@ -7,7 +7,7 @@ import {PIECE_OPTIONS} from "./piece.constants";
 import {Piece, PieceEditable} from "./piece.ts";
 import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {getHash, dumpToRbxImage, now, dumpToRbxMesh} from "@main/piece/utils.ts";
+import {getHash, dumpToRbxImage, now, dumpToRbxMesh} from "@main/utils";
 import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";

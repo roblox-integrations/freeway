@@ -1,10 +1,10 @@
-import {PieceTypeEnum, PieceRoleEnum} from "./enum";
-import {now} from "@main/piece/utils.ts";
-import {lookup} from 'mime-types';
+import {PieceRoleEnum, PieceTypeEnum} from "./enum";
+import {now} from "@main/utils";
 
 export interface PieceSnapshot {
   assetId: string,
   fileHash: string,
+  operationId?: string,
 }
 
 export class Piece {
@@ -30,12 +30,8 @@ export class Piece {
     return object;
   }
 
-  get mimeType(): string {
-    return lookup(this.filePath) || 'application/octet-stream';
-  }
-
   static createFromObject (obj: Piece) {
-    const piece = new Piece(
+    return new Piece(
       obj.id,
       obj.role,
       obj.type,
@@ -46,7 +42,6 @@ export class Piece {
       obj.updatedAt,
       obj.deletedAt
     );
-    return piece;
   }
 }
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import crypto from 'node:crypto'
 import {Jimp} from "jimp";
+import {lookup} from "mime-types";
 
 export async function getHash(filePath: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
@@ -25,6 +26,10 @@ export async function getHash(filePath: string): Promise<string> {
 
 export function now(): number {
   return Math.floor(Date.now() / 1000);
+}
+
+export function getMime(filePath: string, defaultMime = 'application/octet-stream'): string {
+  return lookup(filePath) || defaultMime
 }
 
 

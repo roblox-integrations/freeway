@@ -23,7 +23,7 @@ export class PieceController {
     return this.pieceService.getPieceById(id);
   }
 
-  @Get("/:id/dumped")
+  @Get("/:id/raw")
   async getJimp(@Param('id') id: string, @Query('r') round: number) {
     console.log(typeof round === 'number');
     return this.pieceService.getPieceByIdDumped(id, round);

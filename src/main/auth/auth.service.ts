@@ -189,7 +189,6 @@ export class AuthService {
   async createAssetOperationId(filePath : string, assetType = "decal", name = "Test name", description = "Test description") {
     const profile = await this.getProfile();
     const userId = profile.id;
-
     const formData = new FormData()
 
     const request = {
@@ -213,7 +212,10 @@ export class AuthService {
     })
 
     if (!response.ok) {
-      // let json = await response.json();
+      this.logger.error(`response: ${response.status}`)
+
+      let responseText = await response.text();
+      this.logger.error(`response: ${responseText}`)
       throw new Error('Cannot create asset (asset operation failed)')
     }
 

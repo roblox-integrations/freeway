@@ -2,10 +2,11 @@ import {Controller, Get} from "@nestjs/common";
 import {AuthService} from "./auth.service.ts";
 import {IpcHandle} from "@doubleshot/nest-electron";
 import {of} from "rxjs";
+import {RobloxOauthClient} from "@main/roblox-api/roblox-oauth.client.ts";
 
 @Controller()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private robloxOauthClient: RobloxOauthClient) {}
 
   @Get("/account")
   public account() {
@@ -14,7 +15,7 @@ export class AuthController {
 
   @Get("/resources")
   public resources() {
-    return this.authService.getAuthorizedResources();
+    return this.robloxOauthClient.getAuthorizedResources();
   }
 
   @IpcHandle("profile")
@@ -22,3 +23,9 @@ export class AuthController {
     return of(this.authService.getProfile());
   }
 }
+
+
+// session:account
+// session:authorized-resources
+// session:login
+// session:logout

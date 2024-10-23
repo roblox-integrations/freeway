@@ -27,8 +27,11 @@ export class PieceModule {
         {
           provide: PieceService,
           useFactory: async (pieceService: PieceService, options: PieceModuleOptions) => {
-            await ensureDir(options.defaultWatchPath)
-            await pieceService.init();
+            ensureDir(options.defaultWatchPath)
+              .then(() => {
+                return pieceService.init();
+              })
+
             return pieceService;
           },
           inject: [pieceServiceInstanceProviderName, PIECE_OPTIONS]

@@ -5,6 +5,7 @@ export function configuration() {
     port: Number.parseInt(process.env.PORT, 10) || 3000,
     roblox: {
       clientId: '3542170589549758275',
+      scope: 'openid profile asset:read asset:write'
     },
     piece: {
       output: 'metadata.json',
@@ -27,7 +28,8 @@ export function configuration() {
 
 
 export interface ConfigurationRoblox {
-  clientId: string
+  clientId: string,
+  scope: string,
 }
 
 export interface ConfigurationCors extends CorsOptions {

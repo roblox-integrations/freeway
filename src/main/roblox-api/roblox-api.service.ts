@@ -5,6 +5,7 @@ import {getMime} from "@main/utils";
 import {setTimeout as delay} from "timers/promises";
 import {default as pRetry} from "p-retry";
 import {RobloxOauthClient} from "@main/roblox-api/roblox-oauth.client.ts";
+import {CreateAssetResultDto} from "@main/piece/dto/create-asset-result.dto.ts";
 
 @Injectable()
 export class RobloxApiService {
@@ -74,14 +75,16 @@ export class RobloxApiService {
     return json.operationId;
   }
 
-  async createAsset(filePath: string, assetType = "decal", name = "Test name", description = "Test description") {
+  async createAsset(filePath: string, assetType = "decal", name = "Test name", description = "Test description"): Promise<CreateAssetResultDto> {
     try {
       let operationId = await this.createAssetOperationId(filePath, assetType, name, description);
       await delay(500);
       const decalId = await this.getAssetOperationResultRetry(operationId)
       const assetId = await this.getImageFromDecal(decalId)
-      this.logger.log(assetId)
-      return {assetId, decalId, operationId}
+
+      const result = CreateAssetResultDto.fromDto({assetId, decalId, operationId});
+      this.logger.log(`createAsset result ${JSON.stringify(result)}`);
+      return result;
     } catch (err) {
       this.logger.error(`Cannot create asset for file ${filePath}`, err);
       throw err;
@@ -116,8 +119,8 @@ export class RobloxApiService {
 
     if (!response.ok) {
       const result = await response.json();
-      this.logger.error('getAssetOperationResult: not OK', response.status, url, result)
-      throw new Error('getAssetOperationResult: not OK');
+      this.logger.error('getAssetOperationResult: error', response.status, url, result)
+      throw new Error('getAssetOperationResult: error');
     }
 
     let operationJson = await response.json()
@@ -137,7 +140,7 @@ export class RobloxApiService {
       throw new Error(`Cannot getImageFromDecal. Status: ${response.status}`)
     }
 
-    let text = await response.text()
+    let text = await response.text();
 
     const match = DECAL_CAPTURE_REGEX.exec(text);
 

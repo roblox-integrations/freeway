@@ -4,9 +4,9 @@ import {PartialType} from '@nestjs/mapped-types';
 
 
 export class PieceUpload {
+  public fileHash: string
   public assetId: string
   public decalId: string
-  public fileHash: string
   public operationId?: string
 
   constructor() {

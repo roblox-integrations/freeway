@@ -1,16 +1,16 @@
 import {Controller, Get, Post, Patch, Param, Query, Body, StreamableFile} from "@nestjs/common";
 import {PieceService} from "@main/piece/piece.service.ts";
 import {createReadStream} from 'fs';
-import {lookup} from 'mime-types';
 import {PieceTypeEnum} from "@main/piece/enum";
 import {join} from "node:path";
 import {app} from 'electron'
 import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
-import {AuthService} from "@main/auth/auth.service.ts";
+import {RobloxApiService} from "@main/roblox-api/roblox-api.service.ts";
+import {getMime} from "@main/utils";
 
 @Controller('api/pieces')
 export class PieceController {
-  constructor(private readonly pieceService: PieceService, private readonly authService: AuthService) {
+  constructor(private readonly pieceService: PieceService, private readonly robloxApiService: RobloxApiService) {
   }
 
   @Get("/")
@@ -24,16 +24,15 @@ export class PieceController {
   }
 
   @Get("/:id/raw")
-  async getJimp(@Param('id') id: string, @Query('r') round: number) {
-    console.log(typeof round === 'number');
+  async getRaw(@Param('id') id: string, @Query('r') round: number) {
     return this.pieceService.getPieceByIdDumped(id, round);
   }
 
   @Get("/:id/preview")
-  async getPreview(@Param('id') id: string) {
+  async getPreview(@Param('id') id: string): Promise<StreamableFile> {
     const piece = this.pieceService.getPieceById(id);
 
-    let filePath;
+    let filePath: string;
     if (piece.type === PieceTypeEnum.image) {
       filePath = piece.filePath;
     } else {
@@ -48,7 +47,7 @@ export class PieceController {
     const file = createReadStream(filePath);
 
     return new StreamableFile(file, {
-      type: lookup(piece.filePath) || 'application/octet-stream'
+      type: getMime(piece.filePath)
     });
   }
 
@@ -72,11 +71,11 @@ export class PieceController {
 
   @Get("/:id/operation")
   async getOperation(@Param('id') id: string) {
-    return this.authService.getAssetOperationResultRetry(id)
+    return this.robloxApiService.getAssetOperationResultRetry(id)
   }
 
   @Get("/:id/decal")
   async getFromDecal(@Param('id') id: string) {
-    return this.authService.getImageFromDecal(id)
+    return this.robloxApiService.getImageFromDecal(id)
   }
 }

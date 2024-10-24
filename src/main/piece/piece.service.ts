@@ -1,73 +1,25 @@
 import type {PieceModuleOptions} from "./piece.module.options.ts";
 import fs from "node:fs/promises";
 import {parse} from "node:path";
-import {Inject, Injectable, Logger} from "@nestjs/common";
-import chokidar from "chokidar";
+import {Inject, Injectable} from "@nestjs/common";
 import {PIECE_OPTIONS} from "./piece.constants";
 import {Piece, PieceEditable, PieceUpload} from "./piece.ts";
 import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {dumpToRbxImage, dumpToRbxMesh, getHash, now} from "@main/utils";
+import {dumpToRbxImage, dumpToRbxMesh, getHash, now, randomString} from "@main/utils";
 import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
 import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
 import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
-import Queue from 'better-queue'
 import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
-import {AuthService} from "@main/auth/auth.service.ts";
+import {RobloxApiService} from "@main/roblox-api/roblox-api.service";
 import {PieceEventEnum} from "@main/piece/enum/piece-event.enum.ts";
-
-// import useQueue from './piece-queue.ts'
-
-
-interface QueueFileTask {
-  id: string
-  filePath: string
-  method: Function
-}
-
 
 @Injectable()
 export class PieceService {
-  private readonly data: Piece[];
-  private isReady: boolean;
-  private queue: Queue;
-  private readonly logger = new Logger(PieceService.name);
+  private readonly data: Piece[] = [];
 
-  constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow, private readonly authService: AuthService) {
-    this.data = [];
-
-    this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
-      // console.log(`-------------------> task start ${input.filePath}`);
-
-      input.method.call(this, input.filePath)
-        .then((result) => {
-          cb(null, result);
-        })
-        .catch((err) => {
-          console.error(err);
-          cb(err)
-        })
-        .then(() => {
-          // console.log(`-------------------> task end ${input.filePath}`);
-        })
-    })
-
-    this.queue.on('drain', () => {
-      // console.log('-------------------> drain');
-      this.flush()
-    })
-
-
-    // this.queue = useQueue({concurrency: 1});
-    // this.queue.on('idle', async () => {
-    //   await this.flush()
-    // })
-
-  }
-
-  async init() {
-    await this.load();
-    this.watch();
+  constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow, private readonly robloxApiService: RobloxApiService) {
+    //
   }
 
   async load() {
@@ -106,7 +58,7 @@ export class PieceService {
     }
   }
 
-  async _write(): Promise<any> {
+  async _write(): Promise<void> {
     try {
       const data = JSON.stringify(this.data, null, 2);
       await fs.writeFile(this.options.metadataPath, data, {encoding: "utf8", flush: true});
@@ -114,10 +66,9 @@ export class PieceService {
       console.error(writeErr);
       throw new Error(`File ${this.options.metadataPath} cannot write file`);
     }
-    return null;
   }
 
-  async flush() {
+  async flush(): Promise<void> {
     return this._write();
   }
 
@@ -155,6 +106,10 @@ export class PieceService {
     this.data.push(piece);
   }
 
+  removePiece(piece: Piece): void {
+    piece.deletedAt = now();
+  }
+
   async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
     const id = this.generateUniqId()
     const fileHash = await getHash(filePath)
@@ -185,145 +140,35 @@ export class PieceService {
     return piece;
   }
 
-  watch() {
-    const watcher = chokidar.watch(this.options.defaultWatchPath, {
-      ignored: (filePath, stats) => {
-        if (stats?.isDirectory()) {
-          return false;
-        }
-
-        if (stats?.isFile()) {
-          const parsed = parse(filePath);
-          if (parsed.name[0] == '.' || parsed.name[0] === '_') {
-            // ignore .dot-files and _underscore-files
-            return true;
-          }
-
-          return !PieceExtTypeMap.has(parsed.ext);
-        }
-      },
-      ignoreInitial: false,
-      persistent: true,
-      usePolling: true,
-      awaitWriteFinish: true,
-      depth: 99,
-      alwaysStat: true,
-    });
-
-    watcher
-      .on("add", (filePath) => {
-        this.logger.log('add', filePath);
-        if (!this.isReady) {
-          // this.queue.add(async () => {
-          //   await this.onWatcherInit(filePath);
-          // });
-          this.queue.push({id: filePath, filePath, method: this.onWatcherInit})
-        } else {
-          // this.queue.add(async () => {
-          //   await this.onWatcherChange(filePath);
-          // });
-          this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
-        }
-      })
-      .on("change", filePath => {
-        this.logger.log('change', filePath);
-        // this.queue.add(async () => {
-        //   await this.onWatcherInit(filePath);
-        // });
-        this.queue.push({id: filePath, filePath, method: this.onWatcherChange})
-      })
-      .on("unlink", filePath => {
-        this.logger.log('unlink')
-        // this.queue.add(async () => {
-        //   await this.onWatcherUnlink(filePath);
-        // });
-        this.queue.push({id: filePath, filePath, method: this.onWatcherUnlink})
-      })
-      .on("ready", () => {
-        this.onWatcherReady()
-      })
-      .on('raw', (event, path, details) => {
-        this.logger.log('Raw event info:', event, path, details)
-      })
-
-    // watcher
-    // .on("addDir", (path) => log(`Directory ${path} has been added`))
-    // .on("unlinkDir", (path) => log(`Directory ${path} has been removed`))
-    // .on("error", (error) => log(`Watcher error: ${error}`))
-
-  }
-
-  async onWatcherInit(filePath: string) {
-    const piece = this.getPiece(filePath);
-    if (!piece) {
-      await this.addFromFile(filePath);
-    } else {
-      await this.updateFromFile(piece);
-    }
-  }
-
-  async onWatcherChange(filePath: string) {
-    const piece = this.getPiece(filePath);
-    if (!piece) {
-      await this.addFromFile(filePath);
-      this.emitEvent(PieceEventEnum.created, piece);
-    } else {
-      await this.updateFromFile(piece);
-      this.emitEvent(PieceEventEnum.updated, piece);
-    }
-
-    if (piece.isAutoSave) {
-      // TODO: queue this action
-      await this.uploadAsset(piece);
-    }
-
-    await this.flush(); // throttle?
-  }
-
   async uploadAsset(piece: Piece) {
-    const upload = piece.uploads.find(x => x.fileHash === piece.fileHash);
+    let upload = piece.uploads.find(x => x.fileHash === piece.fileHash);
     if (upload) {
       // no need to upload asset actually, just update timestamp
       piece.uploadedAt = now();
       return piece;
     }
 
-    // TODO: make upload incremental - step by step with saving results on each
-    const uploadDto = await this.authService.createAsset(
+    // TODO: make upload incremental - step by step, saving results on each
+    const result = await this.robloxApiService.createAsset(
       piece.filePath,
-      "decal", // TODO: make enum? or rename existing PieceEnum key to decal
+      "decal",
       `Piece #${piece.id}`,
       `hash:${piece.fileHash}`
     );
 
-    const newUpload = PieceUpload.fromObject({
+    upload = PieceUpload.fromObject({
       fileHash: piece.fileHash,
-      decalId: uploadDto.decalId,
-      assetId: uploadDto.assetId,
-      operationId: uploadDto.operationId
+      assetId: result.assetId,
+      decalId: result.decalId,
+      operationId: result.operationId
     });
 
-    piece.uploads.push(newUpload);
+    piece.uploads.push(upload);
     piece.uploadedAt = now();
 
     this.emitEvent(PieceEventEnum.updated, piece);
 
     return piece;
-  }
-
-  async onWatcherUnlink(path: string) {
-    const piece = this.getPiece(path);
-
-    if (!piece) return
-
-    piece.deletedAt = now();
-
-    this.emitEvent(PieceEventEnum.deleted, piece);
-  }
-
-  onWatcherReady() {
-    this.logger.log("Ready. Initial scan complete. Watching for changes...");
-    this.isReady = true;
   }
 
   emitEvent(name: string, data: any) {
@@ -332,7 +177,7 @@ export class PieceService {
 
   private generateUniqId() {
     for (let i = 0; ; i++) {
-      const id = generateAlphabeticalId(Math.floor(i / 10 + 4));
+      const id = randomString(Math.floor(i / 10 + 4));
       if (!this.getPieceById(id)) {
         return id;
       }
@@ -342,9 +187,8 @@ export class PieceService {
   async update(piece: Piece, updatePieceDto: UpdatePieceDto) {
     piece.isAutoSave = updatePieceDto.isAutoSave;
 
-
     if (piece.isAutoSave) {
-      // TODO: queue this action
+      // TODO: queue this action?
       await this.uploadAsset(piece);
     }
 
@@ -352,16 +196,4 @@ export class PieceService {
 
     return piece;
   }
-}
-
-export function generateAlphabeticalId(length: number) {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const charactersLength = characters.length;
-  let counter = 0;
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
-  }
-  return result;
 }

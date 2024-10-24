@@ -2,14 +2,13 @@ import { join } from 'node:path'
 import { ElectronModule, ELECTRON_WINDOW_DEFAULT_NAME } from '@doubleshot/nest-electron'
 import { AuthModule } from '@main/auth/auth.module'
 import { TestModule } from '@main/test/test.module'
-import { Module, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { app, BrowserWindow } from 'electron'
 import { configuration } from './_config/configuration'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { PieceModule } from './piece/piece.module.ts'
-import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { RobloxApiModule } from './roblox-api/roblox-api.module';
 // import { RobloxApiServiceService } from './roblox-api-service/roblox-api-service.service';
 import { ProfileModule } from './profile/profile.module';
@@ -68,21 +67,16 @@ const electronModule = ElectronModule.registerAsync({
     electronModule,
     AuthModule,
     TestModule,
+    RobloxApiModule,
     PieceModule.registerAsync({
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
       defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')
     }),
-    RobloxApiModule,
     ProfileModule,
   ],
   controllers: [AppController],
-  providers: [AppService/*, RobloxApiServiceService*/],
+  providers: [AppService],
 })
 
 export class AppModule {
-/*
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('/')
-  }
-*/
 }

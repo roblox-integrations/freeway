@@ -91,6 +91,11 @@ export class AppController {
     shell.beep(); // Just for fun
   }
 
+  @Get("beep")
+  public getAppBeep() {
+    shell.beep(); // Just for fun
+  }
+
   @IpcOn("reveal")
   public reveal(@Payload() path: string): void {
     shell.showItemInFolder(path);

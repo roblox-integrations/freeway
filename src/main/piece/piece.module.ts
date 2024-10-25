@@ -3,7 +3,7 @@ import {PieceModuleOptions} from '@main/piece/piece.module.options.ts'
 import {DynamicModule, Module} from '@nestjs/common'
 import {PieceController} from './piece.controller'
 import {PieceService} from './piece.service'
-import {PieceWatcher} from "@main/piece/piece.watcher.ts"
+import {PieceWatcher, PieceChokidarWatcher, PieceParcelWatcher} from "@main/piece/watcher"
 import {RobloxApiModule} from "@main/roblox-api/roblox-api.module.ts";
 
 @Module({})
@@ -19,7 +19,10 @@ export class PieceModule {
           useValue: options,
         },
         PieceService,
-        PieceWatcher,
+        {
+          provide: PieceWatcher,
+          useClass: PieceParcelWatcher
+        },
       ],
       imports: [RobloxApiModule],
       exports: [PieceService],

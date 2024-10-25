@@ -69,6 +69,7 @@ const electronModule = ElectronModule.registerAsync({
     TestModule,
     RobloxApiModule,
     PieceModule.registerAsync({
+      workingDir: join(app.getPath('home'), 'roblox-electron-hub'),
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
       defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')
     }),

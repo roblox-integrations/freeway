@@ -1,14 +1,19 @@
-import {Image, Card, Stack, CardBody, Heading, CardFooter, Button, Text, Badge, Flex, Switch, FormLabel} from '@chakra-ui/react'
+import {Image, Code, Card, Stack, CardBody, Heading, CardFooter, Button, Text, Badge, Flex, Switch, FormLabel} from '@chakra-ui/react'
 import {useState, useEffect} from "react";
 
-function CurrentAssetId ({item}) {
+function PieceItemCurrentAssetId ({item}) {
   const found = item?.uploads?.find(x => x.fileHash === item.fileHash);
 
   if (!found) {
     return null
   }
 
-  return <>assetId: {found.assetId}</>
+  return <>assetId={found.assetId}</>
+}
+
+function PieceItemDate ({date}) {
+  const result = (new Date(date * 1000)).toISOString().slice(0, 19);
+  return <>{result}</>
 }
 
 export default function PieceItem({item}) {
@@ -66,21 +71,17 @@ export default function PieceItem({item}) {
       <Stack>
         <CardBody>
           <Flex gap='2' my='2'>
-            <Badge colorScheme='blue'>{item.role}</Badge>
-            <Badge colorScheme='green'>{item.type}</Badge>
+            <Code colorScheme='blue'>{item.role}</Code>
+            <Code colorScheme='green'>{item.type}</Code>
+            <Code colorScheme='gray'>#{item.id}</Code>
+            <Code colorScheme='gray'><PieceItemDate date={item.updatedAt}></PieceItemDate></Code>
           </Flex>
-          <Heading size='sm'>{item.filePath}</Heading>
-          <Text>
-            id {item.id}
-          </Text>
+          <Heading size='xs'>{item.filePath}</Heading>
           <Text>
             hash: {item.fileHash}
           </Text>
           <Text>
-            updated: {item.updatedAt}
-          </Text>
-          <Text>
-            uploads: {item.uploads.length}, <CurrentAssetId item={item}></CurrentAssetId>
+            uploads={item.uploads.length} <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId>
           </Text>
 
         </CardBody>

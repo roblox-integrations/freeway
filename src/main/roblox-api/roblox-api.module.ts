@@ -6,6 +6,4 @@ import { RobloxOauthClient } from './roblox-oauth.client.ts';
   providers: [RobloxApiService, RobloxOauthClient],
   exports: [RobloxApiService, RobloxOauthClient],
 })
-export class RobloxApiModule {
-
-}
+export class RobloxApiModule {}

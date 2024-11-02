@@ -11,7 +11,6 @@ import { AppService } from './app.service'
 import { PieceModule } from './piece/piece.module.ts'
 import { RobloxApiModule } from './roblox-api/roblox-api.module';
 // import { RobloxApiServiceService } from './roblox-api-service/roblox-api-service.service';
-import { ProfileModule } from './profile/profile.module';
 
 const electronModule = ElectronModule.registerAsync({
   name:  ELECTRON_WINDOW_DEFAULT_NAME,
@@ -73,7 +72,6 @@ const electronModule = ElectronModule.registerAsync({
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
       defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')
     }),
-    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

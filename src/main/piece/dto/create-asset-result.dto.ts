@@ -3,9 +3,9 @@ export class CreateAssetResultDto {
   decalId: string
   operationId: string
 
-  static fromDto (obj: CreateAssetResultDto) {
-    const dto = new CreateAssetResultDto();
-    Object.assign(dto, obj);
-    return dto;
+  static fromDto(obj: CreateAssetResultDto) {
+    const dto = new CreateAssetResultDto()
+    Object.assign(dto, obj)
+    return dto
   }
 }

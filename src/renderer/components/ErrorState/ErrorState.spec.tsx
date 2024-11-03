@@ -1,12 +1,12 @@
-import { render, screen } from '@testing-library/react'
+import {render, screen} from '@testing-library/react'
 import ErrorState from './ErrorState'
 
-describe('ErrorState | component | unit test', () => {
+describe('errorState | component | unit test', () => {
   it('should render with success', () => {
     render(<ErrorState />)
 
     expect(
-      screen.getByText('An internal error occurred on the server')
+      screen.getByText('An internal error occurred on the server'),
     ).toBeInTheDocument()
   })
 

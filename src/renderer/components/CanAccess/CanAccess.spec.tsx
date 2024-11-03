@@ -1,20 +1,20 @@
-import { render, screen } from '@testing-library/react'
+import {useSession} from '@render/hooks'
+import {validateUserPermissions} from '@render/utils'
+import {render, screen} from '@testing-library/react'
 import CanAccess from './CanAccess'
-import { useSession } from '@render/hooks'
-import { validateUserPermissions } from '@render/utils'
 
 jest.mock('@render/hooks/useSession', () => ({
-  useSession: jest.fn()
+  useSession: jest.fn(),
 }))
 
 jest.mock('@render/utils/validateUserPermissions', () => ({
-  validateUserPermissions: jest.fn()
+  validateUserPermissions: jest.fn(),
 }))
 
-describe('CanAccess component', () => {
+describe('canAccess component', () => {
   beforeEach(() => {
     ;(useSession as jest.Mock).mockReturnValue({
-      isAuthenticated: true
+      isAuthenticated: true,
     })
   })
 
@@ -22,7 +22,7 @@ describe('CanAccess component', () => {
     it('should not render child component', () => {
       ;(validateUserPermissions as jest.Mock).mockReturnValue({
         hasAllPermissions: false,
-        hasAllRoles: false
+        hasAllRoles: false,
       })
 
       render(<CanAccess>Sample component</CanAccess>)
@@ -35,7 +35,7 @@ describe('CanAccess component', () => {
     it('should render child component', () => {
       ;(validateUserPermissions as jest.Mock).mockReturnValue({
         hasAllPermissions: true,
-        hasAllRoles: true
+        hasAllRoles: true,
       })
 
       render(<CanAccess>Sample component</CanAccess>)

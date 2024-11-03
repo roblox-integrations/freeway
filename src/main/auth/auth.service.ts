@@ -1,7 +1,6 @@
-import {Injectable} from "@nestjs/common";
-import {ProfileDto} from "@main/auth/dto";
-import {RobloxOauthClient} from "@main/roblox-api/roblox-oauth.client.ts";
-
+import {ProfileDto} from '@main/auth/dto'
+import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
+import {Injectable} from '@nestjs/common'
 
 @Injectable()
 export class AuthService {
@@ -9,11 +8,10 @@ export class AuthService {
   }
 
   async getProfile(): Promise<ProfileDto> {
-    await this.oauthClient.assertTokenSetIsValid();
+    await this.oauthClient.assertTokenSetIsValid()
 
-    const tokenSet = await this.oauthClient.getTokenSet();
+    const tokenSet = await this.oauthClient.getTokenSet()
 
     return ProfileDto.createFromProfileOAuthDto(tokenSet.claims)
   }
 }
-

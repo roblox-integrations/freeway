@@ -1,11 +1,11 @@
 import type {MicroserviceOptions} from '@nestjs/microservices'
 import {ElectronIpcTransport} from '@doubleshot/nest-electron'
-import {NestFactory} from '@nestjs/core'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
+import {NestFactory} from '@nestjs/core'
 import {app} from 'electron'
-import {AppModule} from './app.module'
 import {ConfigurationCors} from './_config/configuration'
+import {AppModule} from './app.module'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -13,7 +13,7 @@ async function bootstrap() {
   try {
     await app.whenReady()
 
-    const nestApp = await NestFactory.create(AppModule);
+    const nestApp = await NestFactory.create(AppModule)
 
     const config = nestApp.get(ConfigService)
 
@@ -23,7 +23,7 @@ async function bootstrap() {
       new ValidationPipe({
         transform: true,
       }),
-    );
+    )
 
     // global middleware
     // nestApp.use((req, res, next) => {
@@ -35,18 +35,17 @@ async function bootstrap() {
       strategy: new ElectronIpcTransport('IpcTransport'),
     })
 
-    nestApp.enableShutdownHooks();
+    nestApp.enableShutdownHooks()
     await nestApp.startAllMicroservices()
 
-    const port = config.get<number>('port');
-    await nestApp.listen(port);
-
+    const port = config.get<number>('port')
+    await nestApp.listen(port)
 
     const isDev = !app.isPackaged
-    app.on('window-all-closed', async() => {
+    app.on('window-all-closed', async () => {
       if (process.platform !== 'darwin') {
-        await nestApp.close();
-        app.quit();
+        await nestApp.close()
+        app.quit()
       }
     })
 
@@ -54,20 +53,20 @@ async function bootstrap() {
       if (process.platform === 'win32') {
         process.on('message', async (data) => {
           if (data === 'graceful-exit') {
-            await nestApp.close();
-            app.quit();
+            await nestApp.close()
+            app.quit()
           }
         })
-      } else {
-        process.on('SIGTERM', async() => {
-          await nestApp.close();
-          app.quit();
+      }
+      else {
+        process.on('SIGTERM', async () => {
+          await nestApp.close()
+          app.quit()
         })
       }
     }
-
-  } catch (error) {
-    // eslint-disable-next-line no-console
+  }
+  catch (error) {
     console.log(error)
     app.quit()
   }

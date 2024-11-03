@@ -11,7 +11,7 @@ const paths = {
   REGISTER_PATH,
   STATUS_PATH,
   PIECES_PATH,
-  PIECE_PATH
+  PIECE_PATH,
 } as const
 
 export default paths

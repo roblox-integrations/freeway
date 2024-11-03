@@ -20,7 +20,7 @@ export default defineConfig({
       alias: {
         '@render': resolve('src/renderer'),
         '@components': resolve('src/renderer/components'),
-      }
+      },
     },
     plugins: [react()],
   },

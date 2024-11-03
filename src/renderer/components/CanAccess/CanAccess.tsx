@@ -1,21 +1,21 @@
-import { ReactNode } from 'react'
-import { useSession } from '@render/hooks'
-import { validateUserPermissions } from '@render/utils'
+import {useSession} from '@render/hooks'
+import {validateUserPermissions} from '@render/utils'
+import {ReactNode} from 'react'
 
-type Props = {
+interface Props {
   children: ReactNode
   permissions?: string[]
   roles?: string[]
 }
 
 function CanAccess(props: Props) {
-  const { children, permissions, roles } = props
+  const {children, permissions, roles} = props
 
-  const { isAuthenticated, user } = useSession()
-  const { hasAllPermissions, hasAllRoles } = validateUserPermissions({
+  const {isAuthenticated, user} = useSession()
+  const {hasAllPermissions, hasAllRoles} = validateUserPermissions({
     user,
     permissions,
-    roles
+    roles,
   })
 
   if (!isAuthenticated || !hasAllPermissions || !hasAllRoles) {

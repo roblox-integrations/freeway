@@ -1,27 +1,26 @@
-import { useRoutePaths, useSession } from '@render/hooks'
-import { Link as RLink, NavLink as RNavLink} from 'react-router-dom'
-import { CanAccess } from '../CanAccess'
-
+import {CloseIcon, HamburgerIcon} from '@chakra-ui/icons'
 import {
-  Box,
-  Flex,
   Avatar,
-  HStack,
-  Text,
-  IconButton,
+  Box,
   Button,
+  Flex,
+  HStack,
+  IconButton,
+  Link,
   Menu,
   MenuButton,
-  MenuList,
-  MenuItem,
   MenuDivider,
-  useDisclosure,
-  useColorModeValue,
+  MenuItem,
+  MenuList,
   Stack,
-  Link,
+  useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react'
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
-import {ReactNode} from "react";
+import {useRoutePaths, useSession} from '@render/hooks'
+
+import {ReactNode} from 'react'
+import {NavLink as RNavLink} from 'react-router-dom'
+import {CanAccess} from '../CanAccess'
 
 interface Props {
   children: React.ReactNode
@@ -29,15 +28,15 @@ interface Props {
 
 const Links = ['Home', 'Status', 'Pieces']
 
-const NavLink = (props: {children: ReactNode, href: string}) => {
-  const { children, href } = props
+function NavLink(props: { children: ReactNode, href: string }) {
+  const {children, href} = props
 
   return (
     <Link
-      as= {RNavLink}
+      as={RNavLink}
       px={2}
       py={1}
-      rounded={'md'}
+      rounded="md"
       _hover={{
         textDecoration: 'none',
         bg: useColorModeValue('gray.200', 'gray.700'),
@@ -47,52 +46,54 @@ const NavLink = (props: {children: ReactNode, href: string}) => {
         bg: useColorModeValue('gray.200', 'gray.700'),
       }}
 
-      to={href}>
+      to={href}
+    >
       {children}
     </Link>
   )
 }
 
 export default function Simple() {
-  const { isAuthenticated, user, signOut, signIn } = useSession()
-  const { LOGIN_PATH, STATUS_PATH, REGISTER_PATH, ROOT_PATH, PIECES_PATH } = useRoutePaths()
+  const {isAuthenticated, user, signOut, signIn} = useSession()
+  const {LOGIN_PATH, STATUS_PATH, REGISTER_PATH, ROOT_PATH, PIECES_PATH} = useRoutePaths()
 
-  function onClickRobloxAccount () {
+  function onClickRobloxAccount() {
     window.electron.openExternal(user.profile)
   }
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {isOpen, onOpen, onClose} = useDisclosure()
 
   return (
     <>
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
-        <Flex h={12} alignItems={'center'} justifyContent={'space-between'}>
+        <Flex h={12} alignItems="center" justifyContent="space-between">
           <IconButton
-            size={'md'}
+            size="md"
             icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            aria-label={'Open Menu'}
-            display={{ md: 'none' }}
+            aria-label="Open Menu"
+            display={{md: 'none'}}
             onClick={isOpen ? onClose : onOpen}
           />
-          <HStack spacing={6} alignItems={'center'}>
+          <HStack spacing={6} alignItems="center">
             <Box>Logo</Box>
-            <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
+            <HStack as="nav" spacing={4} display={{base: 'none', md: 'flex'}}>
               <NavLink href={ROOT_PATH}>Home</NavLink>
               <NavLink href={STATUS_PATH}>Status</NavLink>
               <NavLink href={PIECES_PATH}>Pieces</NavLink>
             </HStack>
           </HStack>
           {isAuthenticated && (
-            <Flex alignItems={'center'}>
+            <Flex alignItems="center">
               <Menu>
                 <MenuButton
                   as={Button}
-                  rounded={'full'}
-                  variant={'link'}
-                  cursor={'pointer'}
-                  minW={0}>
+                  rounded="full"
+                  variant="link"
+                  cursor="pointer"
+                  minW={0}
+                >
                   <Avatar
-                    size={'sm'}
+                    size="sm"
                     src={user?.picture}
                   />
                 </MenuButton>
@@ -107,15 +108,17 @@ export default function Simple() {
           )}
         </Flex>
         <CanAccess>
-          {isAuthenticated && isOpen ? (
-            <Box pb={4} display={{ md: 'none' }}>
-              <Stack as={'nav'} spacing={4}>
-                {Links.map((link) => (
-                  <NavLink key={link}>{link}</NavLink>
-                ))}
-              </Stack>
-            </Box>
-          ) : null}
+          {isAuthenticated && isOpen
+            ? (
+                <Box pb={4} display={{md: 'none'}}>
+                  <Stack as="nav" spacing={4}>
+                    {Links.map(link => (
+                      <NavLink key={link}>{link}</NavLink>
+                    ))}
+                  </Stack>
+                </Box>
+              )
+            : null}
         </CanAccess>
       </Box>
     </>

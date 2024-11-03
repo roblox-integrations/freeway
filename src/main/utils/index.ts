@@ -1,42 +1,41 @@
-import fs from 'node:fs/promises'
 import crypto from 'node:crypto'
-import {Jimp} from "jimp";
-import {lookup} from "mime-types";
+import fs from 'node:fs/promises'
+import {Jimp} from 'jimp'
+import {lookup} from 'mime-types'
 
 export async function getHash(filePath: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
-    const fd = await fs.open(filePath, 'r');
-    const stream = fd.createReadStream();
+    const fd = await fs.open(filePath, 'r')
+    const stream = fd.createReadStream()
 
-    const md5sum = crypto.createHash("md5");
+    const md5sum = crypto.createHash('md5')
 
-    stream.on("data", function (data) {
-      md5sum.update(data);
-    });
+    stream.on('data', (data) => {
+      md5sum.update(data)
+    })
 
-    stream.on("error", function (err) {
-      reject(err);
-    });
+    stream.on('error', (err) => {
+      reject(err)
+    })
 
-    stream.on("end", function () {
-      resolve(md5sum.digest("hex"))
-    });
+    stream.on('end', () => {
+      resolve(md5sum.digest('hex'))
+    })
   })
 }
 
 export function now(): number {
-  return Math.floor(Date.now() / 1000);
+  return Math.floor(Date.now() / 1000)
 }
 
 export function getMime(filePath: string, defaultMime = 'application/octet-stream'): string {
   return lookup(filePath) || defaultMime
 }
 
-
 // RbxArray encodes pixel rgb as floats form 0 to 1, and has form: [ p1.r, p1.g, p1.b, p1.a, p2.r, ... ]
 export interface RbxImage {
-  h: number,
-  w: number,
+  h: number
+  w: number
   p: number[]
 }
 
@@ -45,19 +44,19 @@ export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxI
 
   image.bitmap.data
 
-  const w = image.width;
-  const h = image.height;
-  const pixelCount = w * h;
+  const w = image.width
+  const h = image.height
+  const pixelCount = w * h
 
-  const p = new Array<number>(pixelCount * 4);
+  const p = Array.from({length: pixelCount * 4})
 
   for (let i = 0; i < image.bitmap.data.length; i++) {
-    p[i] = image.bitmap.data[i] / 255;
+    p[i] = image.bitmap.data[i] / 255
 
     if (round) {
-      const pow = Math.pow(10, round || 0);
-      const n = (p[i] * pow) * (1 + Number.EPSILON);
-      p[i] = Math.round(n) / pow;
+      const pow = 10 ** (round || 0)
+      const n = (p[i] * pow) * (1 + Number.EPSILON)
+      p[i] = Math.round(n) / pow
     }
   }
 
@@ -65,20 +64,19 @@ export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxI
 }
 
 export async function dumpToRbxMesh(objectPath: string): Promise<string> {
-  return fs.readFile(objectPath, 'utf-8');
+  return fs.readFile(objectPath, 'utf-8')
 }
 
 export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') {
-  let result = '';
-  const charactersLength = characters.length;
-  let counter = 0;
+  let result = ''
+  const charactersLength = characters.length
+  let counter = 0
   while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
+    result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    counter += 1
   }
-  return result;
+  return result
 }
-
 
 /*
 import {createReadStream} from 'fs';

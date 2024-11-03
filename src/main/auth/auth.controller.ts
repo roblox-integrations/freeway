@@ -1,29 +1,28 @@
-import {Controller, Get} from "@nestjs/common";
-import {AuthService} from "./auth.service.ts";
-import {IpcHandle} from "@doubleshot/nest-electron";
-import {of} from "rxjs";
-import {RobloxOauthClient} from "@main/roblox-api/roblox-oauth.client.ts";
+import {IpcHandle} from '@doubleshot/nest-electron'
+import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client.ts'
+import {Controller, Get} from '@nestjs/common'
+import {of} from 'rxjs'
+import {AuthService} from './auth.service.ts'
 
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService, private robloxOauthClient: RobloxOauthClient) {}
 
-  @Get("/account")
+  @Get('/account')
   public account() {
-    return this.authService.getProfile();
+    return this.authService.getProfile()
   }
 
-  @Get("/resources")
+  @Get('/resources')
   public resources() {
-    return this.robloxOauthClient.getAuthorizedResources();
+    return this.robloxOauthClient.getAuthorizedResources()
   }
 
-  @IpcHandle("profile")
+  @IpcHandle('profile')
   public handleGetAccount() {
-    return of(this.authService.getProfile());
+    return of(this.authService.getProfile())
   }
 }
-
 
 // session:account
 // session:authorized-resources

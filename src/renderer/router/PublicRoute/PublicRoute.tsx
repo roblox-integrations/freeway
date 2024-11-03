@@ -1,17 +1,17 @@
-import { ReactNode, Suspense } from 'react'
-import { Navigate } from 'react-router-dom'
-import { ErrorBoundary } from 'react-error-boundary'
-import { ErrorState, Loader } from '@render/components'
-import { useSession } from '@render/hooks'
+import {ErrorState, Loader} from '@render/components'
+import {useSession} from '@render/hooks'
+import {ReactNode, Suspense} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {Navigate} from 'react-router-dom'
 
-type Props = {
+interface Props {
   children: ReactNode
 }
 
 function PublicRoute(props: Props) {
-  const { children } = props
+  const {children} = props
 
-  const { isAuthenticated } = useSession()
+  const {isAuthenticated} = useSession()
 
   if (isAuthenticated) {
     return <Navigate to="/" />

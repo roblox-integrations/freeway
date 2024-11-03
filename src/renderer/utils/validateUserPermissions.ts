@@ -1,16 +1,16 @@
-type User = {
+interface User {
   permissions: string[]
   roles: string[]
 }
 
-type Params = {
+interface Params {
   user?: User
   permissions?: string[]
   roles?: string[]
 }
 
 export function validateUserPermissions(params: Params) {
-  const { user, permissions, roles } = params
+  const {user, permissions, roles} = params
 
   let hasAllPermissions = true
   let hasAllRoles = true
@@ -31,5 +31,5 @@ export function validateUserPermissions(params: Params) {
     })
   }
 
-  return { hasAllPermissions, hasAllRoles }
+  return {hasAllPermissions, hasAllRoles}
 }

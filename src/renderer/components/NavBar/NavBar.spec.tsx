@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { ReactNode } from 'react'
-import { MemoryRouter } from 'react-router-dom'
-import { AuthContext } from '@render/contexts'
-import { paths } from '@render/router'
+import {AuthContext} from '@render/contexts'
+import {paths} from '@render/router'
+import {fireEvent, render, screen} from '@testing-library/react'
+import {ReactNode} from 'react'
+import {MemoryRouter} from 'react-router-dom'
 import NavBar from './NavBar'
 
 const providerUserUnloggedMock = {
@@ -10,7 +10,7 @@ const providerUserUnloggedMock = {
   signOut: jest.fn(),
   user: undefined,
   isAuthenticated: false,
-  loadingUserData: false
+  loadingUserData: false,
 }
 
 const providerUserLoggedMock = {
@@ -19,29 +19,29 @@ const providerUserLoggedMock = {
   user: {
     email: 'email@site.com',
     permissions: ['users.list', 'pieces.list'],
-    roles: []
+    roles: [],
   },
   isAuthenticated: true,
-  loadingUserData: false
+  loadingUserData: false,
 }
 
-type WrapperProps = {
+interface WrapperProps {
   children: ReactNode
 }
 
 function wrapper(props: WrapperProps) {
-  const { children } = props
+  const {children} = props
 
   return <MemoryRouter>{children}</MemoryRouter>
 }
 
-describe('NavBar component', () => {
+describe('navBar component', () => {
   it('should render with success', () => {
     render(
       <AuthContext.Provider value={providerUserUnloggedMock}>
         <NavBar />
       </AuthContext.Provider>,
-      { wrapper }
+      {wrapper},
     )
 
     expect(screen.getByText(/Login/)).toHaveAttribute('href', paths.LOGIN_PATH)
@@ -53,7 +53,7 @@ describe('NavBar component', () => {
         <AuthContext.Provider value={providerUserLoggedMock}>
           <NavBar />
         </AuthContext.Provider>,
-        { wrapper }
+        {wrapper},
       )
 
       expect(screen.getByText(/email@site\.com/)).toBeInTheDocument()
@@ -66,10 +66,10 @@ describe('NavBar component', () => {
         <AuthContext.Provider value={providerUserLoggedMock}>
           <NavBar />
         </AuthContext.Provider>,
-        { wrapper }
+        {wrapper},
       )
 
-      const logoutButton = screen.getByRole('button', { name: /logout/i })
+      const logoutButton = screen.getByRole('button', {name: /logout/i})
 
       fireEvent.click(logoutButton)
 

@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import {render, screen} from '@testing-library/react'
 import Loader from './Loader'
 
-describe('Loader | component | unit test', () => {
+describe('loader | component | unit test', () => {
   it('should render with success', () => {
     render(<Loader />)
 

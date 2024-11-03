@@ -1,7 +1,7 @@
 // import { AxiosError } from 'axios'
-import { createContext } from 'react'
+import {createContext} from 'react'
 
-export type User = {
+export interface User {
   name: string
   nickname: string
   preferredUsername: string
@@ -12,7 +12,7 @@ export type User = {
   roles: string[] // not in use
 }
 
-export type AuthContextData = {
+export interface AuthContextData {
   user?: User
   isAuthenticated: boolean
   loadingUserData: boolean

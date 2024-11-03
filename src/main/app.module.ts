@@ -1,22 +1,22 @@
-import { join } from 'node:path'
-import { ElectronModule, ELECTRON_WINDOW_DEFAULT_NAME } from '@doubleshot/nest-electron'
-import { AuthModule } from './auth/auth.module'
-import { TestModule } from './test/test.module'
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config'
+import {join} from 'node:path'
+import process from 'node:process'
+import {ELECTRON_WINDOW_DEFAULT_NAME, ElectronModule} from '@doubleshot/nest-electron'
+import {is} from '@electron-toolkit/utils'
+import {Module} from '@nestjs/common'
+import {ConfigModule} from '@nestjs/config'
 import {app, BrowserWindow, shell} from 'electron'
-import { configuration } from './_config/configuration'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
-import { PieceModule } from './piece/piece.module'
-import { RobloxApiModule } from './roblox-api/roblox-api.module';
-import process from "node:process";
-import {electronApp, is, optimizer} from '@electron-toolkit/utils'
+import {configuration} from './_config/configuration'
+import {AppController} from './app.controller'
+import {AppService} from './app.service'
+import {AuthModule} from './auth/auth.module'
+import {PieceModule} from './piece/piece.module'
+import {RobloxApiModule} from './roblox-api/roblox-api.module'
+import {TestModule} from './test/test.module'
 
 // import { RobloxApiServiceService } from './roblox-api-service/roblox-api-service.service';
 
 const electronModule = ElectronModule.registerAsync({
-  name:  ELECTRON_WINDOW_DEFAULT_NAME,
+  name: ELECTRON_WINDOW_DEFAULT_NAME,
   isGlobal: true,
   useFactory: async () => {
     // Create the browser window.
@@ -51,7 +51,6 @@ const electronModule = ElectronModule.registerAsync({
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
 
-
     return mainWindow
   },
 })
@@ -69,7 +68,7 @@ const electronModule = ElectronModule.registerAsync({
     PieceModule.registerAsync({
       workingDir: join(app.getPath('home'), 'roblox-electron-hub'),
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub', '/metadata.json'),
-      defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files')
+      defaultWatchPath: join(app.getPath('home'), 'roblox-electron-hub', '/files'),
     }),
   ],
   controllers: [AppController],

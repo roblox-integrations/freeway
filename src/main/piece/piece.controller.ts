@@ -1,80 +1,81 @@
-import {Controller, Get, Post, Patch, Param, Query, Body, StreamableFile} from "@nestjs/common";
-import {PieceService} from "@main/piece/piece.service.ts";
-import {createReadStream} from 'fs';
-import {PieceTypeEnum} from "@main/piece/enum";
-import {join} from "node:path";
+import {createReadStream} from 'node:fs'
+import {join} from 'node:path'
+import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto.ts'
+import {PieceTypeEnum} from '@main/piece/enum'
+import {PieceService} from '@main/piece/piece.service.ts'
+import {RobloxApiService} from '@main/roblox-api/roblox-api.service.ts'
+import {getMime} from '@main/utils'
+import {Body, Controller, Get, Param, Patch, Post, Query, StreamableFile} from '@nestjs/common'
 import {app} from 'electron'
-import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
-import {RobloxApiService} from "@main/roblox-api/roblox-api.service.ts";
-import {getMime} from "@main/utils";
 
 @Controller('api/pieces')
 export class PieceController {
   constructor(private readonly pieceService: PieceService, private readonly robloxApiService: RobloxApiService) {
   }
 
-  @Get("/")
+  @Get('/')
   async findAll() {
-    return this.pieceService.getAll();
+    return this.pieceService.getAll()
   }
 
-  @Get("/:id")
+  @Get('/:id')
   async get(@Param('id') id: string) {
-    return this.pieceService.getPieceById(id);
+    return this.pieceService.getPieceById(id)
   }
 
-  @Get("/:id/raw")
+  @Get('/:id/raw')
   async getRaw(@Param('id') id: string, @Query('r') round: number) {
-    return this.pieceService.getPieceByIdDumped(id, round);
+    return this.pieceService.getPieceByIdDumped(id, round)
   }
 
-  @Get("/:id/preview")
+  @Get('/:id/preview')
   async getPreview(@Param('id') id: string): Promise<StreamableFile> {
-    const piece = this.pieceService.getPieceById(id);
+    const piece = this.pieceService.getPieceById(id)
 
-    let filePath: string;
+    let filePath: string
     if (piece.type === PieceTypeEnum.image) {
-      filePath = piece.filePath;
-    } else {
-      const isDev = !app.isPackaged;
+      filePath = piece.filePath
+    }
+    else {
+      const isDev = !app.isPackaged
       const staticDir = isDev
         ? join(__dirname, '../../static')
         : join(process.resourcesPath, 'static')
 
-      filePath = join(staticDir, 'preview-placeholder.png');
+      filePath = join(staticDir, 'preview-placeholder.png')
     }
 
-    const file = createReadStream(filePath);
+    const file = createReadStream(filePath)
 
     return new StreamableFile(file, {
-      type: getMime(piece.filePath)
-    });
+      type: getMime(piece.filePath),
+    })
   }
 
-  @Patch("/:id")
+  @Patch('/:id')
   async update(@Param('id') id: string, @Body() updatePieceDto: UpdatePieceDto) {
-    const piece = this.pieceService.getPieceById(id);
+    const piece = this.pieceService.getPieceById(id)
 
-    await this.pieceService.update(piece, updatePieceDto);
-    await this.pieceService.flush();
+    await this.pieceService.update(piece, updatePieceDto)
+    await this.pieceService.flush()
 
-    return piece;
+    return piece
   }
 
-  @Post("/:id/asset")
+  @Post('/:id/asset')
   async createAsset(@Param('id') id: string) {
-    const piece = this.pieceService.getPieceById(id);
-    await this.pieceService.uploadAsset(piece);
-    await this.pieceService.flush();
-    return piece;
+    const piece = this.pieceService.getPieceById(id)
+    await this.pieceService.uploadAsset(piece)
+    await this.pieceService.flush()
+    return piece
   }
 
-  @Get("/:id/operation")
+  @Get('/:id/operation')
   async getOperation(@Param('id') id: string) {
     return this.robloxApiService.getAssetOperationResultRetry(id)
   }
 
-  @Get("/:id/decal")
+  @Get('/:id/decal')
   async getFromDecal(@Param('id') id: string) {
     return this.robloxApiService.getImageFromDecal(id)
   }

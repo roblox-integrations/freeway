@@ -1,17 +1,17 @@
-import { ReactNode, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { AuthContext, User } from '@render/contexts'
-import { paths } from '@render/router'
-import {useCustomEventListener} from "react-custom-events";
+import {AuthContext, User} from '@render/contexts'
+import {paths} from '@render/router'
+import {ReactNode, useEffect, useState} from 'react'
+import {useCustomEventListener} from 'react-custom-events'
+import {useNavigate} from 'react-router-dom'
 // import { api, setAuthorizationHeader } from '@render/services'
 // import { createSessionCookies, getToken, removeSessionCookies } from '@render/utils'
 
-type Props = {
+interface Props {
   children: ReactNode
 }
 
 function AuthProvider(props: Props) {
-  const { children } = props
+  const {children} = props
 
   const [user, setUser] = useState<User>()
   const [loadingUserData, setLoadingUserData] = useState(true)
@@ -23,7 +23,7 @@ function AuthProvider(props: Props) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   async function signIn() {
-    console.log('[AuthProvider] signIn');
+    console.log('[AuthProvider] signIn')
     window.electron.login()
   }
 
@@ -36,7 +36,7 @@ function AuthProvider(props: Props) {
     window.electron.logout()
   }
 
-/*
+  /*
   useEffect(() => {
     console.log('use effect');
     if (!token) {
@@ -54,21 +54,22 @@ function AuthProvider(props: Props) {
       const account = await window.electron.getAccount() as User
       if (account) {
         setUser(account)
-        console.log('[AuthProvider] getUserData()', account);
+        console.log('[AuthProvider] getUserData()', account)
         setIsAuthenticated(true)
       }
       else {
-        console.log('[AuthProvider] getUserData()', null  );
+        console.log('[AuthProvider] getUserData()', null)
         setIsAuthenticated(false)
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error(error)
       setIsAuthenticated(false)
-    } finally {
+    }
+    finally {
       setLoadingUserData(false)
     }
   }
-
 
   useCustomEventListener<any>('ready', async () => {
     console.log('[AuthProvider] ready getUserData')
@@ -87,7 +88,7 @@ function AuthProvider(props: Props) {
         user,
         loadingUserData,
         signIn,
-        signOut
+        signOut,
       }}
     >
       {children}

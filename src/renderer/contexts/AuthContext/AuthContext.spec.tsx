@@ -1,8 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { useSession } from '@render/hooks'
-import { AuthProvider } from '@render/providers'
-import { api } from '@render/services'
-import { paths } from '@render/router'
+import {useSession} from '@render/hooks'
+import {AuthProvider} from '@render/providers'
+import {paths} from '@render/router'
+import {api} from '@render/services'
+import {fireEvent, render, screen, waitFor} from '@testing-library/react'
 
 const mockNavigate = jest.fn()
 
@@ -10,12 +10,12 @@ jest.mock('@render/services/api')
 jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => ({
-    pathname: '/'
-  })
+    pathname: '/',
+  }),
 }))
 
 function SampleComponent() {
-  const { signIn, signOut } = useSession()
+  const {signIn, signOut} = useSession()
 
   return (
     <div>
@@ -23,9 +23,8 @@ function SampleComponent() {
         onClick={() =>
           signIn({
             email: 'email@site.com',
-            password: 'password'
-          })
-        }
+            password: 'password',
+          })}
       >
         Sign in
       </button>
@@ -39,11 +38,11 @@ function customRender() {
   render(
     <AuthProvider>
       <SampleComponent />
-    </AuthProvider>
+    </AuthProvider>,
   )
 }
 
-describe('AuthProvider', () => {
+describe('authProvider', () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
@@ -55,15 +54,15 @@ describe('AuthProvider', () => {
           token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
           refreshToken: '84ee647c-ac74-4e34-bb84-1bd6c96b3977',
           permissions: ['users.list', 'users.create', 'pieces.list'],
-          roles: ['administrator']
-        }
+          roles: ['administrator'],
+        },
       }
 
       ;(api.post as jest.Mock).mockReturnValueOnce(responseMock)
 
       customRender()
 
-      const signInButton = screen.getByRole('button', { name: /sign in/i })
+      const signInButton = screen.getByRole('button', {name: /sign in/i})
 
       fireEvent.click(signInButton)
 
@@ -72,7 +71,7 @@ describe('AuthProvider', () => {
           expect(api.post).toHaveBeenCalledTimes(1)
           expect(api.post).toHaveReturnedWith(responseMock)
         },
-        { timeout: 1000 }
+        {timeout: 1000},
       )
     })
   })
@@ -83,7 +82,7 @@ describe('AuthProvider', () => {
 
       customRender()
 
-      const signInButton = screen.getByRole('button', { name: /sign in/i })
+      const signInButton = screen.getByRole('button', {name: /sign in/i})
 
       fireEvent.click(signInButton)
 
@@ -91,7 +90,7 @@ describe('AuthProvider', () => {
         () => {
           expect(api.post).toHaveBeenCalledTimes(1)
         },
-        { timeout: 1000 }
+        {timeout: 1000},
       )
     })
   })
@@ -102,8 +101,8 @@ describe('AuthProvider', () => {
         data: {
           email: 'admin@site.com',
           permissions: ['users.list', 'users.create', 'pieces.list'],
-          roles: ['administrator']
-        }
+          roles: ['administrator'],
+        },
       }
 
       ;(api.get as jest.Mock).mockReturnValueOnce(responseMock)
@@ -115,7 +114,7 @@ describe('AuthProvider', () => {
           expect(api.get).toHaveBeenCalledTimes(1)
           expect(api.get).toHaveReturnedWith(responseMock)
         },
-        { timeout: 1000 }
+        {timeout: 1000},
       )
     })
   })
@@ -130,7 +129,7 @@ describe('AuthProvider', () => {
         () => {
           expect(api.get).toHaveBeenCalledTimes(1)
         },
-        { timeout: 1000 }
+        {timeout: 1000},
       )
     })
   })
@@ -139,7 +138,7 @@ describe('AuthProvider', () => {
     it('should dispatch signOut function', async () => {
       customRender()
 
-      const signOutButton = screen.getByRole('button', { name: /sign out/i })
+      const signOutButton = screen.getByRole('button', {name: /sign out/i})
 
       fireEvent.click(signOutButton)
 

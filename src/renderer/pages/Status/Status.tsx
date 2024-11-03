@@ -1,5 +1,5 @@
-import { Link as ReactRouterLink } from 'react-router-dom'
-import { Link as ChakraLink, LinkProps } from '@chakra-ui/react'
+import {Link as ChakraLink} from '@chakra-ui/react'
+import {Link as ReactRouterLink} from 'react-router-dom'
 
 function Status() {
   return (
@@ -7,9 +7,9 @@ function Status() {
       <h1>Status page</h1>
 
       GO
-      <ChakraLink as={ReactRouterLink} to='/'>
-      Home
-    </ChakraLink>
+      <ChakraLink as={ReactRouterLink} to="/">
+        Home
+      </ChakraLink>
     </div>
   )
 }

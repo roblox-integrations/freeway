@@ -1,4 +1,4 @@
-import {ProfileOauthDto} from "@main/auth/dto/profile.oauth.dto.ts";
+import {ProfileOauthDto} from '@main/auth/dto/profile.oauth.dto.ts'
 
 export class ProfileDto {
   constructor(
@@ -20,7 +20,7 @@ export class ProfileDto {
       dto.preferred_username,
       dto.profile,
       dto.picture,
-      dto.created_at
+      dto.created_at,
     )
   }
 }

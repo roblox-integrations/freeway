@@ -1,14 +1,14 @@
 import {Box, Stack} from '@chakra-ui/react'
-import { useEffect, useState } from "react";
-import PieceItem from "@render/pages/Pieces/PieceItem.tsx";
-import { useCustomEventListener } from 'react-custom-events'
+import PieceItem from '@render/pages/Pieces/PieceItem.tsx'
+import {useEffect, useState} from 'react'
+import {useCustomEventListener} from 'react-custom-events'
 
 function Pieces() {
   const getApiPieces = async () => {
-    const res = await fetch("http://localhost:3000/api/pieces")
-    const json = await res.json();
-    setList(json);
-  };
+    const res = await fetch('http://localhost:3000/api/pieces')
+    const json = await res.json()
+    setList(json)
+  }
 
   useCustomEventListener<any>('piece:updated', () => {
     getApiPieces()
@@ -20,22 +20,21 @@ function Pieces() {
     getApiPieces()
   })
 
-  const [list, setList] = useState([]);
+  const [list, setList] = useState([])
   useEffect(() => {
-    getApiPieces();
-  }, []);
+    getApiPieces()
+  }, [])
 
   return (
     <Box p={4}>
-      <Stack gap='2'>
-        {list &&
-          list.map((item) => (
-            <PieceItem
-              key={item.filePath}
-              item={item}
-            />
-          ))
-        }
+      <Stack gap="2">
+        {list
+        && list.map(item => (
+          <PieceItem
+            key={item.filePath}
+            item={item}
+          />
+        ))}
       </Stack>
     </Box>
   )

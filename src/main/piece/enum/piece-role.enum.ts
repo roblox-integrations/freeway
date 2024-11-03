@@ -1,4 +1,4 @@
 export enum PieceRoleEnum {
-  asset = "asset",
-  editable = "editable"
+  asset = 'asset',
+  editable = 'editable',
 }

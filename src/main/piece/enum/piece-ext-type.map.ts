@@ -1,4 +1,4 @@
-import {PieceTypeEnum} from "./piece-type.enum.ts";
+import {PieceTypeEnum} from './piece-type.enum.ts'
 
 export const PieceExtTypeMap: Map<string, PieceTypeEnum> = new Map ([
   ['.png', PieceTypeEnum.image],

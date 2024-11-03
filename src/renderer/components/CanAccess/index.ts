@@ -1,1 +1,1 @@
-export { default as CanAccess } from './CanAccess'
+export {default as CanAccess} from './CanAccess'

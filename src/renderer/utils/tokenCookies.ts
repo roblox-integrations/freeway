@@ -1,29 +1,29 @@
-import { destroyCookie, parseCookies, setCookie } from 'nookies'
 import {
   COOKIE_EXPIRATION_TIME,
   REFRESH_TOKEN_COOKIE,
-  TOKEN_COOKIE
+  TOKEN_COOKIE,
 } from '@render/utils'
+import {destroyCookie, parseCookies, setCookie} from 'nookies'
 
-type CreateSessionCookiesParams = {
+interface CreateSessionCookiesParams {
   token?: string
   refreshToken?: string
 }
 
 export function createSessionCookies(params: CreateSessionCookiesParams) {
-  const { token, refreshToken } = params
+  const {token, refreshToken} = params
 
   if (token) {
     setCookie(null, TOKEN_COOKIE, token, {
       maxAge: COOKIE_EXPIRATION_TIME,
-      path: '/'
+      path: '/',
     })
   }
 
   if (refreshToken) {
     setCookie(null, REFRESH_TOKEN_COOKIE, refreshToken, {
       maxAge: COOKIE_EXPIRATION_TIME,
-      path: '/'
+      path: '/',
     })
   }
 }

@@ -1,22 +1,22 @@
-import type {PieceModuleOptions} from "./piece.module.options.ts";
-import fs from "node:fs/promises";
-import {parse} from "node:path";
-import {Inject, Injectable} from "@nestjs/common";
-import {PIECE_OPTIONS} from "./piece.constants";
-import {Piece, PieceEditable, PieceUpload} from "./piece.ts";
-import {Window} from '@doubleshot/nest-electron'
 import type {BrowserWindow} from 'electron'
-import {dumpToRbxImage, dumpToRbxMesh, getHash, now, randomString} from "@main/utils";
-import {PieceRoleEnum} from "@main/piece/enum/piece-role.enum.ts";
-import {PieceTypeEnum} from "@main/piece/enum/piece-type.enum.ts";
-import {PieceExtTypeMap} from "@main/piece/enum/piece-ext-type.map.ts";
-import {UpdatePieceDto} from "@main/piece/dto/update-piece.dto.ts";
-import {RobloxApiService} from "@main/roblox-api/roblox-api.service";
-import {PieceEventEnum} from "@main/piece/enum/piece-event.enum.ts";
+import type {PieceModuleOptions} from './piece.module.options.ts'
+import fs from 'node:fs/promises'
+import {parse} from 'node:path'
+import {Window} from '@doubleshot/nest-electron'
+import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto.ts'
+import {PieceEventEnum} from '@main/piece/enum/piece-event.enum.ts'
+import {PieceExtTypeMap} from '@main/piece/enum/piece-ext-type.map.ts'
+import {PieceRoleEnum} from '@main/piece/enum/piece-role.enum.ts'
+import {PieceTypeEnum} from '@main/piece/enum/piece-type.enum.ts'
+import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
+import {dumpToRbxImage, dumpToRbxMesh, getHash, now, randomString} from '@main/utils'
+import {Inject, Injectable} from '@nestjs/common'
+import {PIECE_OPTIONS} from './piece.constants'
+import {Piece, PieceEditable, PieceUpload} from './piece.ts'
 
 @Injectable()
 export class PieceService {
-  private readonly data: Piece[] = [];
+  private readonly data: Piece[] = []
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow, private readonly robloxApiService: RobloxApiService) {
     //
@@ -24,68 +24,74 @@ export class PieceService {
 
   async load() {
     try {
-      await fs.access(this.options.metadataPath);
-    } catch (accessErr) {
-      if (accessErr.code === "ENOENT") {
-        await fs.writeFile(this.options.metadataPath, "[]"); // create empty-array file
-      } else {
-        throw accessErr;
+      await fs.access(this.options.metadataPath)
+    }
+    catch (accessErr) {
+      if (accessErr.code === 'ENOENT') {
+        await fs.writeFile(this.options.metadataPath, '[]') // create empty-array file
+      }
+      else {
+        throw accessErr
       }
     }
 
-    let data = null;
+    let data = null
     try {
-      data = await fs.readFile(this.options.metadataPath, {encoding: "utf8"});
-      data = data || '[]';
-    } catch (readErr) {
-      console.error(readErr);
-      throw new Error(`File ${this.options.metadataPath} does not exist`);
+      data = await fs.readFile(this.options.metadataPath, {encoding: 'utf8'})
+      data = data || '[]'
+    }
+    catch (readErr) {
+      console.error(readErr)
+      throw new Error(`File ${this.options.metadataPath} does not exist`)
     }
 
     try {
-      data = JSON.parse(data);
-    } catch (parseErr) {
-      console.error(parseErr);
-      throw new Error(`Cannot parse JSON file ${this.options.metadataPath}`);
+      data = JSON.parse(data)
+    }
+    catch (parseErr) {
+      console.error(parseErr)
+      throw new Error(`Cannot parse JSON file ${this.options.metadataPath}`)
     }
 
     if (Array.isArray(data)) {
       for (const x of data) {
-        this.data.push(Piece.fromObject(x));
+        this.data.push(Piece.fromObject(x))
       }
-    } else {
-      throw new TypeError("Invalid metadata format");
+    }
+    else {
+      throw new TypeError('Invalid metadata format')
     }
   }
 
   async _write(): Promise<void> {
     try {
-      const data = JSON.stringify(this.data, null, 2);
-      await fs.writeFile(this.options.metadataPath, data, {encoding: "utf8", flush: true});
-    } catch (writeErr) {
-      console.error(writeErr);
-      throw new Error(`File ${this.options.metadataPath} cannot write file`);
+      const data = JSON.stringify(this.data, null, 2)
+      await fs.writeFile(this.options.metadataPath, data, {encoding: 'utf8', flush: true})
+    }
+    catch (writeErr) {
+      console.error(writeErr)
+      throw new Error(`File ${this.options.metadataPath} cannot write file`)
     }
   }
 
   async flush(): Promise<void> {
-    return this._write();
+    return this._write()
   }
 
   hasPiece(file: string): boolean {
-    return !!this.getPiece(file);
+    return !!this.getPiece(file)
   }
 
   getAll(): Piece[] {
-    return this.data;
+    return this.data
   }
 
   getPiece(filePath: string): Piece {
-    return this.data.find((x) => x.filePath === filePath);
+    return this.data.find(x => x.filePath === filePath)
   }
 
   getPieceById(id: string): Piece {
-    return this.data.find((x) => x.id === id);
+    return this.data.find(x => x.id === id)
   }
 
   public async getPieceByIdDumped(id: string, round: number) {
@@ -97,103 +103,104 @@ export class PieceService {
   public async getDump(piece: Piece, round: number) {
     if (piece.type === PieceTypeEnum.image) {
       return await dumpToRbxImage(piece.filePath, round)
-    } else if (piece.type === PieceTypeEnum.mesh) {
+    }
+    else if (piece.type === PieceTypeEnum.mesh) {
       return await dumpToRbxMesh(piece.filePath)
     }
   }
 
   add(piece: Piece): void {
-    this.data.push(piece);
+    this.data.push(piece)
   }
 
   removePiece(piece: Piece): void {
-    piece.deletedAt = now();
+    piece.deletedAt = now()
   }
 
   async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
     const id = this.generateUniqId()
     const fileHash = await getHash(filePath)
-    const parsed = parse(filePath);
-    const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum;
-    const isDirty = false;
+    const parsed = parse(filePath)
+    const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum
+    const isDirty = false
 
-    return Piece.fromObject({id, role, type, filePath, fileHash, isDirty});
+    return Piece.fromObject({id, role, type, filePath, fileHash, isDirty})
   }
 
   async addFromFile(filePath: string) {
-    const newPiece = await this.createFromFile(filePath);
-    this.add(newPiece);
+    const newPiece = await this.createFromFile(filePath)
+    this.add(newPiece)
 
-    return newPiece;
+    return newPiece
   }
 
   async updateFromFile(piece: Piece) {
-    piece.isDirty = false;
-    piece.deletedAt = null;
+    piece.isDirty = false
+    piece.deletedAt = null
 
-    const hash = await getHash(piece.filePath);
+    const hash = await getHash(piece.filePath)
     if (hash !== piece.fileHash) {
-      piece.fileHash = hash;
-      piece.updatedAt = now();
+      piece.fileHash = hash
+      piece.updatedAt = now()
     }
 
-    return piece;
+    return piece
   }
 
   async uploadAsset(piece: Piece) {
-    let upload = piece.uploads.find(x => x.fileHash === piece.fileHash);
+    let upload = piece.uploads.find(x => x.fileHash === piece.fileHash)
     if (upload) {
       // no need to upload asset actually, just update timestamp
-      piece.uploadedAt = now();
-      return piece;
+      piece.uploadedAt = now()
+      return piece
     }
 
     // TODO: make upload incremental - step by step, saving results on each
     const result = await this.robloxApiService.createAsset(
       piece.filePath,
-      "decal",
+      'decal',
       `Piece #${piece.id}`,
-      `hash:${piece.fileHash}`
-    );
+      `hash:${piece.fileHash}`,
+    )
 
     upload = PieceUpload.fromObject({
       fileHash: piece.fileHash,
       assetId: result.assetId,
       decalId: result.decalId,
-      operationId: result.operationId
-    });
+      operationId: result.operationId,
+    })
 
-    piece.uploads.push(upload);
-    piece.uploadedAt = now();
+    piece.uploads.push(upload)
+    piece.uploadedAt = now()
 
-    this.emitEvent(PieceEventEnum.updated, piece);
+    this.emitEvent(PieceEventEnum.updated, piece)
 
-    return piece;
+    return piece
   }
 
   emitEvent(name: string, data: any) {
-    this.mainWin.webContents.send("ipc-message", {name, data})
+    this.mainWin.webContents.send('ipc-message', {name, data})
   }
 
   private generateUniqId() {
     for (let i = 0; ; i++) {
-      const id = randomString(Math.floor(i / 10 + 4));
+      const id = randomString(Math.floor(i / 10 + 4))
       if (!this.getPieceById(id)) {
-        return id;
+        return id
       }
     }
   }
 
   async update(piece: Piece, updatePieceDto: UpdatePieceDto) {
-    piece.isAutoSave = updatePieceDto.isAutoSave;
+    piece.isAutoSave = updatePieceDto.isAutoSave
 
     if (piece.isAutoSave) {
       // TODO: queue this action?
-      await this.uploadAsset(piece);
+      await this.uploadAsset(piece)
     }
 
-    this.emitEvent(PieceEventEnum.updated, piece);
+    this.emitEvent(PieceEventEnum.updated, piece)
 
-    return piece;
+    return piece
   }
 }

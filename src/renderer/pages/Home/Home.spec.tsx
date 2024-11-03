@@ -1,15 +1,15 @@
-import { render, screen } from '@testing-library/react'
+import {render, screen} from '@testing-library/react'
 import Home from './Home'
 
-describe('Home page component', () => {
+describe('home page component', () => {
   it('should render with success', () => {
     render(<Home />)
 
     expect(
       screen.getByRole('heading', {
         name: 'Home',
-        level: 1
-      })
+        level: 1,
+      }),
     ).toBeInTheDocument()
   })
 })

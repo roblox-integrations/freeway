@@ -1,7 +1,6 @@
-import {PieceRoleEnum, PieceTypeEnum} from "./enum";
-import {now} from "@main/utils";
-import {PartialType} from '@nestjs/mapped-types';
-
+import {now} from '@main/utils'
+import {PartialType} from '@nestjs/mapped-types'
+import {PieceRoleEnum, PieceTypeEnum} from './enum'
 
 export class PieceUpload {
   public fileHash: string
@@ -14,9 +13,9 @@ export class PieceUpload {
   }
 
   static fromObject(obj: CreatePieceUploadDto) {
-    const piece = new PieceUpload();
-    Object.assign(piece, obj);
-    return piece;
+    const piece = new PieceUpload()
+    Object.assign(piece, obj)
+    return piece
   }
 }
 
@@ -39,19 +38,19 @@ export class Piece {
 
   constructor() {
     if (!this.updatedAt) {
-      this.updatedAt = now();
+      this.updatedAt = now()
     }
   }
 
   toJSON() {
-    const {isDirty, ...object} = this;
-    return object;
+    const {isDirty, ...object} = this
+    return object
   }
 
   static fromObject(obj: CreatePieceDto) {
-    const piece = new Piece();
-    Object.assign(piece, obj);
-    return piece;
+    const piece = new Piece()
+    Object.assign(piece, obj)
+    return piece
   }
 }
 
@@ -60,9 +59,8 @@ export class CreatePieceDto extends PartialType(Piece) {
 }
 
 export class PieceEditable extends Piece {
-  public data: any;
+  public data: any
 }
-
 
 /*
 class Entry {

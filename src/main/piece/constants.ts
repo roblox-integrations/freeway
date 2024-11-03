@@ -1,1 +1,1 @@
-export const PIECE_OPTIONS = 'PIECE_OPTIONS';
+export const PIECE_OPTIONS = 'PIECE_OPTIONS'

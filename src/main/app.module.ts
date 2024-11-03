@@ -1,59 +1,58 @@
 import { join } from 'node:path'
 import { ElectronModule, ELECTRON_WINDOW_DEFAULT_NAME } from '@doubleshot/nest-electron'
-import { AuthModule } from '@main/auth/auth.module'
-import { TestModule } from '@main/test/test.module'
+import { AuthModule } from './auth/auth.module'
+import { TestModule } from './test/test.module'
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
-import { app, BrowserWindow } from 'electron'
+import {app, BrowserWindow, shell} from 'electron'
 import { configuration } from './_config/configuration'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import { PieceModule } from './piece/piece.module.ts'
+import { PieceModule } from './piece/piece.module'
 import { RobloxApiModule } from './roblox-api/roblox-api.module';
+import process from "node:process";
+import {electronApp, is, optimizer} from '@electron-toolkit/utils'
+
 // import { RobloxApiServiceService } from './roblox-api-service/roblox-api-service.service';
 
 const electronModule = ElectronModule.registerAsync({
   name:  ELECTRON_WINDOW_DEFAULT_NAME,
   isGlobal: true,
   useFactory: async () => {
-    const isDev = !app.isPackaged
-
-    const width = isDev ? 1024 + 500 : 1024 // make window a bit wider when dev
-    const height = 768
-
-    const browserWindow = new BrowserWindow({
-      width,
-      height,
-
-      icon: join(__dirname, '../../resources/icon.ico'),
-      title: 'Roblox Integration Hub',
-
-      autoHideMenuBar: isDev,
+    // Create the browser window.
+    const mainWindow = new BrowserWindow({
+      width: 900,
+      height: 670,
+      show: false,
+      autoHideMenuBar: true,
+      frame: true,
+      // ...(process.platform === 'linux' ? {icon} : {}),
       webPreferences: {
-        contextIsolation: true,
-        preload: join(__dirname, '../preload/index.cjs'),
+        preload: join(__dirname, '../preload/index.mjs'),
+        sandbox: false,
       },
     })
 
-    browserWindow.on('closed', () => {
-      browserWindow.destroy()
+    mainWindow.on('ready-to-show', () => {
+      mainWindow.show()
     })
 
-    const URL = isDev
-      ? process.env.DS_RENDERER_URL
-      : `file://${join(app.getAppPath(), 'dist/render/index.html')}`
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+      shell.openExternal(details.url)
+      return {action: 'deny'}
+    })
 
-    await browserWindow.loadURL(URL)
-    // browserWindow.loadURL(URL)
-
-    if (isDev) {
-      browserWindow.webContents.openDevTools() // open dev tools when dev
-      browserWindow.maximize()
-      // await new Promise((resolve) => setTimeout(resolve, 1000))
+    // HMR for renderer base on electron-vite cli.
+    // Load the remote URL for development or the local html file for production.
+    if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+      mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    }
+    else {
+      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
 
-    // return { win: browserWindow, URL }
-    return browserWindow
+
+    return mainWindow
   },
 })
 

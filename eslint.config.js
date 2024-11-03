@@ -1,17 +1,17 @@
-const lightwing = require('@lightwing/eslint-config').default
+import defineEslint from '@antfu/eslint-config'
 
-module.exports = lightwing(
-  {
-    ignores: [
-      'dist',
-      'node_modules',
-      '*.svelte',
-      '*.snap',
-      '*.d.ts',
-      'coverage',
-      'js_test',
-      'local-data',
-    ],
-    react: true,
+export default defineEslint({
+  vue: false,
+  react: true,
+  ignores: [
+    'out',
+    'dist',
+    'node_modules',
+    '*.json',
+  ],
+  rules: {
+    'ts/consistent-type-imports': 'off', // MUST be disabled! This rule breaks Nestjs DI by importing type instead of class
+    'no-console': 'off', // console one ♥ >:)
+    'style/object-curly-spacing': ['error', 'never'], // make all braces consistent
   },
-)
+})

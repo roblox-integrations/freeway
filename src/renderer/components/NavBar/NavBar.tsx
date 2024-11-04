@@ -16,19 +16,19 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import {useRoutePaths, useSession} from '@render/hooks'
+import {useRoutePaths, useSession} from '@renderer/hooks'
 
 import {ReactNode} from 'react'
 import {NavLink as RNavLink} from 'react-router-dom'
 import {CanAccess} from '../CanAccess'
 
-interface Props {
+/* interface Props {
   children: React.ReactNode
-}
+} */
 
 const Links = ['Home', 'Status', 'Pieces']
 
-function NavLink(props: { children: ReactNode, href: string }) {
+function NavLink(props: {children: ReactNode, href: string}) {
   const {children, href} = props
 
   return (

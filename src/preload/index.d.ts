@@ -1,5 +1,6 @@
 declare global {
   interface Window {
+    // electron: ElectronAPI
     electron: {
       login: () => void
       logout: () => void
@@ -10,7 +11,8 @@ declare global {
       onReplyMsg: (cb: (msg: string) => any) => void
       onIpcMessage: (cb: (msg: {name: string, data: any}) => any) => void
     }
+    api: {
+      foo: () => void
+    }
   }
 }
-
-export { }

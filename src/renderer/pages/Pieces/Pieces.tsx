@@ -1,9 +1,11 @@
 import {Box, Stack} from '@chakra-ui/react'
-import PieceItem from '@render/pages/Pieces/PieceItem.tsx'
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
+import PieceItem from './PieceItem'
 
 function Pieces() {
+  const [list, setList] = useState([])
+
   const getApiPieces = async () => {
     const res = await fetch('http://localhost:3000/api/pieces')
     const json = await res.json()
@@ -20,7 +22,6 @@ function Pieces() {
     getApiPieces()
   })
 
-  const [list, setList] = useState([])
   useEffect(() => {
     getApiPieces()
   }, [])

@@ -3,16 +3,13 @@ import type {PieceModuleOptions} from './piece.module.options.ts'
 import fs from 'node:fs/promises'
 import {parse} from 'node:path'
 import {Window} from '@doubleshot/nest-electron'
-import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto.ts'
-import {PieceEventEnum} from '@main/piece/enum/piece-event.enum.ts'
-import {PieceExtTypeMap} from '@main/piece/enum/piece-ext-type.map.ts'
-import {PieceRoleEnum} from '@main/piece/enum/piece-role.enum.ts'
-import {PieceTypeEnum} from '@main/piece/enum/piece-type.enum.ts'
+import {PieceEventEnum, PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {dumpToRbxImage, dumpToRbxMesh, getHash, now, randomString} from '@main/utils'
 import {Inject, Injectable} from '@nestjs/common'
+import {UpdatePieceDto} from './dto/update-piece.dto'
+import {Piece, PieceEditable, PieceUpload} from './piece'
 import {PIECE_OPTIONS} from './piece.constants'
-import {Piece, PieceEditable, PieceUpload} from './piece.ts'
 
 @Injectable()
 export class PieceService {
@@ -26,7 +23,7 @@ export class PieceService {
     try {
       await fs.access(this.options.metadataPath)
     }
-    catch (accessErr) {
+    catch (accessErr: any) {
       if (accessErr.code === 'ENOENT') {
         await fs.writeFile(this.options.metadataPath, '[]') // create empty-array file
       }
@@ -107,6 +104,8 @@ export class PieceService {
     else if (piece.type === PieceTypeEnum.mesh) {
       return await dumpToRbxMesh(piece.filePath)
     }
+
+    throw new Error(`Invalid piece type ${piece.type} do get dump`)
   }
 
   add(piece: Piece): void {

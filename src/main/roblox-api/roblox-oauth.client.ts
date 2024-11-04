@@ -117,8 +117,8 @@ export class RobloxOauthClient {
           const json = await response.json()
           throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}, json: ${json}`)
         }
-        catch (jsonErr) {
-          this.logger.error('Cannot fetch json from response on error')
+        catch (jsonErr: any) {
+          this.logger.error(`Cannot fetch json from response on error (${jsonErr.message})`)
           throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}`)
         }
       }

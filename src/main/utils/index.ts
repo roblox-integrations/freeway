@@ -42,21 +42,24 @@ export interface RbxImage {
 export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxImage> {
   const image = await Jimp.read(imagePath)
 
-  image.bitmap.data
+  // image.bitmap.data
 
   const w = image.width
   const h = image.height
   const pixelCount = w * h
 
-  const p = Array.from({length: pixelCount * 4})
+  const p: number[] = Array.from({length: pixelCount * 4})
 
   for (let i = 0; i < image.bitmap.data.length; i++) {
-    p[i] = image.bitmap.data[i] / 255
+    const value = image.bitmap.data[i] / 255
 
     if (round) {
       const pow = 10 ** (round || 0)
-      const n = (p[i] * pow) * (1 + Number.EPSILON)
+      const n = (value * pow) * (1 + Number.EPSILON)
       p[i] = Math.round(n) / pow
+    }
+    else {
+      p[i] = value
     }
   }
 

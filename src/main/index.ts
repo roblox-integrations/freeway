@@ -1,4 +1,5 @@
 import type {MicroserviceOptions} from '@nestjs/microservices'
+import process from 'node:process'
 import {ElectronIpcTransport} from '@doubleshot/nest-electron'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'

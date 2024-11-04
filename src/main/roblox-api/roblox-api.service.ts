@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
 
 import {setTimeout as delay} from 'node:timers/promises'
-import {CreateAssetResultDto} from '@main/piece/dto/create-asset-result.dto.ts'
-import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client.ts'
+import {CreateAssetResultDto} from '@main/piece/dto/create-asset-result.dto'
+import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {getMime} from '@main/utils'
 import {Injectable, Logger} from '@nestjs/common'
-import {default as pRetry} from 'p-retry'
+import pRetry from 'p-retry'
 
 @Injectable()
 export class RobloxApiService {
@@ -35,7 +35,7 @@ export class RobloxApiService {
 
       return await response.json()
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(err.message)
       throw err
     }
@@ -106,8 +106,8 @@ export class RobloxApiService {
         minTimeout: 400,
       })
     }
-    catch (err) {
-      throw new Error('Unable to fetch assetId in time, please try again')
+    catch (err: any) {
+      throw new Error(`Unable to fetch assetId in time, please try again (${err.message})`)
     }
   }
 
@@ -135,7 +135,7 @@ export class RobloxApiService {
   }
 
   async getImageFromDecal(decalId: string): Promise<string> {
-    const DECAL_CAPTURE_REGEX = new RegExp('<Content name="Texture">\\s*<url>\\D+(\\d+)</url>\\s*</Content>')
+    const DECAL_CAPTURE_REGEX = /<Content name="Texture">\s*<url>\D+(\d+)<\/url>\s*<\/Content>/i
 
     const response = await fetch(`https://assetdelivery.roblox.com/v1/asset/?id=${decalId}`)
 

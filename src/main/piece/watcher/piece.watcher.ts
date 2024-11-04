@@ -11,7 +11,7 @@ import {PieceService} from '../piece.service'
 interface QueueFileTask {
   id: string
   filePath: string
-  method: Function
+  method: () => void
 }
 
 @Injectable()
@@ -21,14 +21,14 @@ export abstract class PieceWatcher {
   protected readonly logger = new Logger(PieceWatcher.name)
 
   constructor(@Inject(PIECE_OPTIONS) protected options: PieceModuleOptions, protected readonly service: PieceService) {
-    this.queue = new Queue(async (input: QueueFileTask, cb: Function) => {
+    this.queue = new Queue(async (input: QueueFileTask, cb: (err: any, result?: any) => void) => {
       // console.log(`-------------------> task start ${input.filePath}`);
 
       input.method.call(this, input.filePath)
         .then((result: any) => {
           cb(null, result)
         })
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err)
           cb(err)
         })

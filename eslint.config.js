@@ -13,5 +13,6 @@ export default defineEslint({
     'ts/consistent-type-imports': 'off', // MUST be disabled! This rule breaks Nestjs DI by importing type instead of class
     'no-console': 'off', // console one ♥ >:)
     'style/object-curly-spacing': ['error', 'never'], // make all braces consistent
+    'style/block-spacing': ['error', 'never'],
   },
 })

@@ -1,4 +1,5 @@
-import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto.ts'
+import {Buffer} from 'node:buffer'
+import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto'
 
 export interface TokenSetParameters {
   accessToken?: string

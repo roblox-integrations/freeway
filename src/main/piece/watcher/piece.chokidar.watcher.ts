@@ -15,13 +15,15 @@ export class PieceChokidarWatcher extends PieceWatcher {
 
         if (stats?.isFile()) {
           const parsed = parse(filePath)
-          if (parsed.name[0] == '.' || parsed.name[0] === '_') {
+          if (parsed.name[0] === '.' || parsed.name[0] === '_') {
             // ignore .dot-files and _underscore-files
             return true
           }
 
           return !PieceExtTypeMap.has(parsed.ext)
         }
+
+        return false
       },
       ignoreInitial: false,
       persistent: true,

@@ -84,7 +84,7 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
     try {
       return await watcher.getEventsSince(this.options.defaultWatchPath, this.snapshotPath, {ignore: this.ignoreGlobs})
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(err.stack)
     }
     return []

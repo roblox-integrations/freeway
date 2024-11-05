@@ -63,9 +63,9 @@ export abstract class PieceWatcher {
   }
 
   async onChange(filePath: string) {
-    const piece = this.service.getPiece(filePath)
+    let piece = this.service.getPiece(filePath)
     if (!piece) {
-      await this.service.addFromFile(filePath)
+      piece = await this.service.addFromFile(filePath)
       this.emitEvent(PieceEventEnum.created, piece)
     }
     else {

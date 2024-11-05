@@ -83,7 +83,7 @@ export class PieceService {
     return this.data
   }
 
-  getPiece(filePath: string): Piece {
+  getPiece(filePath: string): Piece | undefined {
     return this.data.find(x => x.filePath === filePath)
   }
 

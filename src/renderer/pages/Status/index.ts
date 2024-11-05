@@ -1,1 +1,1 @@
-export {default as Status} from './Status.tsx'
+export {default as Status} from './Status'

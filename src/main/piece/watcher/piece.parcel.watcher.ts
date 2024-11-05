@@ -1,4 +1,4 @@
-import type {PieceModuleOptions} from '../piece.module.options.ts'
+import type {PieceModuleOptions} from '../piece.module.options'
 import fs from 'node:fs/promises'
 import {join} from 'node:path'
 import {Inject, Injectable, OnModuleDestroy} from '@nestjs/common'
@@ -52,7 +52,6 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
       }
       events.forEach((event: {type: 'create' | 'update' | 'delete', path: string}) => {
         if (!event.path?.startsWith(this.options.defaultWatchPath)) {
-          //
           this.logger.log(`Ignore event ${event.type} occurred for file ${event.path}`)
           return
         }
@@ -76,7 +75,6 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
 
     await this.subscription.unsubscribe()
     await watcher.writeSnapshot(this.options.workingDir, this.snapshotPath)
-    this.logger.log('onModuleDestroy() ===================')
   }
 
   async getEventsSince() {

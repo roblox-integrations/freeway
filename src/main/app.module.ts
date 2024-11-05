@@ -5,6 +5,7 @@ import {is} from '@electron-toolkit/utils'
 import {Module} from '@nestjs/common'
 import {ConfigModule} from '@nestjs/config'
 import {app, BrowserWindow, shell} from 'electron'
+import icon from '../../resources/icon.png?asset'
 import {configuration} from './_config/configuration'
 import {AppController} from './app.controller'
 import {AppService} from './app.service'
@@ -26,7 +27,7 @@ const electronModule = ElectronModule.registerAsync({
       show: false,
       autoHideMenuBar: true,
       frame: true,
-      // ...(process.platform === 'linux' ? {icon} : {}),
+      ...(process.platform === 'linux' ? {icon} : {}),
       webPreferences: {
         preload: join(__dirname, '../preload/index.mjs'),
         sandbox: false,

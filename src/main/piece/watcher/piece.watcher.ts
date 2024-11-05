@@ -1,4 +1,4 @@
-import type {PieceModuleOptions} from '../piece.module.options.ts'
+import type {PieceModuleOptions} from '../piece.module.options'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
 import {Inject, Injectable, Logger} from '@nestjs/common'
 import Queue from 'better-queue'
@@ -6,7 +6,7 @@ import {ensureDir} from 'fs-extra'
 
 import {PIECE_OPTIONS} from '../piece.constants'
 import {PieceService} from '../piece.service'
-// import useQueue from './piece-queue.ts'
+// import useQueue from './piece-queue'
 
 interface QueueFileTask {
   id: string

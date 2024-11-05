@@ -1,7 +1,7 @@
-import {PIECE_OPTIONS} from '@main/piece/constants.ts'
-import {PieceModuleOptions} from '@main/piece/piece.module.options.ts'
+import {PIECE_OPTIONS} from '@main/piece/constants'
+import {PieceModuleOptions} from '@main/piece/piece.module.options'
 import {PieceParcelWatcher, PieceWatcher} from '@main/piece/watcher'
-import {RobloxApiModule} from '@main/roblox-api/roblox-api.module.ts'
+import {RobloxApiModule} from '@main/roblox-api/roblox-api.module'
 import {DynamicModule, Module} from '@nestjs/common'
 import {PieceController} from './piece.controller'
 import {PieceService} from './piece.service'
@@ -18,6 +18,7 @@ export class PieceModule {
           provide: PIECE_OPTIONS,
           useValue: options,
         },
+
         PieceService,
         {
           provide: PieceWatcher,

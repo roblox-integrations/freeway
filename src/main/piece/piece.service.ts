@@ -1,5 +1,5 @@
 import type {BrowserWindow} from 'electron'
-import type {PieceModuleOptions} from './piece.module.options.ts'
+import type {PieceModuleOptions} from './piece.module.options'
 import fs from 'node:fs/promises'
 import {parse} from 'node:path'
 import {Window} from '@doubleshot/nest-electron'

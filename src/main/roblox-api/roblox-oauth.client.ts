@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 
 import {URL, URLSearchParams} from 'node:url'
 import {ConfigurationRoblox} from '@main/_config/configuration'
-import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto.ts'
+import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto'
 import {Injectable, Logger, UnauthorizedException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import keytar from 'keytar'
@@ -50,8 +50,9 @@ export class RobloxOauthClient {
       const obj = JSON.parse(json)
       return TokenSet.fromObject(obj)
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(`Unable to parse stored token set: ${err.message}`)
+      return null
     }
   }
 
@@ -126,7 +127,7 @@ export class RobloxOauthClient {
       const json = await response.json() as TokenSetDto
       return TokenSet.fromDto(json)
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(err.message)
       throw err
     }
@@ -166,7 +167,7 @@ export class RobloxOauthClient {
         throw new UnprocessableEntityException(`Cannot revoke token. Status: ${response.status}`)
       }
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(err.message)
       throw err
     }
@@ -184,7 +185,7 @@ export class RobloxOauthClient {
       }
       return await response.json()
     }
-    catch (err) {
+    catch (err: any) {
       this.logger.error(err.message)
       throw err
     }

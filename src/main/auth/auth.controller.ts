@@ -1,8 +1,8 @@
 import {IpcHandle} from '@doubleshot/nest-electron'
-import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client.ts'
+import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Controller, Get} from '@nestjs/common'
 import {of} from 'rxjs'
-import {AuthService} from './auth.service.ts'
+import {AuthService} from './auth.service'
 
 @Controller()
 export class AuthController {

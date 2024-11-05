@@ -16,7 +16,8 @@ import {
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import {useRoutePaths, useSession} from '@renderer/hooks'
+
+import {useRoutePaths, useSession} from '@render/hooks'
 
 import {ReactNode} from 'react'
 import {NavLink as RNavLink} from 'react-router-dom'

@@ -1,5 +1,5 @@
 // import { PartialType } from '@nestjs/mapped-types';
-// import { CreatePieceDto } from './create-piece.dto.ts';
+// import { CreatePieceDto } from './create-piece.dto';
 // export class UpdatePieceDto extends PartialType(CreatePieceDto) {}
 
 import {IsBoolean} from 'class-validator'

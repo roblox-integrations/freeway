@@ -27,8 +27,6 @@ import {CanAccess} from '../CanAccess'
   children: React.ReactNode
 } */
 
-const Links = ['Home', 'Status', 'Pieces']
-
 function NavLink(props: {children: ReactNode, href: string}) {
   const {children, href} = props
 
@@ -55,8 +53,8 @@ function NavLink(props: {children: ReactNode, href: string}) {
 }
 
 export default function Simple() {
-  const {isAuthenticated, user, signOut, signIn} = useSession()
-  const {LOGIN_PATH, STATUS_PATH, REGISTER_PATH, ROOT_PATH, PIECES_PATH} = useRoutePaths()
+  const {isAuthenticated, user, signOut} = useSession()
+  const {STATUS_PATH, ROOT_PATH, PIECES_PATH} = useRoutePaths()
 
   function onClickRobloxAccount() {
     window.electron.openExternal(user.profile)
@@ -113,9 +111,9 @@ export default function Simple() {
             ? (
                 <Box pb={4} display={{md: 'none'}}>
                   <Stack as="nav" spacing={4}>
-                    {Links.map(link => (
-                      <NavLink key={link}>{link}</NavLink>
-                    ))}
+                    <NavLink href={ROOT_PATH}>Home</NavLink>
+                    <NavLink href={STATUS_PATH}>Status</NavLink>
+                    <NavLink href={PIECES_PATH}>Pieces</NavLink>
                   </Stack>
                 </Box>
               )

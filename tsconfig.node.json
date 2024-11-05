@@ -6,9 +6,6 @@
     "composite": true,
     "types": ["electron-vite/node"],
     "target": "ESNext",
-    "typeRoots": [
-      "./node_modules/@types"
-    ],
 
     "module": "commonjs",
     "declaration": true,
@@ -30,7 +27,7 @@
     "esModuleInterop": true,
     "paths": {
       "@render/*": [
-        "src/render/*"
+        "src/renderer/*"
       ],
       "@main/*": [
         "src/main/*"

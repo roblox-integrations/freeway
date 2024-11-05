@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react'
-import Status from './Status.tsx'
+import Status from './Status'
 
 describe('status page component', () => {
   it('should render with success', () => {

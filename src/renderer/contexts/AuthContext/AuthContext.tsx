@@ -8,8 +8,8 @@ export interface User {
   profile: string
   picture: string
 
-  permissions: string[] // not in use
-  roles: string[] // not in use
+  permissions?: string[] // not in use
+  roles?: string[] // not in use
 }
 
 export interface AuthContextData {

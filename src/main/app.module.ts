@@ -1,7 +1,6 @@
 import {join} from 'node:path'
 import process from 'node:process'
 import {ELECTRON_WINDOW_DEFAULT_NAME, ElectronModule} from '@doubleshot/nest-electron'
-import {is} from '@electron-toolkit/utils'
 import {Module} from '@nestjs/common'
 import {ConfigModule} from '@nestjs/config'
 import {app, BrowserWindow, shell} from 'electron'
@@ -45,12 +44,7 @@ const electronModule = ElectronModule.registerAsync({
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
-    if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-      mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
-    }
-    else {
-      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-    }
+    mainWindow.loadURL(AppService.getAppUrl())
 
     return mainWindow
   },

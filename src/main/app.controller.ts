@@ -56,12 +56,7 @@ export class AppController {
   }
 
   async loadMain() {
-    const isDev = !app.isPackaged
-    const url = isDev
-      ? process.env.DS_RENDERER_URL
-      : `file://${join(app.getAppPath(), 'dist/render/index.html')}`
-
-    await this.mainWin.loadURL(url)
+    await this.mainWin.loadURL(AppService.getAppUrl())
   }
 
   @IpcHandle('msg')

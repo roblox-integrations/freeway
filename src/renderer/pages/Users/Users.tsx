@@ -19,7 +19,7 @@ function Users() {
       }
       catch (error) {
         const err = error as AxiosError
-        return err
+        console.error(err)
       }
     }
 

@@ -1,10 +1,8 @@
-import {join} from 'node:path'
-import process from 'node:process'
 import {IpcHandle, IpcOn, Window} from '@doubleshot/nest-electron'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Controller, Get, Logger} from '@nestjs/common'
 import {Payload} from '@nestjs/microservices'
-import {app, BrowserWindow, shell} from 'electron'
+import {BrowserWindow, shell} from 'electron'
 import {type Observable, of} from 'rxjs'
 import {AppService} from './app.service'
 

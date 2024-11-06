@@ -1,5 +1,6 @@
 appId: com.electron.app
-productName: electron-vite-nest-boilerplate
+icon: 'resources/icon.ico'
+productName: roblox-electron-hub
 directories:
   buildResources: build
 files:
@@ -12,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: electron-vite-nest-boilerplate
+  executableName: roblox-electron-hub
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

@@ -5,7 +5,7 @@ import {parse} from 'node:path'
 import {Window} from '@doubleshot/nest-electron'
 import {PieceEventEnum, PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {dumpToRbxImage, dumpToRbxMesh, getHash, now, randomString} from '@main/utils'
+import {getHash, getRbxBase64File, getRbxBase64Image, now, randomString} from '@main/utils'
 import {Inject, Injectable} from '@nestjs/common'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceEditable, PieceUpload} from './piece'
@@ -75,10 +75,6 @@ export class PieceService {
     return this._write()
   }
 
-  hasPiece(file: string): boolean {
-    return !!this.getPiece(file)
-  }
-
   getAll(): Piece[] {
     return this.data
   }
@@ -91,21 +87,24 @@ export class PieceService {
     return this.data.find(x => x.id === id)
   }
 
-  public async getPieceByIdDumped(id: string, round: number) {
+  public async getPieceByIdDumped(id: string) {
     const piece = this.getPieceById(id) as PieceEditable
-    piece.data = await this.getDump(piece, round)
+    piece.data = await this.getDump(piece)
     return piece
   }
 
-  public async getDump(piece: Piece, round: number) {
+  public async getPieceByIdBase64(id: string) {
+    const piece = this.getPieceById(id) as PieceEditable
+
     if (piece.type === PieceTypeEnum.image) {
-      return await dumpToRbxImage(piece.filePath, round)
-    }
-    else if (piece.type === PieceTypeEnum.mesh) {
-      return await dumpToRbxMesh(piece.filePath)
+      return await getRbxBase64Image(piece.filePath)
     }
 
-    throw new Error(`Invalid piece type ${piece.type} do get dump`)
+    return await getRbxBase64File(piece.filePath)
+  }
+
+  public async getDump(piece: Piece) {
+    return await getRbxBase64File(piece.filePath)
   }
 
   add(piece: Piece): void {

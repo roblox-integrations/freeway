@@ -32,17 +32,18 @@ export function getMime(filePath: string, defaultMime = 'application/octet-strea
   return lookup(filePath) || defaultMime
 }
 
-// RbxArray encodes pixel rgb as floats form 0 to 1, and has form: [ p1.r, p1.g, p1.b, p1.a, p2.r, ... ]
-export interface RbxImage {
-  h: number
-  w: number
-  p: number[]
+export interface RbxBase64File {
+  base64?: string
 }
 
-export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxImage> {
-  const image = await Jimp.read(imagePath)
+export interface RbxBase64Image extends RbxBase64File {
+  width: number
+  height: number
+  p?: number[]
+}
 
-  // image.bitmap.data
+export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxBase64Image> {
+  const image = await Jimp.read(imagePath)
 
   const w = image.width
   const h = image.height
@@ -63,11 +64,26 @@ export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxI
     }
   }
 
-  return {h, w, p}
+  return {height: h, width: w, p}
 }
 
-export async function dumpToRbxMesh(objectPath: string): Promise<string> {
-  return fs.readFile(objectPath, 'utf-8')
+export async function getRbxBase64Image(filePath: string): Promise<RbxBase64Image> {
+  const image = await Jimp.read(filePath)
+
+  const width = image.width
+  const height = image.height
+  const base64 = await getFileBase64(filePath)
+
+  return {width, height, base64}
+}
+
+export async function getRbxBase64File(filePath: string): Promise<RbxBase64File> {
+  const base64 = await fs.readFile(filePath, 'base64')
+  return {base64}
+}
+
+export async function getFileBase64(filePath: string): Promise<string> {
+  return fs.readFile(filePath, 'base64')
 }
 
 export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') {

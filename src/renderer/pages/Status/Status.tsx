@@ -1,16 +1,17 @@
-import {Link as ChakraLink} from '@chakra-ui/react'
-import {Link as ReactRouterLink} from 'react-router-dom'
+import {Box, Button, Heading} from '@chakra-ui/react'
 
 function Status() {
-  return (
-    <div>
-      <h1>Status page</h1>
+  async function onClick() {
+    // window.electron.beep()
+    window.electronApi.ipcRenderer.send('app:beep')
+  }
 
-      GO
-      <ChakraLink as={ReactRouterLink} to="/">
-        Home
-      </ChakraLink>
-    </div>
+  return (
+    <Box p={4}>
+      <Heading size="2xl">Status page</Heading>
+      <br />
+      <Button variant="outline" onClick={onClick}>Beep</Button>
+    </Box>
   )
 }
 

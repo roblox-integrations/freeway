@@ -1,7 +1,10 @@
 import process from 'node:process'
+import {electronAPI} from '@electron-toolkit/preload'
 import {contextBridge, ipcRenderer} from 'electron'
 
 const electron = {
+  beep: (): void => ipcRenderer.send('app:beep'),
+
   reveal: (path: string): void => ipcRenderer.send('reveal', path),
 
   login: (): void => ipcRenderer.send('auth:login'),
@@ -19,8 +22,6 @@ const electron = {
   }),
 }
 
-// contextBridge.exposeInMainWorld('electron',  electron)
-
 // Custom APIs for renderer
 const api = {
   foo() {
@@ -34,6 +35,7 @@ const api = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electron)
+    contextBridge.exposeInMainWorld('electronApi', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
   }
   catch (error) {
@@ -41,6 +43,7 @@ if (process.contextIsolated) {
   }
 }
 else {
+  globalThis.electronApi = electronAPI
   globalThis.electron = electron
   globalThis.api = api
 }

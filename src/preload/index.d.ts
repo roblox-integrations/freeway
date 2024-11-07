@@ -1,6 +1,7 @@
 import type {ElectronAPI} from '@electron-toolkit/preload'
 
 interface MyElectron {
+  beep: () => void
   login: () => void
   logout: () => void
   openExternal: (url: string) => void

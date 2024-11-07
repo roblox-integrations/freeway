@@ -1,1 +1,1 @@
-export {default as Pieces} from './Pieces.tsx'
+export {default as Pieces} from './Pieces'

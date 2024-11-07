@@ -29,8 +29,7 @@ function Pieces() {
   return (
     <Box p={4}>
       <Stack gap="2">
-        {list
-        && list.map(item => (
+        {list?.map(item => (
           <PieceItem
             key={item.filePath}
             item={item}

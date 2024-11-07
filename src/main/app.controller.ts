@@ -79,18 +79,20 @@ export class AppController {
   }
 
   @IpcOn('open:external')
-  public handleOpenExternal(url: string) {
-    shell.openExternal(url)
+  public async handleOpenExternal(url: string) {
+    await shell.openExternal(url)
   }
 
   @IpcOn('app:beep')
-  public handleAppBeep() {
+  public ipcBeep() {
     shell.beep() // Just for fun
+    return {message: 'bop'}
   }
 
   @Get('beep')
   public getAppBeep() {
     shell.beep() // Just for fun
+    return {message: 'bop'}
   }
 
   @IpcOn('reveal')

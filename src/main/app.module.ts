@@ -19,15 +19,23 @@ const electronModule = ElectronModule.registerAsync({
   name: ELECTRON_WINDOW_DEFAULT_NAME,
   isGlobal: true,
   useFactory: async () => {
+    const isDev = !app.isPackaged
+
+    const width = isDev ? 1024 + 500 : 1024 // make window a bit wider when dev
+    const height = 768
+
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-      width: 900,
-      height: 670,
+      width,
+      height,
       show: false,
-      autoHideMenuBar: true,
+      autoHideMenuBar: isDev,
+      icon: join(__dirname, '../../resources/icon.ico'),
+      title: 'Roblox Integration Hub',
       frame: true,
       ...(process.platform === 'linux' ? {icon} : {}),
       webPreferences: {
+        contextIsolation: true,
         preload: join(__dirname, '../preload/index.mjs'),
         sandbox: false,
       },
@@ -44,7 +52,12 @@ const electronModule = ElectronModule.registerAsync({
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
-    mainWindow.loadURL(AppService.getAppUrl())
+    await mainWindow.loadURL(AppService.getAppUrl())
+
+    if (isDev) {
+      mainWindow.webContents.openDevTools()
+      // mainWindow.maximize()
+    }
 
     return mainWindow
   },
@@ -69,6 +82,4 @@ const electronModule = ElectronModule.registerAsync({
   controllers: [AppController],
   providers: [AppService],
 })
-
-export class AppModule {
-}
+export class AppModule {}

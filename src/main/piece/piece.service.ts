@@ -5,7 +5,15 @@ import {parse} from 'node:path'
 import {Window} from '@doubleshot/nest-electron'
 import {PieceEventEnum, PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {getHash, getRbxBase64File, getRbxBase64Image, now, randomString} from '@main/utils'
+import {
+  getHash,
+  getRbxBase64File,
+  getRbxImageBitmap01,
+  getRbxImageBitmap255,
+  getRbxImageBitmapBase64,
+  now,
+  randomString,
+} from '@main/utils'
 import {Inject, Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceEditable, PieceUpload} from './piece'
@@ -98,7 +106,9 @@ export class PieceService {
     const piece = this.getPieceById(id) as PieceEditable
 
     if (piece.type === PieceTypeEnum.image) {
-      return await getRbxBase64Image(piece.filePath)
+      // return await getRbxImageBitmap255(piece.filePath)
+      // return await getRbxImageBitmap01(piece.filePath)
+      return await getRbxImageBitmapBase64(piece.filePath)
     }
 
     return await getRbxBase64File(piece.filePath)

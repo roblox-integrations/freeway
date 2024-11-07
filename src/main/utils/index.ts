@@ -40,34 +40,10 @@ export interface RbxBase64Image extends RbxBase64File {
   width: number
   height: number
   p?: number[]
+  bitmap?: string | number[]
 }
 
-export async function dumpToRbxImage(imagePath: string, round = 0): Promise<RbxBase64Image> {
-  const image = await Jimp.read(imagePath)
-
-  const w = image.width
-  const h = image.height
-  const pixelCount = w * h
-
-  const p: number[] = Array.from({length: pixelCount * 4})
-
-  for (let i = 0; i < image.bitmap.data.length; i++) {
-    const value = image.bitmap.data[i] / 255
-
-    if (round) {
-      const pow = 10 ** (round || 0)
-      const n = (value * pow) * (1 + Number.EPSILON)
-      p[i] = Math.round(n) / pow
-    }
-    else {
-      p[i] = value
-    }
-  }
-
-  return {height: h, width: w, p}
-}
-
-export async function getRbxBase64Image(filePath: string): Promise<RbxBase64Image> {
+export async function getRbxImageBase64(filePath: string): Promise<RbxBase64Image> {
   const image = await Jimp.read(filePath)
 
   const width = image.width
@@ -75,6 +51,48 @@ export async function getRbxBase64Image(filePath: string): Promise<RbxBase64Imag
   const base64 = await getFileBase64(filePath)
 
   return {width, height, base64}
+}
+
+export async function getRbxImageBitmapBase64(filePath: string): Promise<RbxBase64Image> {
+  const image = await Jimp.read(filePath)
+
+  const width = image.width
+  const height = image.height
+  const bitmap = image.bitmap.data.toString('base64')
+
+  return {width, height, bitmap}
+}
+
+export async function getRbxImageBitmap255(filePath: string): Promise<RbxBase64Image> {
+  const image = await Jimp.read(filePath)
+
+  const width = image.width
+  const height = image.height
+  const pixelCount = width * height
+
+  const bitmap: number[] = Array.from({length: pixelCount * 4})
+
+  for (let i = 0; i < image.bitmap.data.length; i++) {
+    bitmap[i] = image.bitmap.data[i]
+  }
+
+  return {width, height, bitmap}
+}
+
+export async function getRbxImageBitmap01(filePath: string): Promise<RbxBase64Image> {
+  const image = await Jimp.read(filePath)
+
+  const width = image.width
+  const height = image.height
+  const pixelCount = width * height
+
+  const bitmap: number[] = Array.from({length: pixelCount * 4})
+
+  for (let i = 0; i < image.bitmap.data.length; i++) {
+    bitmap[i] = image.bitmap.data[i] / 255
+  }
+
+  return {width, height, bitmap}
 }
 
 export async function getRbxBase64File(filePath: string): Promise<RbxBase64File> {

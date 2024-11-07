@@ -207,12 +207,12 @@ export class RobloxOauthClient {
         try {
           tokenSet = await this.exchangeRefreshToken(tokenSet.refreshToken)
           await this.setTokenSet(tokenSet)
-          this.logger.debug('TokenSet refreshed')
+          this.logger.debug('TokenSet is refreshed')
         }
         catch (err) {
-          this.logger.error('Cannot exchange token set')
+          this.logger.error('Cannot exchange TokenSet')
           this.logger.error(err)
-          this.logger.debug('Reset token set')
+          this.logger.debug('Reset TokenSet')
           await this.resetTokenSet()
         }
       }

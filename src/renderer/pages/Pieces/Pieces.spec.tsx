@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react'
-import Pieces from './Pieces.tsx'
+import Pieces from './Pieces'
 
 describe('pieces page component', () => {
   it('should render with success', () => {

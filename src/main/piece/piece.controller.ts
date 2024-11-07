@@ -6,7 +6,7 @@ import {PieceTypeEnum} from '@main/piece/enum'
 import {PieceService} from '@main/piece/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {getMime} from '@main/utils'
-import {Body, Controller, Get, Param, Patch, Post, StreamableFile} from '@nestjs/common'
+import {Body, Controller, Delete, Get, Param, Patch, Post, StreamableFile} from '@nestjs/common'
 import {app} from 'electron'
 
 @Controller('api/pieces')
@@ -60,6 +60,13 @@ export class PieceController {
     await this.pieceService.update(piece, updatePieceDto)
     await this.pieceService.flush()
 
+    return piece
+  }
+
+  @Delete('/:id')
+  async delete(@Param('id') id: string) {
+    const piece = this.pieceService.getPieceById(id)
+    await this.pieceService.delete(piece)
     return piece
   }
 

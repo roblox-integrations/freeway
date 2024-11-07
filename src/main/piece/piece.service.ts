@@ -6,13 +6,14 @@ import {Window} from '@doubleshot/nest-electron'
 import {PieceEventEnum, PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {getHash, getRbxBase64File, getRbxBase64Image, now, randomString} from '@main/utils'
-import {Inject, Injectable} from '@nestjs/common'
+import {Inject, Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceEditable, PieceUpload} from './piece'
 import {PIECE_OPTIONS} from './piece.constants'
 
 @Injectable()
 export class PieceService {
+  private readonly logger = new Logger(PieceService.name)
   private readonly data: Piece[] = []
 
   constructor(@Inject(PIECE_OPTIONS) private options: PieceModuleOptions, @Window() private readonly mainWin: BrowserWindow, private readonly robloxApiService: RobloxApiService) {
@@ -200,5 +201,21 @@ export class PieceService {
     this.emitEvent(PieceEventEnum.updated, piece)
 
     return piece
+  }
+
+  async delete(piece: Piece) {
+    try {
+      await fs.unlink(piece.filePath)
+      const pos = this.data.indexOf(piece)
+      if (pos !== -1) {
+        this.data.splice(pos, 1)
+      }
+      this.emitEvent(PieceEventEnum.deleted, piece)
+      return null
+    }
+    catch (err) {
+      this.logger.error(`Error deleting piece: ${piece.fileHash}`, err)
+      throw new UnprocessableEntityException(err)
+    }
   }
 }

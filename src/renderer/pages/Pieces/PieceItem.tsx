@@ -42,6 +42,19 @@ export default function PieceItem({item}) {
     console.log('[PieceItem] updated', json)
   }
 
+  const deletePieceItem = async () => {
+    console.log('[PieceItem] before', isAutoSave)
+
+    const res = await fetch(`http://localhost:3000/api/pieces/${item.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const json = await res.json()
+    console.log('[PieceItem] deleted', json)
+  }
+
   const onCreateAsset = async () => {
     const res = await fetch(`http://localhost:3000/api/pieces/${item.id}/asset`, {
       method: 'POST',
@@ -53,10 +66,14 @@ export default function PieceItem({item}) {
     console.log('[PieceItem] asset', json)
   }
 
-  async function onChangeIsAuthSave() {
+  async function onChangeIsAutoSave() {
     const newIsAutoSave = !isAutoSave
     setIsAutoSave(newIsAutoSave)
     updatePieceItem({isAutoSave: newIsAutoSave})
+  }
+
+  async function onDelete() {
+    await deletePieceItem()
   }
 
   return (
@@ -101,7 +118,7 @@ export default function PieceItem({item}) {
 
         <CardFooter gap="2" alignItems="center">
           <FormLabel mb="0" alignItems="center">
-            <Switch isChecked={isAutoSave} onChange={onChangeIsAuthSave} />
+            <Switch isChecked={isAutoSave} onChange={onChangeIsAutoSave} />
             {' '}
             auto save
           </FormLabel>
@@ -112,6 +129,10 @@ export default function PieceItem({item}) {
 
           <Button variant="outline" colorScheme="blue" size="sm" onClick={onCreateAsset}>
             Create Asset
+          </Button>
+
+          <Button variant="outline" colorScheme="red" size="sm" onClick={onDelete}>
+            Delete
           </Button>
 
         </CardFooter>

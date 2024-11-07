@@ -12,8 +12,8 @@ import {PieceWatcher} from './piece.watcher'
 @Injectable()
 export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy {
   private subscription: AsyncSubscription = null
-  private snapshotPath: string = ''
-  private ignoreGlobs: string[] = []
+  private readonly snapshotPath: string = ''
+  private readonly ignoreGlobs: string[] = []
 
   constructor(@Inject(PIECE_OPTIONS) protected options: PieceModuleOptions, protected readonly service: PieceService) {
     super(options, service)
@@ -52,16 +52,16 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
       }
       events.forEach((event: {type: 'create' | 'update' | 'delete', path: string}) => {
         if (!event.path?.startsWith(this.options.defaultWatchPath)) {
-          this.logger.log(`Ignore event ${event.type} occurred for file ${event.path}`)
+          this.logger.debug(`Ignore event ${event.type} occurred for file ${event.path}`)
           return
         }
 
         if (event.type === 'create' || event.type === 'update') {
-          this.logger.log({id: event.path, filePath: event.path, method: 'this.onChange'})
+          this.logger.debug(`Event "${event.type}": ${event.path}`)
           this.queue.push({id: event.path, filePath: event.path, method: this.onChange})
         }
         if (event.type === 'delete') {
-          this.logger.log({id: event.path, filePath: event.path, method: 'this.onUnlink'})
+          this.logger.debug(`Event "${event.type}": ${event.path}`)
           this.queue.push({id: event.path, filePath: event.path, method: this.onUnlink})
         }
       })

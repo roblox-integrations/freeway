@@ -56,8 +56,16 @@ export async function getRbxImageBase64(filePath: string): Promise<RbxBase64Imag
 export async function getRbxImageBitmapBase64(filePath: string): Promise<RbxBase64Image> {
   const image = await Jimp.read(filePath)
 
-  const width = image.width
-  const height = image.height
+  let width = image.width
+  let height = image.height
+
+  if (width > 1024 || height > 1024) { // todo MI externalize
+    const scaleFactor = width > height ? width/1024 : height/1024
+    width  = Math.floor(width/scaleFactor)
+    height = Math.floor(height/scaleFactor)
+    image.resize({ w:  width, h: height})
+ }
+
   const bitmap = image.bitmap.data.toString('base64')
 
   return {width, height, bitmap}
@@ -84,6 +92,7 @@ export async function getRbxImageBitmap01(filePath: string): Promise<RbxBase64Im
 
   const width = image.width
   const height = image.height
+
   const pixelCount = width * height
 
   const bitmap: number[] = Array.from({length: pixelCount * 4})

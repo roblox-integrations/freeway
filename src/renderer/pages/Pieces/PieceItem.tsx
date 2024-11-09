@@ -1,4 +1,6 @@
-import {Button, Card, CardBody, CardFooter, Code, Flex, FormLabel, Heading, Image, Stack, Switch, Text} from '@chakra-ui/react'
+import {Switch} from '@/components/ui/switch'
+import {Field} from '@/components/ui/field'
+import {Button, Card, Code, Flex, Heading, Image, Stack, Text} from '@chakra-ui/react'
 import {useState} from 'react'
 
 function PieceItemCurrentAssetId({item}) {
@@ -77,10 +79,10 @@ export default function PieceItem({item}) {
   }
 
   return (
-    <Card
-      size="sm"
-      direction={{base: 'column', sm: 'row'}}
+    <Card.Root
+      flexDirection="row"
       overflow="hidden"
+      size="sm"
       variant="outline"
     >
       <Image
@@ -91,15 +93,14 @@ export default function PieceItem({item}) {
       />
 
       <Stack>
-        <CardBody>
+        <Card.Body>
           <Flex gap="2" my="2">
-            <Code colorScheme="blue">{item.role}</Code>
-            <Code colorScheme="green">{item.type}</Code>
-            <Code colorScheme="gray">
-              #
-              {item.id}
+            <Code colorPalette="blue">{item.role}</Code>
+            <Code colorPalette="green">{item.type}</Code>
+            <Code colorPalette="gray">
+              #{item.id}
             </Code>
-            <Code colorScheme="gray"><PieceItemDate date={item.updatedAt}></PieceItemDate></Code>
+            <Code colorPalette="gray"><PieceItemDate date={item.updatedAt}></PieceItemDate></Code>
           </Flex>
           <Heading size="xs">{item.filePath}</Heading>
           <Text>
@@ -114,29 +115,29 @@ export default function PieceItem({item}) {
             <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId>
           </Text>
 
-        </CardBody>
+        </Card.Body>
 
-        <CardFooter gap="2" alignItems="center">
-          <FormLabel mb="0" alignItems="center">
-            <Switch isChecked={isAutoSave} onChange={onChangeIsAutoSave} />
-            {' '}
-            auto save
-          </FormLabel>
+        <Card.Footer gap="2" alignItems="center">
+          <Field>
+            <Switch name="qwe" checked={isAutoSave} onChange={onChangeIsAutoSave}>
+              auto save
+            </Switch>
+          </Field>
 
-          <Button variant="outline" colorScheme="blue" size="sm" onClick={onReveal}>
+          <Button variant="outline" colorPalette="blue" size="sm" onClick={onReveal}>
             Show in explorer (finder)
           </Button>
 
-          <Button variant="outline" colorScheme="blue" size="sm" onClick={onCreateAsset}>
+          <Button variant="outline" colorPalette="blue" size="sm" onClick={onCreateAsset}>
             Create Asset
           </Button>
 
-          <Button variant="outline" colorScheme="red" size="sm" onClick={onDelete}>
+          <Button variant="outline" colorPalette="red" size="sm" onClick={onDelete}>
             Delete
           </Button>
 
-        </CardFooter>
+        </Card.Footer>
       </Stack>
-    </Card>
+    </Card.Root>
   )
 }

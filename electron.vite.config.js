@@ -1,6 +1,7 @@
 import {resolve} from 'node:path'
 import react from '@vitejs/plugin-react'
 import {defineConfig, externalizeDepsPlugin, swcPlugin} from 'electron-vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   main: {
@@ -18,10 +19,11 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
+        '@': resolve('src/renderer'),
         '@render': resolve('src/renderer'),
         '@components': resolve('src/renderer/components'),
       },
     },
-    plugins: [react()],
+    plugins: [react(), tsconfigPaths()],
   },
 })

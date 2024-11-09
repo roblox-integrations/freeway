@@ -1,4 +1,4 @@
-import {ChakraProvider} from '@chakra-ui/react'
+import {Provider} from '@/components/ui/provider'
 import {HashRouter} from 'react-router-dom'
 import {AuthProvider} from './providers'
 import {Router} from './router'
@@ -13,13 +13,13 @@ function App() {
   // const { isAuthenticated, user, signOut, signIn } = useSession()
 
   return (
-    <ChakraProvider>
+    <Provider>
       <HashRouter>
         <AuthProvider>
           <Router />
         </AuthProvider>
       </HashRouter>
-    </ChakraProvider>
+    </Provider>
   )
 }
 

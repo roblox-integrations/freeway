@@ -27,15 +27,12 @@
     "test:unit": "jest \\.spec.ts$"
   },
   "dependencies": {
-    "@chakra-ui/icons": "^2.1.1",
-    "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/react": "^3.1.0",
     "@doubleshot/nest-electron": "^0.2.5",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "p-limit": "^6.1.0",
-    "p-queue": "^8.0.1",
     "@nestjs/common": "^10.4.6",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.4.6",
@@ -43,18 +40,12 @@
     "@nestjs/microservices": "^10.4.6",
     "@nestjs/platform-express": "^10.4.6",
     "@parcel/watcher": "^2.4.1",
-    "electron-updater": "^6.1.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1",
-
-
     "axios": "^1.7.7",
     "better-queue": "^3.8.12",
     "chokidar": "^4.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "electron-updater": "^6.1.7",
     "framer-motion": "^11.5.5",
     "fs-extra": "^11.2.0",
     "jimp": "^1.6.0",
@@ -62,11 +53,19 @@
     "keytar": "^7.9.0",
     "micromatch": "^4.0.8",
     "mime-types": "^2.1.35",
+    "next-themes": "^0.4.3",
     "nookies": "^2.5.2",
+    "p-limit": "^6.1.0",
+    "p-queue": "^8.0.1",
     "p-retry": "^4.6.2",
+    "react": "^18.3.1",
     "react-custom-events": "^1.1.1",
+    "react-dom": "^18.3.1",
     "react-error-boundary": "^4.0.13",
-    "react-router-dom": "^6.26.2"
+    "react-icons": "^5.3.0",
+    "react-router-dom": "^6.26.2",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",
@@ -80,9 +79,9 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^15.0.7",
     "@types/better-queue": "^3.8.6",
-    "@types/mime-types": "^2.1.4",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -102,6 +101,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.2",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "vite-tsconfig-paths": "^5.1.0"
   }
 }

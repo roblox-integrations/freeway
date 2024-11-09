@@ -11,7 +11,15 @@
     "jsx": "react-jsx",
     "target": "ESNext",
     "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "allowJs": true,
+
     "paths": {
+      "@/*": [
+        "src/renderer/*"
+      ],
       "@render/*": [
         "src/renderer/*"
       ]

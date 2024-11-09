@@ -4,23 +4,24 @@ import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 
 export async function getHash(filePath: string): Promise<string> {
-  return new Promise(async (resolve, reject) => {
-    const fd = await fs.open(filePath, 'r')
-    const stream = fd.createReadStream()
+  return new Promise((resolve, reject) => {
+    fs.open(filePath, 'r')
+      .then((fd) => {
+        const md5sum = crypto.createHash('md5')
 
-    const md5sum = crypto.createHash('md5')
+        const stream = fd.createReadStream()
 
-    stream.on('data', (data) => {
-      md5sum.update(data)
-    })
+        stream.on('error', reject)
 
-    stream.on('error', (err) => {
-      reject(err)
-    })
+        stream.on('data', (data) => {
+          md5sum.update(data)
+        })
 
-    stream.on('end', () => {
-      resolve(md5sum.digest('hex'))
-    })
+        stream.on('end', () => {
+          resolve(md5sum.digest('hex'))
+        })
+      })
+      .catch(reject)
   })
 }
 
@@ -33,45 +34,30 @@ export function getMime(filePath: string, defaultMime = 'application/octet-strea
 }
 
 export interface RbxBase64File {
-  base64?: string
+  base64: string
 }
 
-export interface RbxBase64Image extends RbxBase64File {
+export interface RbxImageBase64 {
   width: number
   height: number
-  p?: number[]
-  bitmap?: string | number[]
+  bitmap: string | number[]
 }
 
-export async function getRbxImageBase64(filePath: string): Promise<RbxBase64Image> {
+export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)
 
-  const width = image.width
-  const height = image.height
-  const base64 = await getFileBase64(filePath)
+  if (Math.max(image.width, image.height) > fitSize) {
+    image.scaleToFit({w: fitSize, h: fitSize})
+  }
 
-  return {width, height, base64}
+  return {
+    width: image.bitmap.width,
+    height: image.bitmap.height,
+    bitmap: image.bitmap.data.toString('base64'),
+  }
 }
 
-export async function getRbxImageBitmapBase64(filePath: string): Promise<RbxBase64Image> {
-  const image = await Jimp.read(filePath)
-
-  let width = image.width
-  let height = image.height
-
-  if (width > 1024 || height > 1024) { // todo MI externalize
-    const scaleFactor = width > height ? width/1024 : height/1024
-    width  = Math.floor(width/scaleFactor)
-    height = Math.floor(height/scaleFactor)
-    image.resize({ w:  width, h: height})
- }
-
-  const bitmap = image.bitmap.data.toString('base64')
-
-  return {width, height, bitmap}
-}
-
-export async function getRbxImageBitmap255(filePath: string): Promise<RbxBase64Image> {
+export async function getRbxImageBitmap255(filePath: string): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)
 
   const width = image.width
@@ -87,12 +73,11 @@ export async function getRbxImageBitmap255(filePath: string): Promise<RbxBase64I
   return {width, height, bitmap}
 }
 
-export async function getRbxImageBitmap01(filePath: string): Promise<RbxBase64Image> {
+export async function getRbxImageBitmap01(filePath: string): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)
 
   const width = image.width
   const height = image.height
-
   const pixelCount = width * height
 
   const bitmap: number[] = Array.from({length: pixelCount * 4})
@@ -104,13 +89,9 @@ export async function getRbxImageBitmap01(filePath: string): Promise<RbxBase64Im
   return {width, height, bitmap}
 }
 
-export async function getRbxBase64File(filePath: string): Promise<RbxBase64File> {
+export async function getRbxFileBase64(filePath: string): Promise<RbxBase64File> {
   const base64 = await fs.readFile(filePath, 'base64')
   return {base64}
-}
-
-export async function getFileBase64(filePath: string): Promise<string> {
-  return fs.readFile(filePath, 'base64')
 }
 
 export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') {
@@ -123,27 +104,3 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
   }
   return result
 }
-
-/*
-import {createReadStream} from 'fs';
-import {PNG} from 'pngjs';
-export function imageToRbxImagePngjs(imagePath: string): Promise<RbxImage> {
-  return new Promise((resolve, reject) => {
-    createReadStream(imagePath)
-      .pipe(new PNG())
-      .on('parsed', function () {
-        const w = this.width;
-        const h = this.height;
-        const pixelCount = w * h;
-        const p = new Array<number>(pixelCount * 4);
-
-        for (let i = 0; i < this.data.length; i++) {
-          p[i] = this.data[i] / 255;
-        }
-
-        resolve({h, w, p})
-      })
-      .on('error', reject);
-  });
-}
-*/

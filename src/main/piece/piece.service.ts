@@ -7,7 +7,7 @@ import {PieceEventEnum, PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@ma
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {
   getHash,
-  getRbxBase64File,
+  getRbxFileBase64,
   getRbxImageBitmap01,
   getRbxImageBitmap255,
   getRbxImageBitmapBase64,
@@ -111,11 +111,11 @@ export class PieceService {
       return await getRbxImageBitmapBase64(piece.filePath)
     }
 
-    return await getRbxBase64File(piece.filePath)
+    return await getRbxFileBase64(piece.filePath)
   }
 
   public async getDump(piece: Piece) {
-    return await getRbxBase64File(piece.filePath)
+    return await getRbxFileBase64(piece.filePath)
   }
 
   add(piece: Piece): void {

@@ -90,7 +90,7 @@ export default function PieceItem({item}) {
       <Image
         objectFit="cover"
         maxW={{base: '100%', sm: '100px'}}
-        src={`http://localhost:3000/api/pieces/${item.id}/preview`}
+        src={`http://localhost:3000/api/pieces/${item.id}/preview?${item.fileHash}`}
         alt="Caffe Latte"
       />
 

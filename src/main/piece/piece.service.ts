@@ -85,7 +85,7 @@ export class PieceService {
   }
 
   getAll(): Piece[] {
-    return this.data
+    return this.data.filter(x => !x.deletedAt)
   }
 
   getPiece(filePath: string): Piece | undefined {

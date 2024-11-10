@@ -1,4 +1,5 @@
 import {Provider} from '@/components/ui/provider'
+import {ColorModeProvider} from '@/components/ui/color-mode'
 import {HashRouter} from 'react-router-dom'
 import {AuthProvider} from './providers'
 import {Router} from './router'
@@ -14,11 +15,13 @@ function App() {
 
   return (
     <Provider>
-      <HashRouter>
-        <AuthProvider>
-          <Router />
-        </AuthProvider>
-      </HashRouter>
+      <ColorModeProvider>
+        <HashRouter>
+          <AuthProvider>
+            <Router />
+          </AuthProvider>
+        </HashRouter>
+      </ColorModeProvider>
     </Provider>
   )
 }

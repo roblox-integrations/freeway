@@ -10,12 +10,13 @@ export default function NavBarLink(props: {children: ReactNode, href: string}) {
       px={2}
       py={1}
       rounded="md"
-      _hover={{
-        textDecoration: 'none',
-        bg: 'gray.200',
-      }}
+      bg={{base: 'colorPalette.100', _dark: 'colorPalette.800'}}
       _currentPage={{
-        bg: 'gray.200',
+        bg: {base: 'colorPalette.200', _dark: 'colorPalette.900'},
+      }}
+      _hover={{
+        bg: {base: 'colorPalette.200', _dark: 'colorPalette.900'},
+        textDecoration: 'none',
       }}
       outline="none"
     >

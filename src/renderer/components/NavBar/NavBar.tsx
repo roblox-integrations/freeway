@@ -1,4 +1,5 @@
 import {Avatar} from '@/components/ui/avatar'
+import {ColorModeButton} from '@/components/ui/color-mode'
 import {
   MenuContent,
   MenuItem,
@@ -31,7 +32,7 @@ export default function NavBar() {
   }
 
   return (
-    <Box bg="gray.100" px={4}>
+    <Box bg={{base: 'gray.100', _dark: 'gray.800'}} px={4}>
       <Flex h={12} alignItems="center" justifyContent="space-between">
         <IconButton size="md" aria-label="Open Menu" display={{md: 'none'}} onClick={onToggle} variant="plain" p="0" ml="-3">
           {open ? <MdClose /> : <MdMenu />}
@@ -45,7 +46,8 @@ export default function NavBar() {
           </HStack>
         </HStack>
         {isAuthenticated && (
-          <Flex alignItems="center">
+          <Flex alignItems="center" gap="2">
+            <ColorModeButton></ColorModeButton>
             <MenuRoot>
               <MenuTrigger asChild>
                 <Button variant="plain" p="0" outline="none">

@@ -5,6 +5,8 @@ import {Payload} from '@nestjs/microservices'
 import {BrowserWindow, shell} from 'electron'
 import {type Observable, of} from 'rxjs'
 import {AppService} from './app.service'
+import {ConfigService} from "@nestjs/config";
+import {ConfigurationPiece, ConfigurationRoblox} from "@main/_config/configuration";
 
 @Controller()
 export class AppController {
@@ -14,6 +16,7 @@ export class AppController {
     private readonly appService: AppService,
     @Window() private readonly mainWin: BrowserWindow,
     private readonly oauthClient: RobloxOauthClient,
+    private config: ConfigService,
   ) {
     const webRequest = this.mainWin.webContents.session.webRequest
     const filter = {urls: ['http://localhost:3000/oauth/callback*']}
@@ -96,8 +99,14 @@ export class AppController {
   }
 
   @IpcOn('reveal')
-  public reveal(@Payload() path: string): void {
-    shell.showItemInFolder(path)
+  public async reveal(@Payload() path: string = ''): void {
+    if (path) {
+      shell.showItemInFolder(path)
+    }
+    else {
+      const path = this.config.get<ConfigurationPiece>('piece').watchDirectory
+      await shell.openPath(path)
+    }
   }
 
   @Get('/')

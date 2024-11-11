@@ -1,5 +1,7 @@
+import {join} from 'node:path'
 import process from 'node:process'
 import {CorsOptions} from '@nestjs/common/interfaces/external/cors-options.interface'
+import {app} from 'electron'
 
 export function configuration() {
   return {
@@ -10,6 +12,7 @@ export function configuration() {
     },
     piece: {
       output: 'metadata.json',
+      watchDirectory: join(app.getPath('home'), 'roblox-electron-hub/files'),
     },
     cors: {
       origin: '*',
@@ -32,6 +35,11 @@ export interface ConfigurationRoblox {
   scope: string
 }
 
+export interface ConfigurationPiece {
+  output: string
+  watchDirectory: string
+}
+
 export interface ConfigurationCors extends CorsOptions {
 }
 
@@ -39,4 +47,5 @@ export interface Configuration {
   port: number
   roblox: ConfigurationRoblox
   cors: ConfigurationCors
+  piece: ConfigurationPiece
 }

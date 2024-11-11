@@ -5,7 +5,7 @@ interface MyElectron {
   login: () => void
   logout: () => void
   openExternal: (url: string) => void
-  reveal: (path) => void
+  reveal: (path: string = '') => void
   getAccount: () => Promise<object>
   sendMsg: (msg: string) => Promise<string>
   onReplyMsg: (cb: (msg: string) => any) => void

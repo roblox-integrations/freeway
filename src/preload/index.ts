@@ -5,7 +5,7 @@ import {contextBridge, ipcRenderer} from 'electron'
 const electron = {
   beep: (): void => ipcRenderer.send('app:beep'),
 
-  reveal: (path: string): void => ipcRenderer.send('reveal', path),
+  reveal: (path: string = ''): void => ipcRenderer.send('reveal', path),
 
   login: (): void => ipcRenderer.send('auth:login'),
   logout: (): void => ipcRenderer.send('auth:logout'),

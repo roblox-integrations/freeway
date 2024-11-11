@@ -1,28 +1,12 @@
 import {Field} from '@/components/ui/field'
 import {Switch} from '@/components/ui/switch'
-import {Box, Card, Code, Flex, Heading, IconButton, Image, VStack} from '@chakra-ui/react'
-
+import {Box, Card, Code, Flex, Heading, Image, VStack} from '@chakra-ui/react'
 import {useState} from 'react'
 import {MdOutlineDelete as MdDelete, MdOutlineFolder as MdFolder, MdOutlineCloudUpload as MdUpload} from 'react-icons/md'
-
-function PieceItemCurrentAssetId({item}) {
-  const found = item?.uploads?.find(x => x.fileHash === item.fileHash)
-
-  if (!found) {
-    return null
-  }
-
-  return (
-    <Code colorPalette="blue">
-      rbxassetid://{found.assetId}
-    </Code>
-  )
-}
-
-function PieceItemDate({date}) {
-  const result = (new Date(date * 1000)).toISOString().slice(0, 19)
-  return <Code colorPalette="gray">{result}</Code>
-}
+import ConfirmPopover from '../../components/ConfirmPopover/ConfirmPopover'
+import PieceItemButton from './PieceItemButton'
+import PieceItemCurrentAssetId from './PieceItemCurrentAssetId'
+import PieceItemDate from './PieceItemDate'
 
 export default function PieceItem({item}) {
   const [isAutoSave, setIsAutoSave] = useState(item.isAutoSave)
@@ -69,14 +53,14 @@ export default function PieceItem({item}) {
     console.log('[PieceItem] asset', json)
   }
 
+  const onConfirmDelete = async () => {
+    await deletePieceItem()
+  }
+
   async function onChangeIsAutoSave() {
     const newIsAutoSave = !isAutoSave
     setIsAutoSave(newIsAutoSave)
-    updatePieceItem({isAutoSave: newIsAutoSave})
-  }
-
-  async function onDelete() {
-    await deletePieceItem()
+    await updatePieceItem({isAutoSave: newIsAutoSave})
   }
 
   return (
@@ -119,35 +103,17 @@ export default function PieceItem({item}) {
       <Box width="32" p="2">
         <VStack>
           <Box>
-            <IconButton
-              onClick={onUpload}
-              title="Upload/Create Asset"
-              variant="ghost"
-              rounded="full"
-              color={{base: 'colorPalette.500', _hover: 'colorPalette.500'}}
-              size="sm"
-            >
+            <PieceItemButton onClick={onUpload} title="Upload/Create Asset">
               <MdUpload></MdUpload>
-            </IconButton>
-            <IconButton
-              onClick={onReveal}
-              title="Reveal in explorer"
-              variant="ghost"
-              rounded="full"
-              color={{base: 'colorPalette.500', _hover: 'colorPalette.500'}}
-              size="sm"
-            >
+            </PieceItemButton>
+            <PieceItemButton onClick={onReveal} title="Reveal in explorer">
               <MdFolder></MdFolder>
-            </IconButton>
-            <IconButton
-              onClick={onDelete}
-              variant="ghost"
-              rounded="full"
-              color={{base: 'colorPalette.500', _hover: 'colorPalette.500'}}
-              size="sm"
-            >
-              <MdDelete></MdDelete>
-            </IconButton>
+            </PieceItemButton>
+            <ConfirmPopover onConfirm={onConfirmDelete}>
+              <PieceItemButton title="Delete">
+                <MdDelete></MdDelete>
+              </PieceItemButton>
+            </ConfirmPopover>
           </Box>
           <Box self-align="end">
             <Field>

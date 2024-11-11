@@ -115,13 +115,13 @@ export class RobloxOauthClient {
 
       if (!response.ok) {
         try {
-          const json = await response.json()
-          throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}, json: ${json}`)
+          const jsonErr = await response.json()
+          this.logger.error(`Cannot grant ${body.grant_type}. Status: ${response.status}, json: ${JSON.stringify(jsonErr)}`)
         }
         catch (jsonErr: any) {
-          this.logger.error(`Cannot fetch json from response on error (${jsonErr.message})`)
-          throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}`)
+          this.logger.error(`Cannot parse json response (${jsonErr.message})`)
         }
+        throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}`)
       }
 
       const json = await response.json() as TokenSetDto

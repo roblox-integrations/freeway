@@ -14,7 +14,7 @@ import {
   now,
   randomString,
 } from '@main/utils'
-import {Inject, Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
+import {Inject, Injectable, Logger, UnprocessableEntityException, NotFoundException} from '@nestjs/common'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceEditable, PieceUpload} from './piece'
 import {PIECE_OPTIONS} from './piece.constants'
@@ -104,6 +104,10 @@ export class PieceService {
 
   public async getPieceByIdBase64(id: string) {
     const piece = this.getPieceById(id) as PieceEditable
+
+    if (!piece) {
+      throw new NotFoundException()
+    }
 
     if (piece.type === PieceTypeEnum.image) {
       // return await getRbxImageBitmap255(piece.filePath)

@@ -1,12 +1,12 @@
 import {IpcHandle, IpcOn, Window} from '@doubleshot/nest-electron'
+import {ConfigurationPiece} from '@main/_config/configuration'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Controller, Get, Logger} from '@nestjs/common'
+import {ConfigService} from '@nestjs/config'
 import {Payload} from '@nestjs/microservices'
 import {BrowserWindow, shell} from 'electron'
 import {type Observable, of} from 'rxjs'
 import {AppService} from './app.service'
-import {ConfigService} from "@nestjs/config";
-import {ConfigurationPiece, ConfigurationRoblox} from "@main/_config/configuration";
 
 @Controller()
 export class AppController {
@@ -99,7 +99,7 @@ export class AppController {
   }
 
   @IpcOn('reveal')
-  public async reveal(@Payload() path: string = ''): void {
+  public async reveal(@Payload() path: string = ''): Promise<void> {
     if (path) {
       shell.showItemInFolder(path)
     }

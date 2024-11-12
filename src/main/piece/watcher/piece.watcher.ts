@@ -1,12 +1,11 @@
-import type {PieceModuleOptions} from '../piece.module.options'
+import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
-import {Inject, Injectable, Logger} from '@nestjs/common'
+import {PieceProvider} from '@main/piece/piece.provider'
+import {Injectable, Logger} from '@nestjs/common'
+import {ConfigService} from '@nestjs/config'
 import Queue from 'better-queue'
 import {ensureDir} from 'fs-extra'
-
-import {PIECE_OPTIONS} from '../piece.constants'
 import {PieceService} from '../piece.service'
-// import useQueue from './piece-queue'
 
 interface QueueFileTask {
   id: string
@@ -19,11 +18,16 @@ export abstract class PieceWatcher {
   protected isReady: boolean
   protected queue: Queue
   protected readonly logger = new Logger(PieceWatcher.name)
+  protected readonly options: ConfigurationPiece
 
-  constructor(@Inject(PIECE_OPTIONS) protected options: PieceModuleOptions, protected readonly service: PieceService) {
+  constructor(
+    private readonly config: ConfigService,
+    protected readonly service: PieceService,
+    protected readonly provider: PieceProvider,
+  ) {
+    this.options = this.config.get<ConfigurationPiece>('piece')
+
     this.queue = new Queue(async (input: QueueFileTask, cb: (err: any, result?: any) => void) => {
-      // console.log(`-------------------> task start ${input.filePath}`);
-
       input.method.call(this, input.filePath)
         .then((result: any) => {
           cb(null, result)
@@ -32,62 +36,58 @@ export abstract class PieceWatcher {
           console.error(err)
           cb(err)
         })
-        .then(() => {
-          // console.log(`-------------------> task end ${input.filePath}`);
-        })
     })
 
     this.queue.on('drain', () => {
-      // console.log('-------------------> drain');
-      this.service.flush()
+      this.provider.save()
     })
   }
 
   async onModuleInit(): Promise<void> {
     this.logger.log('### Starting piece watcher')
-    await ensureDir(this.options.defaultWatchPath)
-    await this.service.load()
+    await ensureDir(this.options.watchDirectory)
+    await this.provider.load()
     this.watch() // async manner
   }
 
   abstract watch()
 
   async onInit(filePath: string) {
-    const piece = this.service.getPiece(filePath)
+    const piece = this.provider.findOne({filePath})
     if (!piece) {
-      await this.service.addFromFile(filePath)
+      await this.provider.createFromFile(filePath)
     }
     else {
-      await this.service.updateFromFile(piece)
+      await this.provider.updateFromFile(piece)
     }
   }
 
   async onChange(filePath: string) {
-    let piece = this.service.getPiece(filePath)
+    let piece = this.provider.findOne({filePath})
     if (!piece) {
-      piece = await this.service.addFromFile(filePath)
+      piece = await this.provider.createFromFile(filePath)
       this.emitEvent(PieceEventEnum.created, piece)
     }
     else {
-      await this.service.updateFromFile(piece)
+      await this.provider.updateFromFile(piece)
       this.emitEvent(PieceEventEnum.updated, piece)
     }
 
     if (piece.isAutoSave) {
-      // todo: queue this action
+      // todo: queue this action?
       await this.service.uploadAsset(piece)
     }
 
-    await this.service.flush() // throttle?
+    await this.provider.save() // throttle?
   }
 
-  async onUnlink(path: string) {
-    const piece = this.service.getPiece(path)
+  async onUnlink(filePath: string) {
+    const piece = this.provider.findOne({filePath})
 
     if (!piece)
       return
 
-    this.service.removePiece(piece)
+    this.provider.remove(piece)
 
     this.emitEvent(PieceEventEnum.deleted, piece)
   }

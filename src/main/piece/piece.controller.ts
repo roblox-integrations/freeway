@@ -26,7 +26,7 @@ export class PieceController {
 
   @Get('/:id/raw')
   async getRaw(@Param('id') id: string) {
-    return this.pieceService.getPieceByIdBase64(id)
+    return this.pieceService.getRaw(id)
   }
 
   @Get('/:id/preview')
@@ -58,7 +58,6 @@ export class PieceController {
     const piece = this.pieceService.getPieceById(id)
 
     await this.pieceService.update(piece, updatePieceDto)
-    await this.pieceService.flush()
 
     return piece
   }
@@ -74,7 +73,6 @@ export class PieceController {
   async createAsset(@Param('id') id: string) {
     const piece = this.pieceService.getPieceById(id)
     await this.pieceService.uploadAsset(piece)
-    await this.pieceService.flush()
     return piece
   }
 

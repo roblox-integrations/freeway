@@ -13,6 +13,7 @@ export function configuration() {
     piece: {
       output: 'metadata.json',
       watchDirectory: join(app.getPath('home'), 'roblox-electron-hub/files'),
+      metadataPath: join(app.getPath('home'), 'roblox-electron-hub/metadata.json'),
     },
     cors: {
       origin: '*',
@@ -38,6 +39,7 @@ export interface ConfigurationRoblox {
 export interface ConfigurationPiece {
   output: string
   watchDirectory: string
+  metadataPath: string
 }
 
 export interface ConfigurationCors extends CorsOptions {

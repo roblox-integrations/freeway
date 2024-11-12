@@ -42,9 +42,11 @@ function ConfirmPopover({
                 {cancelLabel}
               </Button>
             </ChakraPopover.CloseTrigger>
-            <Button size="xs" onClick={onConfirm} colorPalette="red">
-              {confirmLabel}
-            </Button>
+            <ChakraPopover.CloseTrigger asChild>
+              <Button size="xs" onClick={onConfirm} colorPalette="red">
+                {confirmLabel}
+              </Button>
+            </ChakraPopover.CloseTrigger>
           </Group>
         </PopoverFooter>
       </PopoverContent>

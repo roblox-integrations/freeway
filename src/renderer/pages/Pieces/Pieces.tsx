@@ -6,8 +6,14 @@ import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
 import PieceItem from './PieceItem'
 
+function Loading() {
+  return (
+    <EmptyState title="Loading..."></EmptyState>
+  )
+}
+
 function Pieces() {
-  const [list, setList] = useState([])
+  const [list, setList] = useState<any>([])
   const [loading, setLoading] = useState(true)
 
   function onReveal() {
@@ -18,7 +24,7 @@ function Pieces() {
     setLoading(true)
     const res = await fetch('http://localhost:3000/api/pieces')
     const json = await res.json()
-    setList(json)
+    setList(json || [])
     setLoading(false)
   }
 
@@ -36,10 +42,8 @@ function Pieces() {
     getApiPieces()
   }, [])
 
-  if (loading) {
-    return (
-      <EmptyState title="Loading..."></EmptyState>
-    )
+  if (loading && list.length === 0) {
+    return <Loading />
   }
 
   if (list?.length === 0) {
@@ -61,9 +65,9 @@ function Pieces() {
   return (
     <Box p={4}>
       <Stack gap="2">
-        {list?.map(item => (
+        {list.map(item => (
           <PieceItem
-            key={item.filePath}
+            key={item.id}
             item={item}
           />
         ))}

@@ -1,14 +1,17 @@
-import type {BrowserWindow} from 'electron'
+import {join} from 'node:path'
+import process from 'node:process'
 import {Window} from '@doubleshot/nest-electron'
 import {PieceEventEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {
+  getMime,
   getRbxFileBase64,
   getRbxImageBitmapBase64,
   now,
 } from '@main/utils'
 import {Injectable, NotFoundException} from '@nestjs/common'
+import {app, BrowserWindow} from 'electron'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceUpload} from './piece'
 
@@ -40,16 +43,16 @@ export class PieceService {
     const piece = this.getPieceById(id)
 
     if (piece.type === PieceTypeEnum.image) {
-      // return await getRbxImageBitmap255(piece.filePath)
-      // return await getRbxImageBitmap01(piece.filePath)
-      return await getRbxImageBitmapBase64(piece.filePath)
+      // return await getRbxImageBitmap255(piece.fullPath)
+      // return await getRbxImageBitmap01(piece.fullPath)
+      return await getRbxImageBitmapBase64(piece.fullPath)
     }
 
-    return await getRbxFileBase64(piece.filePath)
+    return await getRbxFileBase64(piece.fullPath)
   }
 
   async uploadAsset(piece: Piece) {
-    let upload = piece.uploads.find(x => x.fileHash === piece.fileHash)
+    let upload = piece.uploads.find(x => x.hash === piece.hash)
     if (upload) {
       // no need to upload asset actually, just update timestamp
       piece.uploadedAt = now()
@@ -61,11 +64,12 @@ export class PieceService {
       piece.filePath,
       'decal',
       `Piece #${piece.id}`,
-      `hash:${piece.fileHash}`,
+      `hash:${piece.hash}`,
     )
 
     upload = PieceUpload.fromObject({
-      fileHash: piece.fileHash,
+      fileHash: piece.hash,
+      hash: piece.hash,
       assetId: result.assetId,
       decalId: result.decalId,
       operationId: result.operationId,
@@ -103,6 +107,23 @@ export class PieceService {
   async delete(piece: Piece) {
     const result = this.provider.delete(piece)
     this.emitEvent(PieceEventEnum.deleted, piece)
-    return result;
+    return result
+  }
+
+  getPiecePreviewPath(piece: Piece) {
+    if (piece.type !== PieceTypeEnum.image) {
+      const isDev = !app.isPackaged
+      const staticDir = isDev
+        ? join(__dirname, '../../static')
+        : join(process.resourcesPath, 'static')
+
+      return join(staticDir, 'preview-placeholder.png')
+    }
+
+    return piece.fullPath
+  }
+
+  getPieceMime(piece: Piece) {
+    return getMime(piece.fullPath)
   }
 }

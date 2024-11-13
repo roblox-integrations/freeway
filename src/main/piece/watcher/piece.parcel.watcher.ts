@@ -7,7 +7,7 @@ import micromatch from 'micromatch'
 import {PieceExtTypeMap} from '../enum'
 import {PieceProvider} from '../piece.provider'
 import {PieceService} from '../piece.service'
-import {PieceWatcher} from './piece.watcher'
+import {PieceWatcher, QueuePieceTask} from './piece.watcher'
 
 @Injectable()
 export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy {
@@ -35,9 +35,10 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
     let files = await fs.readdir(this.options.watchDirectory, {recursive: true})
     files = files.filter(x => !micromatch.isMatch(x, this.ignoreGlobs))
 
-    files.forEach((file) => {
-      const filePath = join(this.options.watchDirectory, file) // make absolute path
-      this.queue.push({id: filePath, filePath, method: this.onInit})
+    files.forEach((name) => {
+      const dir = this.options.watchDirectory
+      const filePath = join(this.options.watchDirectory, name) // make absolute path
+      this.queue.push({id: filePath, filePath, dir, name, method: this.onInit} as QueuePieceTask)
     })
   }
 
@@ -57,13 +58,16 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
           return
         }
 
+        const dir = this.options.watchDirectory
+        const name = event.path.slice(dir.length + 1)
+
         if (event.type === 'create' || event.type === 'update') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({id: event.path, filePath: event.path, method: this.onChange})
+          this.queue.push({id: event.path, filePath: event.path, dir, name, method: this.onChange} as QueuePieceTask)
         }
         if (event.type === 'delete') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({id: event.path, filePath: event.path, method: this.onUnlink})
+          this.queue.push({id: event.path, filePath: event.path, dir, name, method: this.onUnlink} as QueuePieceTask)
         }
       })
     }, {ignore: this.ignoreGlobs})

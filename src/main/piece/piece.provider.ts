@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises'
-import {parse} from 'node:path'
+import {join, parse} from 'node:path'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {getHash, now, randomString} from '@main/utils'
@@ -8,8 +8,10 @@ import {ConfigService} from '@nestjs/config'
 import {Piece} from './piece'
 
 interface PieceFieldCriteria {
-  filePath?: any
   id?: any
+  filePath?: any // deprecated
+  dir?: any
+  name?: any
   deletedAt?: any
   updatedAt?: any
 }
@@ -121,14 +123,25 @@ export class PieceProvider {
     piece.deletedAt = now()
   }
 
-  async createFromFile(filePath: string, role = PieceRoleEnum.asset) {
+  async createFromFile(dir: string, name: string, role = PieceRoleEnum.asset) {
     const id = this.generateUniqId()
-    const fileHash = await getHash(filePath)
+    const filePath = join(dir, name)
+    const hash = await getHash(filePath)
     const parsed = parse(filePath)
     const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum
     const isDirty = false
 
-    const newPiece = Piece.fromObject({id, role, type, filePath, fileHash, isDirty})
+    const newPiece = Piece.fromObject({
+      id,
+      dir,
+      name,
+      role,
+      type,
+      filePath, // deprecated
+      fileHash: hash, // deprecated
+      hash,
+      isDirty,
+    })
 
     this.add(newPiece)
 
@@ -139,9 +152,10 @@ export class PieceProvider {
     piece.isDirty = false
     piece.deletedAt = null
 
-    const hash = await getHash(piece.filePath)
-    if (hash !== piece.fileHash) {
-      piece.fileHash = hash
+    const hash = await getHash(piece.fullPath)
+    if (hash !== piece.hash) {
+      piece.hash = hash
+      piece.fileHash = hash // deprecated
       piece.updatedAt = now()
     }
 
@@ -159,7 +173,7 @@ export class PieceProvider {
 
   async delete(piece: Piece) {
     try {
-      await fs.unlink(piece.filePath)
+      await fs.unlink(piece.fullPath)
       const pos = this.data.indexOf(piece)
       if (pos !== -1) {
         this.data.splice(pos, 1)

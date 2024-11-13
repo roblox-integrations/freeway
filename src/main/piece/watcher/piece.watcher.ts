@@ -7,10 +7,12 @@ import Queue from 'better-queue'
 import {ensureDir} from 'fs-extra'
 import {PieceService} from '../piece.service'
 
-interface QueueFileTask {
+export interface QueuePieceTask {
   id: string
-  filePath: string
-  method: () => void
+  filePath: string // deprecated
+  dir: string
+  name: string
+  method: (task: QueuePieceTask) => void
 }
 
 @Injectable()
@@ -27,8 +29,8 @@ export abstract class PieceWatcher {
   ) {
     this.options = this.config.get<ConfigurationPiece>('piece')
 
-    this.queue = new Queue(async (input: QueueFileTask, cb: (err: any, result?: any) => void) => {
-      input.method.call(this, input.filePath)
+    this.queue = new Queue(async (input: QueuePieceTask, cb: (err: any, result?: any) => void) => {
+      input.method.call(this, input)
         .then((result: any) => {
           cb(null, result)
         })
@@ -52,20 +54,27 @@ export abstract class PieceWatcher {
 
   abstract watch()
 
-  async onInit(filePath: string) {
-    const piece = this.provider.findOne({filePath})
+  async onInit(queueTask: QueuePieceTask) {
+    const {dir, name} = queueTask
+
+    // TODO ES, replace with this one
+    // const piece = this.provider.findOne({dir, name})
+    const piece = this.provider.findOne(x => (x.dir === dir && x.name === name) || x.filePath === `${dir}/${name}` || x.filePath === `${dir}\\${name}`)
     if (!piece) {
-      await this.provider.createFromFile(filePath)
+      await this.provider.createFromFile(dir, name)
     }
     else {
+      piece.dir = dir
+      piece.name = name
       await this.provider.updateFromFile(piece)
     }
   }
 
-  async onChange(filePath: string) {
-    let piece = this.provider.findOne({filePath})
+  async onChange(queueTask: QueuePieceTask) {
+    const {dir, name} = queueTask
+    let piece = this.provider.findOne({dir, name})
     if (!piece) {
-      piece = await this.provider.createFromFile(filePath)
+      piece = await this.provider.createFromFile(dir, name)
       this.emitEvent(PieceEventEnum.created, piece)
     }
     else {
@@ -81,8 +90,9 @@ export abstract class PieceWatcher {
     await this.provider.save() // throttle?
   }
 
-  async onUnlink(filePath: string) {
-    const piece = this.provider.findOne({filePath})
+  async onUnlink(queueTask: QueuePieceTask) {
+    const {dir, name} = queueTask
+    const piece = this.provider.findOne({dir, name})
 
     if (!piece)
       return

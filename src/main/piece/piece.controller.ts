@@ -1,13 +1,8 @@
 import {createReadStream} from 'node:fs'
-import {join} from 'node:path'
-import process from 'node:process'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
-import {PieceTypeEnum} from '@main/piece/enum'
 import {PieceService} from '@main/piece/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {getMime} from '@main/utils'
 import {Body, Controller, Delete, Get, Param, Patch, Post, StreamableFile} from '@nestjs/common'
-import {app} from 'electron'
 
 @Controller('api/pieces')
 export class PieceController {
@@ -33,23 +28,10 @@ export class PieceController {
   async getPreview(@Param('id') id: string): Promise<StreamableFile> {
     const piece = this.pieceService.getPieceById(id)
 
-    let filePath: string
-    if (piece.type === PieceTypeEnum.image) {
-      filePath = piece.filePath
-    }
-    else {
-      const isDev = !app.isPackaged
-      const staticDir = isDev
-        ? join(__dirname, '../../static')
-        : join(process.resourcesPath, 'static')
-
-      filePath = join(staticDir, 'preview-placeholder.png')
-    }
-
-    const file = createReadStream(filePath)
+    const file = createReadStream(this.pieceService.getPiecePreviewPath(piece))
 
     return new StreamableFile(file, {
-      type: getMime(piece.filePath),
+      type: this.pieceService.getPieceMime(piece),
     })
   }
 

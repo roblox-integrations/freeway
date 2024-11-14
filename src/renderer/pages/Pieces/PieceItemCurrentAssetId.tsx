@@ -1,16 +1,16 @@
-import {Code} from "@chakra-ui/react";
+import {Code} from '@chakra-ui/react'
 
 export default function PieceItemCurrentAssetId({item}) {
-    const found = item?.uploads?.find(x => x.fileHash === item.fileHash)
+  const found = item?.uploads?.find(x => x.fileHash === item.fileHash)
 
-    if (!found) {
-        return null
-    }
+  if (!found) {
+    return null
+  }
 
-    return (
-        <Code colorPalette="blue">
-            rbxassetid://
-            {found.assetId}
-        </Code>
-    )
+  return (
+    <Code colorPalette="blue">
+      rbxassetid://
+      {found.assetId}
+    </Code>
+  )
 }

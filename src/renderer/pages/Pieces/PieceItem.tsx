@@ -1,8 +1,9 @@
 import {Field} from '@/components/ui/field'
 import {Switch} from '@/components/ui/switch'
-import {Box, Card, Code, Flex, Heading, Image, VStack} from '@chakra-ui/react'
+import {Box, Card, Code, Flex, Heading, Image, Stack} from '@chakra-ui/react'
+
 import {useState} from 'react'
-import {MdOutlineDelete as MdDelete, MdOutlineFolder as MdFolder, MdOutlineCloudUpload as MdUpload} from 'react-icons/md'
+import {MdOutlineDelete as MdDelete, MdOutlineFolder as MdFolder, MdUpload} from 'react-icons/md'
 import ConfirmPopover from '../../components/ConfirmPopover/ConfirmPopover'
 import PieceItemButton from './PieceItemButton'
 import PieceItemCurrentAssetId from './PieceItemCurrentAssetId'
@@ -69,18 +70,24 @@ export default function PieceItem({item}) {
       overflow="hidden"
       size="sm"
       variant="outline"
-      gap="1"
     >
       <Image
         objectFit="cover"
-        maxW={{base: '100%', sm: '100px'}}
+        maxW="120px"
+        w="120px"
+        maxH="80px"
+        flex="0 0 120px"
         src={`http://localhost:3000/api/pieces/${item.id}/preview?${item.fileHash}`}
-        alt="Caffe Latte"
+        alt={item.name}
       />
 
-      <Box flex="1 0 auto">
+      <Box
+        flex="1 0 0%"
+        minW="calc(100% - 120px - 124px);"
+      >
         <Card.Body p="2">
-          <Flex gap="2" my="2">
+          <Heading size="xs">{item.filePath}</Heading>
+          <Flex gap=".25rem .5rem" flexWrap="wrap" mt={2}>
             <Code colorPalette="gray" variant="surface">
               #
               {item.id}
@@ -88,9 +95,7 @@ export default function PieceItem({item}) {
             <Code colorPalette="green">{item.type}</Code>
             <PieceItemDate date={item.updatedAt}></PieceItemDate>
             <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId>
-
           </Flex>
-          <Heading size="xs">{item.filePath}</Heading>
           {/*
           <Text>hash: {item.fileHash}</Text>
           <Text>uploads= {item.uploads.length} <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId></Text>
@@ -100,13 +105,18 @@ export default function PieceItem({item}) {
 
         </Card.Footer>
       </Box>
-      <Box width="32" p="2">
-        <VStack>
-          <Box>
-            <PieceItemButton onClick={onUpload} title="Upload/Create Asset">
+      <Box
+        p="2"
+        w="124px"
+        maxW="124px"
+        flex="0 0 124px"
+      >
+        <Stack>
+          <Box className="wtf">
+            <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoSave ? 'green' : 'gray'}>
               <MdUpload></MdUpload>
             </PieceItemButton>
-            <PieceItemButton onClick={onReveal} title="Reveal in explorer">
+            <PieceItemButton onClick={onReveal} title="Reveal in Explorer">
               <MdFolder></MdFolder>
             </PieceItemButton>
             <ConfirmPopover onConfirm={onConfirmDelete}>
@@ -115,14 +125,12 @@ export default function PieceItem({item}) {
               </PieceItemButton>
             </ConfirmPopover>
           </Box>
-          <Box self-align="end">
+          <Box ml={2}>
             <Field>
-              <Switch size="xs" colorPalette="green" checked={isAutoSave} onChange={onChangeIsAutoSave}>
-                save
-              </Switch>
+              <Switch size="xs" colorPalette="green" checked={isAutoSave} onChange={onChangeIsAutoSave}>auto</Switch>
             </Field>
           </Box>
-        </VStack>
+        </Stack>
       </Box>
     </Card.Root>
   )

@@ -96,14 +96,11 @@ export class RobloxApiService {
   async getAssetOperationResultRetry(operationId: string) {
     try {
       return await pRetry(() => this.getAssetOperationResult(operationId), {
-        retries: 10,
         onFailedAttempt: async (error) => {
           this.logger.log(`getAssetOperationResultRetry: Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`)
         },
-        // @see https://github.com/tim-kos/node-retry
-        // formula: backoff = Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout)
-        factor: 1.2,
-        minTimeout: 400,
+        retries: 10, // 10 tries for 42 seconds
+        maxTimeout: 5000,
       })
     }
     catch (err: any) {

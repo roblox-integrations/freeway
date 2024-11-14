@@ -1,12 +1,19 @@
 import {Field} from '@/components/ui/field'
+import {
+  HoverCardArrow,
+  HoverCardContent,
+  HoverCardRoot,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import {Switch} from '@/components/ui/switch'
-import {Box, Card, Code, Flex, Heading, Image, Stack} from '@chakra-ui/react'
+import {Box, Card, Code, Flex, Heading, Image, Kbd, Stack, Text} from '@chakra-ui/react'
+import {MouseEvent, useState} from 'react'
 
-import {useState} from 'react'
 import {MdOutlineDelete as MdDelete, MdOutlineFolder as MdFolder, MdUpload} from 'react-icons/md'
 import ConfirmPopover from '../../components/ConfirmPopover/ConfirmPopover'
 import PieceItemButton from './PieceItemButton'
 import PieceItemCurrentAssetId from './PieceItemCurrentAssetId'
+
 import PieceItemDate from './PieceItemDate'
 
 export default function PieceItem({item}) {
@@ -43,7 +50,12 @@ export default function PieceItem({item}) {
     console.log('[PieceItem] deleted', json)
   }
 
-  const onUpload = async () => {
+  const onUpload = async (ev: MouseEvent<HTMLElement>) => {
+    if (ev.shiftKey) {
+      onChangeIsAutoSave()
+      return
+    }
+
     const res = await fetch(`http://localhost:3000/api/pieces/${item.id}/asset`, {
       method: 'POST',
       headers: {
@@ -113,9 +125,34 @@ export default function PieceItem({item}) {
       >
         <Stack>
           <Box className="wtf">
-            <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoSave ? 'green' : 'gray'}>
-              <MdUpload></MdUpload>
-            </PieceItemButton>
+            <HoverCardRoot size="sm" lazyMount>
+              <HoverCardTrigger asChild>
+                <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoSave ? 'green' : 'gray'}>
+                  <MdUpload></MdUpload>
+                </PieceItemButton>
+              </HoverCardTrigger>
+              <HoverCardContent maxWidth="240px">
+                <HoverCardArrow />
+                <Box>
+                  <Field>
+                    <Switch size="xs" colorPalette="green" checked={isAutoSave} onChange={onChangeIsAutoSave}>
+                      auto-upload
+                      {' '}
+                      {isAutoSave ? 'enabled' : 'disabled'}
+                    </Switch>
+                    <Text>
+                      Automatically upload asset on change.
+                      {' '}
+                      <span>
+                        <Kbd>shift</Kbd>
+                        +
+                        <Kbd>click</Kbd>
+                      </span>
+                    </Text>
+                  </Field>
+                </Box>
+              </HoverCardContent>
+            </HoverCardRoot>
             <PieceItemButton onClick={onReveal} title="Reveal in Explorer">
               <MdFolder></MdFolder>
             </PieceItemButton>
@@ -124,11 +161,6 @@ export default function PieceItem({item}) {
                 <MdDelete></MdDelete>
               </PieceItemButton>
             </ConfirmPopover>
-          </Box>
-          <Box ml={2}>
-            <Field>
-              <Switch size="xs" colorPalette="green" checked={isAutoSave} onChange={onChangeIsAutoSave}>auto</Switch>
-            </Field>
           </Box>
         </Stack>
       </Box>

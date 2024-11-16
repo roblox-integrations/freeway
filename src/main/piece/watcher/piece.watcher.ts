@@ -1,24 +1,15 @@
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
 import {PieceProvider} from '@main/piece/piece.provider'
+import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
 import {Injectable, Logger} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import Queue from 'better-queue'
 import {ensureDir} from 'fs-extra'
 import {PieceService} from '../piece.service'
-
-export interface QueuePieceTask {
-  id: string
-  filePath: string // deprecated
-  dir: string
-  name: string
-  method: (task: QueuePieceTask) => void
-}
 
 @Injectable()
 export abstract class PieceWatcher {
   protected isReady: boolean
-  protected queue: Queue
   protected readonly logger = new Logger(PieceWatcher.name)
   protected readonly options: ConfigurationPiece
 
@@ -26,23 +17,9 @@ export abstract class PieceWatcher {
     private readonly config: ConfigService,
     protected readonly service: PieceService,
     protected readonly provider: PieceProvider,
+    protected readonly queue: PieceWatcherQueue,
   ) {
     this.options = this.config.get<ConfigurationPiece>('piece')
-
-    this.queue = new Queue(async (input: QueuePieceTask, cb: (err: any, result?: any) => void) => {
-      input.method.call(this, input)
-        .then((result: any) => {
-          cb(null, result)
-        })
-        .catch((err: any) => {
-          console.error(err)
-          cb(err)
-        })
-    })
-
-    this.queue.on('drain', () => {
-      this.provider.save()
-    })
   }
 
   async onModuleInit(): Promise<void> {
@@ -54,7 +31,7 @@ export abstract class PieceWatcher {
 
   abstract watch()
 
-  async onInit(queueTask: QueuePieceTask) {
+  async onInit(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
 
     // TODO ES, replace with this one
@@ -70,7 +47,7 @@ export abstract class PieceWatcher {
     }
   }
 
-  async onChange(queueTask: QueuePieceTask) {
+  async onChange(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
     let piece = this.provider.findOne({dir, name})
     if (!piece) {
@@ -83,14 +60,13 @@ export abstract class PieceWatcher {
     }
 
     if (piece.isAutoSave) {
-      // todo: queue this action?
-      await this.service.uploadAsset(piece)
+      await this.service.queueUploadAsset(piece)
     }
 
     await this.provider.save() // throttle?
   }
 
-  async onUnlink(queueTask: QueuePieceTask) {
+  async onUnlink(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
     const piece = this.provider.findOne({dir, name})
 

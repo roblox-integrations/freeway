@@ -15,6 +15,7 @@ import PieceItemButton from './PieceItemButton'
 import PieceItemCurrentAssetId from './PieceItemCurrentAssetId'
 
 import PieceItemDate from './PieceItemDate'
+import PieceItemStatus from './PieceItemStatus'
 
 export default function PieceItem({item}) {
   const [isAutoSave, setIsAutoSave] = useState(item.isAutoSave)
@@ -107,6 +108,7 @@ export default function PieceItem({item}) {
             <Code colorPalette="green">{item.type}</Code>
             <PieceItemDate date={item.updatedAt}></PieceItemDate>
             <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId>
+            <PieceItemStatus item={item}></PieceItemStatus>
           </Flex>
           {/*
           <Text>hash: {item.fileHash}</Text>
@@ -124,7 +126,7 @@ export default function PieceItem({item}) {
         flex="0 0 124px"
       >
         <Stack>
-          <Box className="wtf">
+          <Box>
             <HoverCardRoot size="sm" lazyMount>
               <HoverCardTrigger asChild>
                 <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoSave ? 'green' : 'gray'}>

@@ -54,7 +54,7 @@ export class PieceController {
   @Post('/:id/asset')
   async createAsset(@Param('id') id: string) {
     const piece = this.pieceService.getPieceById(id)
-    await this.pieceService.uploadAsset(piece)
+    await this.pieceService.queueUploadAsset(piece)
     return piece
   }
 

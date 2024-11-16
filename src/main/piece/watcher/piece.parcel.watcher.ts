@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import {join} from 'node:path'
+import {PieceWatcherQueue} from '@main/piece/queue'
 import {Injectable, OnModuleDestroy} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import watcher, {AsyncSubscription} from '@parcel/watcher'
@@ -7,7 +8,7 @@ import micromatch from 'micromatch'
 import {PieceExtTypeMap} from '../enum'
 import {PieceProvider} from '../piece.provider'
 import {PieceService} from '../piece.service'
-import {PieceWatcher, QueuePieceTask} from './piece.watcher'
+import {PieceWatcher} from './piece.watcher'
 
 @Injectable()
 export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy {
@@ -18,15 +19,17 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
     config: ConfigService,
     service: PieceService,
     provider: PieceProvider,
+    queue: PieceWatcherQueue,
   ) {
-    super(config, service, provider)
+    super(config, service, provider, queue)
 
     let globPattern = Array.from(PieceExtTypeMap.keys()).map(k => k.slice(1)).join('|')
     globPattern = `**/*.!(${globPattern})`
 
     this.ignoreGlobs = [
-      '_*',
-      '.*',
+      '**/!(*.*)', // ignore files and dirs without ext (file-name.ext)
+      '_*', // ignore _files and _dirs
+      '.*', // ignore .files and .dirs
       globPattern,
     ]
   }
@@ -38,7 +41,15 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
     files.forEach((name) => {
       const dir = this.options.watchDirectory
       const filePath = join(this.options.watchDirectory, name) // make absolute path
-      this.queue.push({id: filePath, filePath, dir, name, method: this.onInit} as QueuePieceTask)
+      this.queue.push({
+        id: filePath,
+        filePath,
+        dir,
+        name,
+        fn: (task) => {
+          return this.onInit(task)
+        },
+      })
     })
   }
 
@@ -63,11 +74,27 @@ export class PieceParcelWatcher extends PieceWatcher implements OnModuleDestroy 
 
         if (event.type === 'create' || event.type === 'update') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({id: event.path, filePath: event.path, dir, name, method: this.onChange} as QueuePieceTask)
+          this.queue.push({
+            id: event.path,
+            filePath: event.path,
+            dir,
+            name,
+            fn: (task) => {
+              return this.onChange(task)
+            },
+          })
         }
         if (event.type === 'delete') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({id: event.path, filePath: event.path, dir, name, method: this.onUnlink} as QueuePieceTask)
+          this.queue.push({
+            id: event.path,
+            filePath: event.path,
+            dir,
+            name,
+            fn: (task) => {
+              return this.onUnlink(task)
+            },
+          })
         }
       })
     }, {ignore: this.ignoreGlobs})

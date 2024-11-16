@@ -1,8 +1,9 @@
 import {join} from 'node:path'
 import process from 'node:process'
 import {Window} from '@doubleshot/nest-electron'
-import {PieceEventEnum, PieceTypeEnum} from '@main/piece/enum'
+import {PieceEventEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
+import {PieceUploadQueue} from '@main/piece/queue'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {
   getMime,
@@ -21,6 +22,7 @@ export class PieceService {
       @Window() private readonly mainWin: BrowserWindow,
       private readonly robloxApiService: RobloxApiService,
       private readonly provider: PieceProvider,
+      private readonly queue: PieceUploadQueue,
   ) {
     //
   }
@@ -51,6 +53,23 @@ export class PieceService {
     return await getRbxFileBase64(piece.fullPath)
   }
 
+  async queueUploadAsset(piece: Piece) {
+    const upload = piece.uploads.find(x => x.hash === piece.hash)
+    if (upload) {
+      return
+    }
+
+    piece.status = PieceStatusEnum.queue
+    this.emitEvent(PieceEventEnum.updated, piece)
+
+    this.queue.push({
+      id: piece.fullPath,
+      fn: () => {
+        return this.uploadAsset(piece)
+      },
+    })
+  }
+
   async uploadAsset(piece: Piece) {
     let upload = piece.uploads.find(x => x.hash === piece.hash)
     if (upload) {
@@ -58,6 +77,9 @@ export class PieceService {
       piece.uploadedAt = now()
       return piece
     }
+
+    piece.status = PieceStatusEnum.upload
+    this.emitEvent(PieceEventEnum.updated, piece)
 
     // TODO: make upload incremental - step by step, saving results on each
     const result = await this.robloxApiService.createAsset(
@@ -78,6 +100,7 @@ export class PieceService {
     piece.uploads.push(upload)
     piece.uploadedAt = now()
 
+    piece.status = PieceStatusEnum.ok
     this.emitEvent(PieceEventEnum.updated, piece)
 
     await this.provider.save()
@@ -93,8 +116,7 @@ export class PieceService {
     piece.isAutoSave = updatePieceDto.isAutoSave
 
     if (piece.isAutoSave) {
-      // TODO: queue this action?
-      await this.uploadAsset(piece)
+      await this.queueUploadAsset(piece)
     }
 
     this.emitEvent(PieceEventEnum.updated, piece)

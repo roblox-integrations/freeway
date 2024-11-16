@@ -1,6 +1,6 @@
 import {now} from '@main/utils'
 import {PartialType} from '@nestjs/mapped-types'
-import {PieceRoleEnum, PieceTypeEnum} from './enum'
+import {PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from './enum'
 
 export class PieceUpload {
   public hash: string
@@ -28,6 +28,7 @@ export class Piece {
   public id: string
   public role: PieceRoleEnum
   public type: PieceTypeEnum
+  public status: PieceStatusEnum = PieceStatusEnum.ok
   public dir: string
   public name: string
   public filePath: string // deprecated

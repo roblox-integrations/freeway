@@ -1,6 +1,6 @@
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceUploadQueue, PieceWatcherQueue} from '@main/piece/queue'
-import {PieceParcelWatcher, PieceWatcher} from '@main/piece/watcher'
+import {PieceWatcher} from '@main/piece/watcher'
 import {RobloxApiModule} from '@main/roblox-api/roblox-api.module'
 import {Module} from '@nestjs/common'
 import {PieceController} from './piece.controller'
@@ -12,10 +12,7 @@ import {PieceService} from './piece.service'
     PieceService,
     PieceWatcherQueue,
     PieceUploadQueue,
-    {
-      provide: PieceWatcher,
-      useClass: PieceParcelWatcher,
-    },
+    PieceWatcher,
   ],
   controllers: [PieceController],
   imports: [RobloxApiModule],

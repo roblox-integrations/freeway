@@ -5,7 +5,7 @@
   "compilerOptions": {
     "composite": true,
     "types": ["electron-vite/node"],
-    "target": "ESNext",
+    "target": "ES2015",
 
     "module": "commonjs",
     "declaration": true,

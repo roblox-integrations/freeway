@@ -9,10 +9,7 @@
     },
     "transform": {
       "legacyDecorator": true,
-      "decoratorMetadata": true,
-      "module": "ESNext",
-      "moduleResolution": "Bundler",
-      "skipLibCheck": true
+      "decoratorMetadata": true
     },
     "baseUrl": "./",
     "paths": {

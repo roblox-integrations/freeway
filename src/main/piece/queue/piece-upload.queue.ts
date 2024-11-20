@@ -6,7 +6,7 @@ import BetterQueue from 'better-queue'
 
 export interface PieceUploadQueueTask {
   id: string
-  fn: (task: PieceUploadQueueTask) => Promise<any>
+  run: (task: PieceUploadQueueTask) => Promise<any>
 }
 
 @Injectable()
@@ -22,7 +22,7 @@ export class PieceUploadQueue {
     this.options = this.config.get<ConfigurationPiece>('piece')
 
     this.queue = new BetterQueue(async (input: PieceUploadQueueTask, cb: (err: any, result?: any) => void) => {
-      input.fn(input)
+      input.run(input)
         .then((result: any) => {
           cb(null, result)
         })
@@ -30,7 +30,7 @@ export class PieceUploadQueue {
           this.logger.error(err)
           cb(err)
         })
-    }, {concurrent: 1, maxRetries: 2})
+    }, {concurrent: this.options.uploadQueue.concurrency, maxRetries: this.options.uploadQueue.retries})
   }
 
   push(task: PieceUploadQueueTask): BetterQueue.Ticket {

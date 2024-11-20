@@ -34,7 +34,7 @@ export class PieceWatcherQueue {
           this.logger.error(err)
           cb(err)
         })
-    }, {concurrent: 20})
+    }, {concurrent: this.options.watcherQueue.concurrency, maxRetries: this.options.uploadQueue.retries})
 
     this.queue.on('drain', () => {
       this.provider.save()

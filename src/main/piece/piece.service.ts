@@ -64,7 +64,7 @@ export class PieceService {
 
     this.queue.push({
       id: piece.fullPath,
-      fn: () => {
+      run: () => {
         return this.uploadAsset(piece)
       },
     })

@@ -14,6 +14,14 @@ export function configuration() {
       output: 'metadata.json',
       watchDirectory: join(app.getPath('home'), 'roblox-electron-hub/files'),
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub/metadata.json'),
+      uploadQueue: {
+        concurrency: 10,
+        retries: 2,
+      },
+      watcherQueue: {
+        concurrency: 20,
+        retries: 2,
+      },
     },
     cors: {
       origin: '*',
@@ -40,6 +48,14 @@ export interface ConfigurationPiece {
   output: string
   watchDirectory: string
   metadataPath: string
+  uploadQueue: {
+    concurrency: number
+    retries: number
+  }
+  watcherQueue: {
+    concurrency: number
+    retries: number
+  }
 }
 
 export interface ConfigurationCors extends CorsOptions {

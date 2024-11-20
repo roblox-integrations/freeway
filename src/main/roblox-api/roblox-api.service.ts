@@ -79,11 +79,11 @@ export class RobloxApiService {
   async createAsset(filePath: string, assetType = 'decal', name = 'Test name', description = 'Test description'): Promise<CreateAssetResultDto> {
     try {
       const operationId = await this.createAssetOperationId(filePath, assetType, name, description)
-      await delay(500)
+      await delay(1000) // in most cases it is not ready at least in 1 sec
       const decalId = await this.getAssetOperationResultRetry(operationId)
       const assetId = await this.getImageFromDecal(decalId)
 
-      const result = CreateAssetResultDto.fromDto({assetId, decalId, operationId})
+      const result = {assetId, decalId, operationId} as CreateAssetResultDto
       this.logger.log(`createAsset result ${JSON.stringify(result)}`)
       return result
     }

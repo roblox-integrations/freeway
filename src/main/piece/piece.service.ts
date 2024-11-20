@@ -62,8 +62,7 @@ export class PieceService {
     piece.status = PieceStatusEnum.queue
     this.emitEvent(PieceEventEnum.updated, piece)
 
-    this.queue.push({
-      id: piece.fullPath,
+    this.queue.push(piece.fullPath, {
       run: () => {
         return this.uploadAsset(piece)
       },

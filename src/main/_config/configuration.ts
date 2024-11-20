@@ -15,10 +15,12 @@ export function configuration() {
       watchDirectory: join(app.getPath('home'), 'roblox-electron-hub/files'),
       metadataPath: join(app.getPath('home'), 'roblox-electron-hub/metadata.json'),
       uploadQueue: {
+        delay: 50,
         concurrency: 10,
         retries: 2,
       },
       watcherQueue: {
+        delay: 200,
         concurrency: 20,
         retries: 2,
       },
@@ -49,10 +51,12 @@ export interface ConfigurationPiece {
   watchDirectory: string
   metadataPath: string
   uploadQueue: {
+    delay: number
     concurrency: number
     retries: number
   }
   watcherQueue: {
+    delay: number
     concurrency: number
     retries: number
   }

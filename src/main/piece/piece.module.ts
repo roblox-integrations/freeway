@@ -10,8 +10,8 @@ import {PieceService} from './piece.service'
   providers: [
     PieceProvider,
     PieceService,
-    PieceWatcherQueue,
     PieceUploadQueue,
+    PieceWatcherQueue,
     PieceWatcher,
   ],
   controllers: [PieceController],

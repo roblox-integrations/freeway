@@ -31,6 +31,9 @@
       ],
       "@main/*": [
         "src/main/*"
+      ],
+      "@common/*": [
+        "src/main/common/*"
       ]
     }
   }

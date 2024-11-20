@@ -1,6 +1,6 @@
-import PQueue, {QueueAddOptions as PQueueAddOptions, Options as PQueueConstructorOptions, Queue} from 'p-queue'
 import type PriorityQueue from 'p-queue/dist/priority-queue'
-import {type RunFunction} from 'p-queue/dist/queue'
+import type {RunFunction} from 'p-queue/dist/queue'
+import PQueue, {QueueAddOptions as PQueueAddOptions, Options as PQueueConstructorOptions, Queue} from 'p-queue'
 
 export type OperationProcess = (payload: any, operation: Operation) => Promise<unknown> | unknown
 

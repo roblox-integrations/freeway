@@ -118,12 +118,12 @@ export class PieceWatcher {
     files.forEach((name) => {
       const dir = this.options.watchDirectory
       const filePath = join(this.options.watchDirectory, name) // make absolute path
-      this.queue.push({
+      this.queue.push(filePath, {
         id: filePath,
         filePath,
         dir,
         name,
-        fn: (task) => {
+        run: (task) => {
           return this.onInit(task)
         },
       })
@@ -151,24 +151,24 @@ export class PieceWatcher {
 
         if (event.type === 'create' || event.type === 'update') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({
+          this.queue.push(event.path, {
             id: event.path,
             filePath: event.path,
             dir,
             name,
-            fn: (task) => {
+            run: (task) => {
               return this.onChange(task)
             },
           })
         }
         if (event.type === 'delete') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
-          this.queue.push({
+          this.queue.push(event.path, {
             id: event.path,
             filePath: event.path,
             dir,
             name,
-            fn: (task) => {
+            run: (task) => {
               return this.onUnlink(task)
             },
           })

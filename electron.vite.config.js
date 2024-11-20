@@ -8,6 +8,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@main': resolve('src/main'),
+        '@common': resolve('src/main/common'),
         '@preload': resolve('src/preload'),
       },
     },

@@ -55,7 +55,7 @@ export class PieceWatcher {
   async onInit(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
 
-    // TODO ES, replace with this one
+    // TODO ES, replace with this one ↓
     // const piece = this.provider.findOne({dir, name})
     const piece = this.provider.findOne(x => (x.dir === dir && x.name === name) || x.filePath === `${dir}/${name}` || x.filePath === `${dir}\\${name}`)
     if (!piece) {
@@ -84,7 +84,7 @@ export class PieceWatcher {
       await this.service.queueUploadAsset(piece)
     }
 
-    await this.provider.save() // throttle?
+    await this.provider.save() // queue?
   }
 
   async onUnlink(queueTask: PieceWatcherQueueTask) {
@@ -104,7 +104,7 @@ export class PieceWatcher {
   }
 
   onReady() {
-    this.logger.log('Ready. Initial scan complete. Watching for changes...')
+    this.logger.log('Initial scan completed, watching for changes...')
     this.isReady = true
   }
 
@@ -119,8 +119,7 @@ export class PieceWatcher {
       const dir = this.options.watchDirectory
       const filePath = join(this.options.watchDirectory, name) // make absolute path
       this.queue.push(filePath, {
-        id: filePath,
-        filePath,
+        fullPath: filePath,
         dir,
         name,
         run: (task) => {
@@ -152,8 +151,7 @@ export class PieceWatcher {
         if (event.type === 'create' || event.type === 'update') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
           this.queue.push(event.path, {
-            id: event.path,
-            filePath: event.path,
+            fullPath: event.path,
             dir,
             name,
             run: (task) => {
@@ -164,8 +162,7 @@ export class PieceWatcher {
         if (event.type === 'delete') {
           this.logger.debug(`Event "${event.type}": ${event.path}`)
           this.queue.push(event.path, {
-            id: event.path,
-            filePath: event.path,
+            fullPath: event.path,
             dir,
             name,
             run: (task) => {

@@ -84,7 +84,7 @@ export class RobloxApiService {
       const assetId = await this.getImageFromDecal(decalId)
 
       const result = {assetId, decalId, operationId} as CreateAssetResultDto
-      this.logger.log(`createAsset result ${JSON.stringify(result)}`)
+      this.logger.debug(`createAsset result ${JSON.stringify(result)}`)
       return result
     }
     catch (err) {
@@ -97,7 +97,7 @@ export class RobloxApiService {
     try {
       return await pRetry(() => this.getAssetOperationResult(operationId), {
         onFailedAttempt: async (error) => {
-          this.logger.log(`getAssetOperationResultRetry: Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`)
+          this.logger.debug(`getAssetOperationResultRetry: Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left.`)
         },
         retries: 10, // 10 tries for 42 seconds
         maxTimeout: 5000,

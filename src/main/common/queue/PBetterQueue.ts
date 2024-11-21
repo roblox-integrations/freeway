@@ -61,8 +61,8 @@ export class PBetterQueue<QueueType extends Queue<RunFunction, OperationOptions>
   }
 
   async addOperation<OperationResultType>(id: OperationId, payload: any, options: {throwOnTimeout: true} & Exclude<OperationOptions, 'throwOnTimeout'>): Promise<OperationResultType>
-  async addOperation<OperationResultType>(id: OperationId, payload: any, options?: Partial<OperationOptions>): Promise<OperationResultType | void>
-  async addOperation<OperationResultType>(id: OperationId, payload: any, options: Partial<OperationOptions> = {}): Promise<OperationResultType | void> {
+  async addOperation<OperationResultType>(id: OperationId, payload: any, options?: Partial<OperationOptions>): Promise<OperationResultType>
+  async addOperation<OperationResultType>(id: OperationId, payload: any, options: Partial<OperationOptions> = {}): Promise<OperationResultType> {
     let operation = this.getOperation(id)
 
     if (!operation) {

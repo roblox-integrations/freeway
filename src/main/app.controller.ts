@@ -1,7 +1,7 @@
 import {IpcHandle, IpcOn, Window} from '@doubleshot/nest-electron'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
-import {Controller, Get, Logger} from '@nestjs/common'
+import {Controller, Get} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {Payload} from '@nestjs/microservices'
 import {BrowserWindow, shell} from 'electron'
@@ -10,54 +10,12 @@ import {AppService} from './app.service'
 
 @Controller()
 export class AppController {
-  private logger = new Logger(AppController.name)
-
   constructor(
     private readonly appService: AppService,
     @Window() private readonly mainWin: BrowserWindow,
     private readonly oauthClient: RobloxOauthClient,
     private config: ConfigService,
   ) {
-    const webRequest = this.mainWin.webContents.session.webRequest
-    const filter = {urls: ['http://localhost:3000/oauth/callback*']}
-
-    webRequest.onBeforeRequest(filter, async ({url}) => {
-      try {
-        await this.oauthClient.callback(url)
-        await this.loadMain()
-      }
-      catch (err: any) {
-        this.mainWin.webContents.send('auth:err:load-tokens')
-        // TODO: show error
-        this.logger.error(err.message)
-        this.logger.error(err.stack)
-      }
-    })
-
-    let isRefreshing = false
-    const refreshTokens = async () => {
-      if (isRefreshing)
-        return
-      isRefreshing = true
-      try {
-        await this.oauthClient.refresh()
-      }
-      catch (err) {
-        this.logger.error('Could not refresh token', err)
-      }
-      isRefreshing = false
-    }
-
-    refreshTokens() // refresh token set on start
-      .then(() => {
-        this.mainWin.webContents.send('ipc-message', {name: 'ready'})
-      })
-
-    setInterval(refreshTokens, 2000)
-  }
-
-  async loadMain() {
-    await this.mainWin.loadURL(AppService.getAppUrl())
   }
 
   @IpcHandle('msg')

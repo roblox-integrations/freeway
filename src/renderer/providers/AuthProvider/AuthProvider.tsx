@@ -76,6 +76,14 @@ function AuthProvider(props: Props) {
     await getUserData()
   })
 
+  useCustomEventListener<any>('app:online', async () => {
+    console.log('[app:online]')
+  })
+
+  useCustomEventListener<any>('app:offline', async () => {
+    console.log('[app:offline]')
+  })
+
   useEffect(() => {
     console.log('[AuthProvider] effect getUserData')
     getUserData()

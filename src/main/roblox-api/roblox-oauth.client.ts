@@ -194,7 +194,7 @@ export class RobloxOauthClient {
   async callback(url: string) {
     const code = this.parseCallbackUrl(url)
     const tokenSet = await this.exchangeCode(code)
-    this.logger.debug('TokenSet exchanged by code (user logged in)')
+    this.logger.debug('TokenSet was exchanged by code (user logged in)')
     await this.setTokenSet(tokenSet)
   }
 

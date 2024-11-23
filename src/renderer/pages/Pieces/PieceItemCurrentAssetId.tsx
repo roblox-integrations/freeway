@@ -1,7 +1,7 @@
 import {Code} from '@chakra-ui/react'
 
 export default function PieceItemCurrentAssetId({item}) {
-  const found = item?.uploads?.find(x => x.fileHash === item.fileHash)
+  const found = item?.uploads?.find(x => x.hash === item.hash)
 
   if (!found) {
     return null
@@ -9,8 +9,7 @@ export default function PieceItemCurrentAssetId({item}) {
 
   return (
     <Code colorPalette="blue">
-      rbxassetid://
-      {found.assetId}
+      rbxassetid://{found.assetId}
     </Code>
   )
 }

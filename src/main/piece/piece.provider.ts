@@ -9,7 +9,6 @@ import {Piece} from './piece'
 
 interface PieceFieldCriteria {
   id?: any
-  filePath?: any // deprecated
   dir?: any
   name?: any
   deletedAt?: any
@@ -124,10 +123,10 @@ export class PieceProvider {
   }
 
   async createFromFile(dir: string, name: string, role = PieceRoleEnum.asset) {
+    const f = join(dir, name)
     const id = this.generateUniqId()
-    const filePath = join(dir, name)
-    const hash = await getHash(filePath)
-    const parsed = parse(filePath)
+    const hash = await getHash(f)
+    const parsed = parse(f)
     const type = PieceExtTypeMap.get(parsed.ext) || PieceTypeEnum.unknown as PieceTypeEnum
     const isDirty = false
 
@@ -137,8 +136,6 @@ export class PieceProvider {
       name,
       role,
       type,
-      filePath, // deprecated
-      fileHash: hash, // deprecated
       hash,
       isDirty,
     })
@@ -155,7 +152,6 @@ export class PieceProvider {
     const hash = await getHash(piece.fullPath)
     if (hash !== piece.hash) {
       piece.hash = hash
-      piece.fileHash = hash // deprecated
       piece.updatedAt = now()
     }
 
@@ -182,7 +178,7 @@ export class PieceProvider {
       return null
     }
     catch (err) {
-      this.logger.error(`Error deleting piece: ${piece.fileHash}`, err)
+      this.logger.error(`Error deleting piece: ${piece.fullPath}`, err)
       throw new UnprocessableEntityException(err)
     }
   }

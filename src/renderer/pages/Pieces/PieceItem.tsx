@@ -90,7 +90,7 @@ export default function PieceItem({item}) {
         w="120px"
         maxH="80px"
         flex="0 0 120px"
-        src={`http://localhost:3000/api/pieces/${item.id}/preview?${item.fileHash}`}
+        src={`http://localhost:3000/api/pieces/${item.id}/preview?${item.hash}`}
         alt={item.name}
       />
 
@@ -99,7 +99,7 @@ export default function PieceItem({item}) {
         minW="calc(100% - 120px - 124px);"
       >
         <Card.Body p="2">
-          <Heading size="xs">{item.filePath}</Heading>
+          <Heading size="xs">{item.name}</Heading>
           <Flex gap=".25rem .5rem" flexWrap="wrap" mt={2}>
             <Code colorPalette="gray" variant="surface">
               #
@@ -111,7 +111,7 @@ export default function PieceItem({item}) {
             <PieceItemStatus item={item}></PieceItemStatus>
           </Flex>
           {/*
-          <Text>hash: {item.fileHash}</Text>
+          <Text>hash: {item.hash}</Text>
           <Text>uploads= {item.uploads.length} <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId></Text>
 */}
         </Card.Body>

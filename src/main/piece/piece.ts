@@ -4,7 +4,6 @@ import {PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from './enum'
 
 export class PieceUpload {
   public hash: string
-  public fileHash: string // deprecated
   public assetId: string
   public decalId: string
   public operationId?: string
@@ -31,9 +30,7 @@ export class Piece {
   public status: PieceStatusEnum = PieceStatusEnum.ok
   public dir: string
   public name: string
-  public filePath: string // deprecated
   public hash: string = ''
-  public fileHash: string = '' // deprecated
   public uploads: PieceUpload[] = []
   public isAutoSave: boolean = false
   public updatedAt: number = null
@@ -58,17 +55,6 @@ export class Piece {
   static fromObject(obj: CreatePieceDto) {
     const piece = new Piece()
     Object.assign(piece, obj)
-
-    if (piece.fileHash) {
-      piece.hash = piece.fileHash
-    }
-
-    if (piece.uploads?.length > 0) {
-      piece.uploads.forEach((upload) => {
-        upload.hash = upload.fileHash // deprecated
-      })
-    }
-
     return piece
   }
 }

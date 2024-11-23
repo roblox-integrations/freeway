@@ -118,14 +118,13 @@ export class PieceService {
   private async _uploadPiece(piece: Piece): Promise<PieceUpload> {
     // TODO: make upload incremental - step by step, saving results on each
     const result = await this.robloxApiService.createAsset(
-      piece.filePath,
+      piece.fullPath,
       'decal',
       `Piece #${piece.id}`,
       `hash:${piece.hash}`,
     )
 
     return PieceUpload.fromObject({
-      fileHash: piece.hash,
       hash: piece.hash,
       assetId: result.assetId,
       decalId: result.decalId,

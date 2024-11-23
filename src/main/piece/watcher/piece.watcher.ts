@@ -56,8 +56,7 @@ export class PieceWatcher {
     const {dir, name} = queueTask
 
     // TODO ES, replace with this one ↓
-    // const piece = this.provider.findOne({dir, name})
-    const piece = this.provider.findOne(x => (x.dir === dir && x.name === name) || x.filePath === `${dir}/${name}` || x.filePath === `${dir}\\${name}`)
+    const piece = this.provider.findOne({dir, name})
     if (!piece) {
       await this.provider.createFromFile(dir, name)
     }
@@ -117,9 +116,9 @@ export class PieceWatcher {
 
     files.forEach((name) => {
       const dir = this.options.watchDirectory
-      const filePath = join(this.options.watchDirectory, name) // make absolute path
-      this.queue.push(filePath, {
-        fullPath: filePath,
+      const fullPath = join(this.options.watchDirectory, name) // make absolute path
+      this.queue.push(fullPath, {
+        fullPath,
         dir,
         name,
         run: (task) => {

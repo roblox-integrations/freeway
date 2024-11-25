@@ -5,7 +5,7 @@ import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
 import {app} from 'electron'
-import {ConfigurationCors} from './_config/configuration'
+import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
 import {AppModule} from './app.module'
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -39,8 +39,8 @@ async function bootstrap() {
     nestApp.enableShutdownHooks()
     await nestApp.startAllMicroservices()
 
-    const port = config.get<number>('port')
-    await nestApp.listen(port)
+    const mainConfig = config.get<ConfigurationMain>('main')
+    await nestApp.listen(mainConfig.port, mainConfig.host)
 
     const isDev = !app.isPackaged
     app.on('window-all-closed', async () => {

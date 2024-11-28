@@ -55,7 +55,6 @@ export class PieceWatcher {
   async onInit(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
 
-    // TODO ES, replace with this one ↓
     const piece = this.provider.findOne({dir, name})
     if (!piece) {
       await this.provider.createFromFile(dir, name)
@@ -76,7 +75,7 @@ export class PieceWatcher {
     }
     else {
       await this.provider.updateFromFile(piece)
-      this.emitEvent(PieceEventEnum.updated, piece)
+      this.emitEvent(PieceEventEnum.changed, piece)
     }
 
     if (piece.isAutoSave) {

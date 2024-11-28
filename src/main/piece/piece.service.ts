@@ -5,13 +5,9 @@ import {PieceEventEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceUploadQueue} from '@main/piece/queue'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {
-  getMime,
-  getRbxFileBase64,
-  getRbxImageBitmapBase64,
-  now,
-} from '@main/utils'
+import {getMime, getRbxFileBase64, getRbxImageBitmapBase64, now} from '@main/utils'
 import {Injectable, Logger, NotFoundException} from '@nestjs/common'
+import {EventEmitter2} from '@nestjs/event-emitter'
 import {app, BrowserWindow} from 'electron'
 import {UpdatePieceDto} from './dto/update-piece.dto'
 import {Piece, PieceUpload} from './piece'
@@ -24,12 +20,13 @@ export class PieceService {
       private readonly robloxApiService: RobloxApiService,
       private readonly provider: PieceProvider,
       private readonly queue: PieceUploadQueue,
+      private readonly eventEmitter: EventEmitter2,
   ) {
     //
   }
 
-  getAll(): Piece[] {
-    return this.provider.findMany(x => !x.deletedAt)
+  findMany(criteria: any): Piece[] {
+    return this.provider.findMany(criteria)
   }
 
   getPieceById(id: string): Piece {
@@ -75,6 +72,7 @@ export class PieceService {
         piece.uploadedAt = now()
 
         this._changePieceStatus(piece, PieceStatusEnum.ok)
+        this.emitEvent(PieceEventEnum.uploaded, piece)
       })
       .catch((err) => {
         this._changePieceStatus(piece, PieceStatusEnum.error)
@@ -99,16 +97,14 @@ export class PieceService {
       return piece
     }
 
-    piece.status = PieceStatusEnum.upload
-    this.emitEvent(PieceEventEnum.updated, piece)
+    this._changePieceStatus(piece, PieceStatusEnum.upload)
 
     upload = await this._uploadPiece(piece)
 
     piece.uploads.push(upload)
     piece.uploadedAt = now()
 
-    piece.status = PieceStatusEnum.ok
-    this.emitEvent(PieceEventEnum.updated, piece)
+    this._changePieceStatus(piece, PieceStatusEnum.ok)
 
     await this.provider.save()
 
@@ -133,6 +129,7 @@ export class PieceService {
   }
 
   emitEvent(name: string, data: any) {
+    this.eventEmitter.emit(name, data)
     this.mainWin.webContents.send('ipc-message', {name, data})
   }
 

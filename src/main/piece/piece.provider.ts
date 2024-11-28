@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import {join, parse} from 'node:path'
+import {filter as whereFilter, find as whereFind} from '@common/where'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {getHash, now, randomString} from '@main/utils'
@@ -7,15 +8,7 @@ import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {Piece} from './piece'
 
-interface PieceFieldCriteria {
-  id?: any
-  dir?: any
-  name?: any
-  deletedAt?: any
-  updatedAt?: any
-}
-
-type PieceCriteria = PieceFieldCriteria | ((piece: Piece) => boolean)
+type PieceCriteria = any // PieceFieldCriteria | ((piece: Piece) => boolean)
 
 @Injectable()
 export class PieceProvider {
@@ -82,36 +75,11 @@ export class PieceProvider {
   }
 
   findMany(criteria: PieceCriteria): Piece[] {
-    return this.data.filter((x) => {
-      return this._where(criteria, x)
-    })
+    return whereFilter<Piece>(this.data, criteria)
   }
 
   findOne(criteria: PieceCriteria): Piece | undefined {
-    return this.data.find((x) => {
-      return this._where(criteria, x)
-    })
-  }
-
-  private _where(criteria: PieceCriteria, needle: Piece) {
-    if (typeof criteria === 'function') {
-      return criteria(needle)
-    }
-
-    for (const k in criteria) {
-      if (typeof criteria[k] === 'function') {
-        if (!criteria[k](needle[k])) {
-          return false
-        }
-      }
-      else {
-        if (criteria[k] !== needle[k]) {
-          return false
-        }
-      }
-    }
-
-    return true
+    return whereFind<Piece>(this.data, criteria)
   }
 
   add(piece: Piece): void {
@@ -147,11 +115,15 @@ export class PieceProvider {
 
   async updateFromFile(piece: Piece) {
     piece.isDirty = false
-    piece.deletedAt = null
 
     const hash = await getHash(piece.fullPath)
     if (hash !== piece.hash) {
       piece.hash = hash
+      piece.updatedAt = now()
+    }
+
+    if (piece.deletedAt !== null) {
+      piece.deletedAt = null
       piece.updatedAt = now()
     }
 
@@ -170,12 +142,15 @@ export class PieceProvider {
   async delete(piece: Piece) {
     try {
       await fs.unlink(piece.fullPath)
-      const pos = this.data.indexOf(piece)
-      if (pos !== -1) {
-        this.data.splice(pos, 1)
-      }
+      this.remove(piece)
+      // TODO ES remove completely
 
-      return null
+      // const pos = this.data.indexOf(piece)
+      // if (pos !== -1) {
+      //   this.data.splice(pos, 1)
+      // }
+
+      return piece
     }
     catch (err) {
       this.logger.error(`Error deleting piece: ${piece.fullPath}`, err)

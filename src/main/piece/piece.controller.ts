@@ -1,17 +1,28 @@
 import {createReadStream} from 'node:fs'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
 import {PieceService} from '@main/piece/piece.service'
+import {PieceNotificationService} from '@main/piece/piece-notification.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {Body, Controller, Delete, Get, Param, Patch, Post, StreamableFile} from '@nestjs/common'
+import {Body, Controller, Delete, Get, Param, Patch, Post, Query, StreamableFile} from '@nestjs/common'
 
 @Controller('api/pieces')
 export class PieceController {
-  constructor(private readonly pieceService: PieceService, private readonly robloxApiService: RobloxApiService) {
+  constructor(
+    private readonly pieceService: PieceService,
+    private readonly pieceNotificationService: PieceNotificationService,
+    private readonly robloxApiService: RobloxApiService,
+  ) {
   }
 
   @Get('/')
-  async findAll() {
-    return this.pieceService.getAll()
+  async find(@Query() query: any) {
+    const criteria = {...query, ...{deletedAt: null}}
+    return this.pieceService.findMany(criteria)
+  }
+
+  @Get('/notify')
+  async notify() {
+    return this.pieceNotificationService.notify()
   }
 
   @Get('/:id')

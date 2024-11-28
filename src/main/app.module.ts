@@ -3,6 +3,7 @@ import process from 'node:process'
 import {ELECTRON_WINDOW_DEFAULT_NAME, ElectronModule} from '@doubleshot/nest-electron'
 import {Module} from '@nestjs/common'
 import {ConfigModule} from '@nestjs/config'
+import {EventEmitterModule} from '@nestjs/event-emitter'
 import {app, BrowserWindow, shell} from 'electron'
 import icon from '../../resources/icon.png?asset'
 import {configuration} from './_config/configuration'
@@ -68,6 +69,9 @@ const electronModule = ElectronModule.registerAsync({
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+    }),
+    EventEmitterModule.forRoot({
+      wildcard: true,
     }),
     electronModule,
     AuthModule,

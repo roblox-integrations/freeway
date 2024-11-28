@@ -5,7 +5,7 @@ import {PieceEventEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceUploadQueue} from '@main/piece/queue'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {getMime, getRbxFileBase64, getRbxImageBitmapBase64, now} from '@main/utils'
+import {getMime, getRbxFileBase64, getRbxImageBitmapBase64, getRbxMeshBase64, now} from '@main/utils'
 import {Injectable, Logger, NotFoundException} from '@nestjs/common'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import {app, BrowserWindow} from 'electron'
@@ -46,6 +46,10 @@ export class PieceService {
       // return await getRbxImageBitmap255(piece.fullPath)
       // return await getRbxImageBitmap01(piece.fullPath)
       return await getRbxImageBitmapBase64(piece.fullPath)
+    }
+
+    if (piece.type === PieceTypeEnum.mesh) {
+      return await getRbxMeshBase64(piece.fullPath)
     }
 
     return await getRbxFileBase64(piece.fullPath)

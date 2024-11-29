@@ -25,6 +25,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "moduleResolution": "Bundler",
     "paths": {
       "@render/*": [
         "src/renderer/*"

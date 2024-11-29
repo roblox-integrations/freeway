@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer'
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
 import {Jimp} from 'jimp'
@@ -44,7 +45,6 @@ export interface RbxImageBase64 {
   bitmap: string | number[]
 }
 
-
 export interface RbxMeshFace {
   material: string
   group: string
@@ -74,59 +74,49 @@ export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024):
   }
 }
 
-
-/**
- * 
- * 
- *  {name: 'Cube', 
- *    {
- *  }
- *  }
- * 
- * 
- * @param filePath 
- * 
- * @returns 
- */
 export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File> {
-
-  if (!filePath.toLocaleLowerCase().endsWith('obj')) return null
+  if (!filePath.toLocaleLowerCase().endsWith('obj'))
+    return null
 
   const fileContent = await fs.readFile(filePath, 'utf-8')
   const objFile = new OBJFile(fileContent)
   const obj = objFile.parse()
 
   const mesh = obj.models[0] // TODO MI:  take the very first mesh _for now_, need a proper solution
-  let v = [], uv = [], vn = [], faces = []
-  mesh.vertices.forEach(vert => {
-    v.push([vert.x, vert.y, vert.x])
-  });
-  mesh.textureCoords.forEach(uvCoord => {
+  const v = []
+  const uv = []
+  const vn = []
+  const faces = []
+  mesh.vertices.forEach((vert: any) => {
+    v.push([vert.x, vert.y, vert.z])
+  })
+  mesh.textureCoords.forEach((uvCoord: any) => {
     uv.push([uvCoord.u, uvCoord.v])
-  });
-  mesh.vertexNormals.forEach(normal => {
+  })
+  mesh.vertexNormals.forEach((normal: any) => {
     vn.push([normal.x, normal.y, normal.z])
-  });
-  mesh.faces.forEach(face => {
-    let verts = []
-    face.vertices.forEach(vert => {
+  })
+  mesh.faces.forEach((face: any) => {
+    const verts = []
+    face.vertices.forEach((vert: any) => {
       verts.push([vert.vertexIndex, vert.textureCoordsIndex, vert.vertexNormalIndex])
     })
-    faces.push({material:'', group: '', smoothingGroup: face.smoothingGroup, v: verts})
-  });
+    // TODO MI: 'material' and 'group' can be transferred from face.
+    faces.push({material: '', group: '', smoothingGroup: face.smoothingGroup, v: verts})
+  })
 
   const result: RbxMesh = {
     name: mesh.name,
-    v: v,
-    uv: uv,
-    vn: vn,
-    faces: faces
-  };
-
+    v,
+    uv,
+    vn,
+    faces,
+  }
+  // TODO ES: use json instead of base64? ↓
+  // return result
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
 }
-
 
 export async function getRbxImageBitmap255(filePath: string): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)

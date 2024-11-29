@@ -1,10 +1,11 @@
 import crypto from 'node:crypto'
 
-import {URL, URLSearchParams} from 'node:url'
+import {URL} from 'node:url'
 import {ConfigurationRoblox} from '@main/_config/configuration'
 import {TokenSetDto} from '@main/roblox-api/dto/token-set.dto'
 import {Injectable, Logger, UnauthorizedException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
+import got from 'got'
 import keytar from 'keytar'
 import {KEYTAR_ACCOUNT, KEYTAR_SERVICE, REDIRECT_URI} from './constants'
 import {GrantType} from './type/grant-type'
@@ -99,35 +100,21 @@ export class RobloxOauthClient {
     return url.toString()
   }
 
-  request(endpointUrl: string, body: any) {
-    return fetch(endpointUrl, {
+  request(endpointUrl: string, data: any) {
+    return got(endpointUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams(body),
+      form: data,
     })
   }
 
   async grant(body: GrantType): Promise<TokenSet> {
     try {
-      const response = await this.request('https://apis.roblox.com/oauth/v1/token', body)
-
-      if (!response.ok) {
-        try {
-          const jsonErr = await response.json()
-          this.logger.error(`Cannot grant ${body.grant_type}. Status: ${response.status}, json: ${JSON.stringify(jsonErr)}`)
-        }
-        catch (jsonErr: any) {
-          this.logger.error(`Cannot parse json response (${jsonErr.message})`)
-        }
-        throw new UnprocessableEntityException(`Cannot grant ${body.grant_type}. Status: ${response.status}`)
-      }
-
-      const json = await response.json() as TokenSetDto
+      const json = await this.request('https://apis.roblox.com/oauth/v1/token', body)
+        .json() as TokenSetDto
       return TokenSet.fromDto(json)
     }
     catch (err: any) {
+      this.logger.error(`Cannot grant ${body.grant_type}. (status: ${err.response?.status}. json: ${err.response.data})`)
       this.logger.error(err.message)
       throw err
     }
@@ -158,36 +145,27 @@ export class RobloxOauthClient {
 
   async revokeToken(refreshToken: string) {
     try {
-      const response = await this.request('https://apis.roblox.com/oauth/v1/token/revoke', {
+      await this.request('https://apis.roblox.com/oauth/v1/token/revoke', {
         client_id: this.clientId,
         token: refreshToken,
-      })
-
-      if (!response.ok) {
-        throw new UnprocessableEntityException(`Cannot revoke token. Status: ${response.status}`)
-      }
+      }).json()
     }
     catch (err: any) {
       this.logger.error(err.message)
-      throw err
+      throw new UnprocessableEntityException(`Cannot revoke token. Status: ${err.response.status}`)
     }
   }
 
   async getAuthorizedResources(/* accessToken: string */): Promise<any> {
     try {
-      const response = await this.request('https://apis.roblox.com/oauth/v1/token/resources', {
+      return await this.request('https://apis.roblox.com/oauth/v1/token/resources', {
         client_id: this.clientId,
         token: this.tokenSet.accessToken,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Cannot get authorized resources. Status: ${response.status}`)
-      }
-      return await response.json()
+      }).json()
     }
     catch (err: any) {
       this.logger.error(err.message)
-      throw err
+      throw new Error(`Cannot get authorized resources. Status: ${err.response.status}`)
     }
   }
 

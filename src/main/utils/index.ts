@@ -91,7 +91,7 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
     v.push([vert.x, vert.y, vert.z])
   })
   mesh.textureCoords.forEach((uvCoord: any) => {
-    uv.push([uvCoord.u, uvCoord.v])
+    uv.push([uvCoord.u, 1 - uvCoord.v])
   })
   mesh.vertexNormals.forEach((normal: any) => {
     vn.push([normal.x, normal.y, normal.z])

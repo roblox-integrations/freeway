@@ -1,9 +1,9 @@
 {
-  "name": "roblox-integration-hub",
+  "name": "freeway",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "This app connects Roblox Studio with other apps and tools",
+  "description": "Freeway - Roblox desktop integration hub",
   "main": "./out/main/index.js",
   "scripts": {
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",

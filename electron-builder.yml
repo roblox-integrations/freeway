@@ -1,6 +1,6 @@
 appId: com.electron.app
 icon: 'resources/icon.ico'
-productName: roblox-electron-hub
+productName: freeway
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: roblox-electron-hub
+  executableName: freeway
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

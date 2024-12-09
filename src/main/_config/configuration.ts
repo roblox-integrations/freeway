@@ -15,8 +15,8 @@ export function configuration() {
     },
     piece: {
       output: 'metadata.json',
-      watchDirectory: join(app.getPath('home'), 'roblox-electron-hub/files'),
-      metadataPath: join(app.getPath('home'), 'roblox-electron-hub/metadata.json'),
+      watchDirectory: join(app.getPath('home'), 'freeway/files'),
+      metadataPath: join(app.getPath('home'), 'freeway/metadata.json'),
       uploadQueue: {
         delay: 50,
         concurrency: 10,

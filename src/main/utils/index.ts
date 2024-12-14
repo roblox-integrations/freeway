@@ -105,7 +105,7 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
     faces.push({material: '', group: '', smoothingGroup: face.smoothingGroup, v: verts})
   })
 
-  const result: RbxMesh = {
+  let result: RbxMesh = {
     name: mesh.name,
     v,
     uv,
@@ -113,11 +113,49 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
     faces,
   }
   // TODO ES: use json instead of base64? ↓
-  // return result
+  result = translateVertices(result)
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
 }
 
+
+function calcBoundingBox(mesh: RbxMesh): number[][] {
+  const v = mesh.v
+  let xMin = Number.MAX_VALUE
+  let xMax = -Number.MAX_VALUE 
+  let yMin = Number.MAX_VALUE
+  let yMax = -Number.MAX_VALUE 
+  let zMin = Number.MAX_VALUE
+  let zMax = -Number.MAX_VALUE 
+
+  v.forEach((v3: number[]) => {
+    xMax = Math.max(xMax, v3[0])
+    xMin = Math.min(xMin, v3[0])
+    yMax = Math.max(yMax, v3[1])
+    yMin = Math.min(yMin, v3[1])
+    zMax = Math.max(zMax, v3[2])
+    zMin = Math.min(zMin, v3[2])
+  }) 
+
+  return [[xMin, xMax], [yMin, yMax], [zMin, zMax]]
+}
+function translateVertices(mesh: RbxMesh): RbxMesh {
+
+  // bounding box
+  if (mesh.v.length == 0) return mesh
+  const box = calcBoundingBox(mesh)
+  // axisTranslate = 0 - min + (max-min)/2
+  let xTr = 0 - (box[0][0] + (box[0][1] - box[0][0])/2)
+  let yTr = 0 - (box[1][0] + (box[1][1] - box[1][0])/2)
+  let zTr = 0 - (box[2][0] + (box[2][1] - box[2][0])/2)
+
+  mesh.v.forEach((v3: number[]) => {
+    v3[0] = v3[0] + xTr
+    v3[1] = v3[1] + yTr
+    v3[2] = v3[2] + zTr
+  }) 
+  return mesh
+}
 export async function getRbxImageBitmap255(filePath: string): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)
 

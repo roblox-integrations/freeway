@@ -1,4 +1,6 @@
 # install
 
 ````
-pnpm i
+npm i
+
+npm run dev

@@ -54,15 +54,18 @@ export class PieceWatcher {
 
   async onInit(queueTask: PieceWatcherQueueTask) {
     const {dir, name} = queueTask
-
-    const piece = this.provider.findOne({dir, name})
+    let piece = this.provider.findOne({dir, name})
     if (!piece) {
-      await this.provider.createFromFile(dir, name)
+      piece = await this.provider.createFromFile(dir, name)
     }
     else {
       piece.dir = dir
       piece.name = name
       await this.provider.updateFromFile(piece)
+    }
+
+    if (piece.isAutoUpload) {
+      await this.service.queueUploadAsset(piece)
     }
   }
 
@@ -78,7 +81,7 @@ export class PieceWatcher {
       this.emitEvent(PieceEventEnum.changed, piece)
     }
 
-    if (piece.isAutoSave) {
+    if (piece.isAutoUpload) {
       await this.service.queueUploadAsset(piece)
     }
 

@@ -117,12 +117,11 @@ export class RobloxOauthClient {
   async grant(body: GrantType): Promise<TokenSet> {
     try {
       // this.logger.log(body)
-      const json = await this.request('https://apis.roblox.com/oauth/v1/token', body)
-        .json() as TokenSetDto
+      const json = await this.request('https://apis.roblox.com/oauth/v1/token', body).json() as TokenSetDto
       return TokenSet.fromDto(json)
     }
     catch (err: any) {
-      this.logger.error(`Cannot grant ${body.grant_type}. (status: ${err.response?.statusCode}. json: ${err.response.body})`)
+      this.logger.error(`Cannot grant ${body.grant_type}. (status: ${err.response?.statusCode}. json: ${err.response?.body})`)
       this.logger.error(err.message)
       throw err
     }

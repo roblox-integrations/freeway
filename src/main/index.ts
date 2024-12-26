@@ -4,7 +4,8 @@ import {ElectronIpcTransport} from '@doubleshot/nest-electron'
 import {ValidationPipe} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
-import {app} from 'electron'
+import {app as electronApp} from 'electron'
+import {json, urlencoded} from 'express'
 import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
 import {AppModule} from './app.module'
 
@@ -12,41 +13,44 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
 async function bootstrap() {
   try {
-    await app.whenReady()
+    await electronApp.whenReady()
 
-    const nestApp = await NestFactory.create(AppModule)
+    const app = await NestFactory.create(AppModule)
 
-    const config = nestApp.get(ConfigService)
+    const config = app.get(ConfigService)
 
-    nestApp.enableCors(config.get<ConfigurationCors>('cors'))
+    app.enableCors(config.get<ConfigurationCors>('cors'))
 
-    nestApp.useGlobalPipes(
+    app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
       }),
     )
 
+    app.use(json({limit: '250mb'}))
+    app.use(urlencoded({extended: true, limit: '250mb'}))
+
     // global middleware
-    // nestApp.use((req, res, next) => {
+    // app.use((req, res, next) => {
     //   console.log('global middleware');
     //   next();
     // })
 
-    nestApp.connectMicroservice<MicroserviceOptions>({
+    app.connectMicroservice<MicroserviceOptions>({
       strategy: new ElectronIpcTransport('IpcTransport'),
     })
 
-    nestApp.enableShutdownHooks()
-    await nestApp.startAllMicroservices()
+    app.enableShutdownHooks()
+    await app.startAllMicroservices()
 
     const mainConfig = config.get<ConfigurationMain>('main')
-    await nestApp.listen(mainConfig.port, mainConfig.host)
+    await app.listen(mainConfig.port, mainConfig.host)
 
-    const isDev = !app.isPackaged
-    app.on('window-all-closed', async () => {
+    const isDev = !electronApp.isPackaged
+    electronApp.on('window-all-closed', async () => {
       if (process.platform !== 'darwin') {
-        await nestApp.close()
-        app.quit()
+        await app.close()
+        electronApp.quit()
       }
     })
 
@@ -54,22 +58,22 @@ async function bootstrap() {
       if (process.platform === 'win32') {
         process.on('message', async (data) => {
           if (data === 'graceful-exit') {
-            await nestApp.close()
-            app.quit()
+            await app.close()
+            electronApp.quit()
           }
         })
       }
       else {
         process.on('SIGTERM', async () => {
-          await nestApp.close()
-          app.quit()
+          await app.close()
+          electronApp.quit()
         })
       }
     }
   }
   catch (error) {
     console.log(error)
-    app.quit()
+    electronApp.quit()
   }
 }
 

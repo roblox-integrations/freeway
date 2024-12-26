@@ -1,28 +1,45 @@
-import {join} from 'node:path'
+import {join, parse} from 'node:path'
 import process from 'node:process'
 import {Window} from '@doubleshot/nest-electron'
-import {PieceEventEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
+import {ConfigurationPiece} from '@main/_config/configuration'
+import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
+import {PieceEventEnum, PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceUploadQueue} from '@main/piece/queue'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {getMime, getRbxFileBase64, getRbxImageBitmapBase64, getRbxMeshBase64, now} from '@main/utils'
-import {Injectable, Logger, NotFoundException} from '@nestjs/common'
+import {
+  getMime,
+  getRbxFileBase64,
+  getRbxImageBitmapBase64,
+  getRbxMeshBase64,
+  now,
+  RbxBase64File,
+  RbxBase64Image,
+  writeRbxFile,
+  writeRbxImage,
+} from '@main/utils'
+import {Injectable, Logger, NotFoundException, UnprocessableEntityException} from '@nestjs/common'
+import {ConfigService} from '@nestjs/config'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import {app, BrowserWindow} from 'electron'
-import {UpdatePieceDto} from './dto/update-piece.dto'
+import fse from 'fs-extra'
+import {temporaryFile} from 'tempy'
 import {Piece, PieceUpload} from './piece'
 
 @Injectable()
 export class PieceService {
   private readonly logger = new Logger(PieceService.name)
+  private readonly options: ConfigurationPiece
+
   constructor(
       @Window() private readonly mainWin: BrowserWindow,
       private readonly robloxApiService: RobloxApiService,
       private readonly provider: PieceProvider,
       private readonly queue: PieceUploadQueue,
       private readonly eventEmitter: EventEmitter2,
+      private readonly config: ConfigService,
   ) {
-    //
+    this.options = this.config.get<ConfigurationPiece>('piece')
   }
 
   findMany(criteria: any): Piece[] {
@@ -137,10 +154,68 @@ export class PieceService {
     this.mainWin.webContents.send('ipc-message', {name, data})
   }
 
-  async update(piece: Piece, updatePieceDto: UpdatePieceDto) {
-    piece.isAutoSave = updatePieceDto.isAutoSave
+  async create(dto: CreatePieceDto) {
+    const name = dto.name
+    const dir = this.options.watchDirectory
 
-    if (piece.isAutoSave) {
+    const piece = await this.provider.create(dir, name, PieceRoleEnum.virtual)
+
+    if (dto.base64) {
+      try {
+        await this.createPieceFileBase64(piece, dto)
+        piece.role = PieceRoleEnum.asset
+      }
+      catch (err: any) {
+        this.logger.error('Unable to write piece file', err)
+        await this.provider.hardDelete(piece) // revert back, delete created piece
+        throw new UnprocessableEntityException(`Unable to write piece file (${err.message})`)
+      }
+    }
+
+    if (piece.isAutoUpload) {
+      await this.queueUploadAsset(piece)
+    }
+
+    this.emitEvent(PieceEventEnum.created, piece)
+
+    return piece
+  }
+
+  async createPieceFileBase64(piece: Piece, dto: RbxBase64Image | RbxBase64File) {
+    if (piece.type === PieceTypeEnum.image) {
+      const parsed = parse(piece.name)
+      const file = temporaryFile({name: parsed.base})
+      await writeRbxImage(dto as RbxBase64Image, file)
+      await fse.move(file, join(piece.dir, piece.name)) // move from temp file to actual file
+    }
+    else if (piece.type === PieceTypeEnum.mesh) {
+      const parsed = parse(piece.name)
+      const file = temporaryFile({name: parsed.base})
+      await writeRbxFile(dto, file)
+      await fse.move(file, join(piece.dir, piece.name)) // move from temp file to actual file
+    }
+    else {
+      throw new UnprocessableEntityException(`Create piece file is not supported for given type ${piece.type}`)
+    }
+  }
+
+  async update(piece: Piece, dto: UpdatePieceDto) {
+    if (dto.isAutoUpload !== undefined) {
+      piece.isAutoUpload = dto.isAutoUpload
+    }
+
+    if (dto.base64) {
+      try {
+        await this.updatePieceFileBase64(piece, dto)
+        piece.role = PieceRoleEnum.asset
+      }
+      catch (err: any) {
+        this.logger.error('Unable to write piece file', err)
+        throw new UnprocessableEntityException(`Unable to write piece file (${err.message})`)
+      }
+    }
+
+    if (piece.isAutoUpload) {
       await this.queueUploadAsset(piece)
     }
 
@@ -151,9 +226,23 @@ export class PieceService {
     return piece
   }
 
+  async updatePieceFileBase64(piece: Piece, dto: RbxBase64Image | RbxBase64File) {
+    const destFile = join(piece.dir, piece.name)
+    if (piece.type === PieceTypeEnum.image) {
+      await writeRbxImage(dto as RbxBase64Image, destFile)
+    }
+    else if (piece.type === PieceTypeEnum.mesh) {
+      await writeRbxFile(dto, destFile)
+    }
+    else {
+      throw new UnprocessableEntityException(`Update piece file is not supported for given type ${piece.type}`)
+    }
+  }
+
   async delete(piece: Piece) {
-    const result = this.provider.delete(piece)
+    const result = await this.provider.delete(piece)
     this.emitEvent(PieceEventEnum.deleted, piece)
+    await this.provider.save()
     return result
   }
 

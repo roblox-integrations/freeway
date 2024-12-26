@@ -1,9 +1,25 @@
 import {createReadStream} from 'node:fs'
+import {CreatePieceDto} from '@main/piece/dto'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
-import {PieceService} from '@main/piece/piece.service'
+import {NewPieceDto} from '@main/piece/piece'
 import {PieceNotificationService} from '@main/piece/piece-notification.service'
+import {PieceService} from '@main/piece/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
-import {Body, Controller, Delete, Get, Param, Patch, Post, Query, StreamableFile} from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseFilePipeBuilder,
+  Patch,
+  Post,
+  Query,
+  StreamableFile,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
+import {FileInterceptor} from '@nestjs/platform-express'
 
 @Controller('api/pieces')
 export class PieceController {
@@ -20,9 +36,35 @@ export class PieceController {
     return this.pieceService.findMany(criteria)
   }
 
+  @Post('/')
+  async create(@Body() createPieceDto: CreatePieceDto) {
+    return await this.pieceService.create(createPieceDto)
+  }
+
   @Get('/notify')
   async notify() {
     return this.pieceNotificationService.notify()
+  }
+
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/upload')
+  uploadFileAndPassValidation(
+      @Body() body: NewPieceDto,
+      @UploadedFile(
+        new ParseFilePipeBuilder()
+          .addFileTypeValidator({
+            fileType: 'json',
+          })
+          .build({
+            fileIsRequired: false,
+          }),
+      )
+      file?: any, // Express.Multer.File,
+  ) {
+    return {
+      body,
+      file: file?.buffer.toString(),
+    }
   }
 
   @Get('/:id')

@@ -14,6 +14,7 @@ export function configuration() {
       scope: 'openid profile asset:read asset:write',
     },
     piece: {
+      isAutoUpload: false,
       output: 'metadata.json',
       watchDirectory: join(app.getPath('home'), 'freeway/files'),
       metadataPath: join(app.getPath('home'), 'freeway/metadata.json'),
@@ -55,6 +56,7 @@ export interface ConfigurationMain {
 }
 
 export interface ConfigurationPiece {
+  isAutoUpload: boolean
   output: string
   watchDirectory: string
   metadataPath: string

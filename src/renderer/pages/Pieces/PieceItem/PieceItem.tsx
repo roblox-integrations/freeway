@@ -6,30 +6,31 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import {Switch} from '@/components/ui/switch'
-import {Box, Card, Code, Flex, Heading, Image, Kbd, Stack, Text} from '@chakra-ui/react'
+import {Box, Card, Code, Flex, Heading, Kbd, Stack, Text} from '@chakra-ui/react'
 import {MouseEvent, useState} from 'react'
 
 import {MdOutlineDelete as MdDelete, MdOutlineFolder as MdFolder, MdUpload} from 'react-icons/md'
-import ConfirmPopover from '../../components/ConfirmPopover/ConfirmPopover'
+import ConfirmPopover from '../../../components/ConfirmPopover/ConfirmPopover'
 import PieceItemButton from './PieceItemButton'
 import PieceItemCurrentAssetId from './PieceItemCurrentAssetId'
-
 import PieceItemDate from './PieceItemDate'
+import PieceItemImage from './PieceItemImage'
+import PieceItemRole from './PieceItemRole'
 import PieceItemStatus from './PieceItemStatus'
 
 export default function PieceItem({item}) {
-  const [isAutoSave, setIsAutoSave] = useState(item.isAutoSave)
+  const [isAutoUpload, setIsAutoUpload] = useState(item.isAutoUpload)
 
   function onReveal() {
     window.electron.reveal(item.filePath)
   }
 
-  const updatePieceItem = async ({isAutoSave}) => {
-    console.log('[PieceItem] before', isAutoSave)
+  const updatePieceItem = async ({isAutoUpload}) => {
+    console.log('[PieceItem] before', isAutoUpload)
 
     const res = await fetch(`http://localhost:3000/api/pieces/${item.id}`, {
       method: 'PATCH',
-      body: JSON.stringify({isAutoSave}),
+      body: JSON.stringify({isAutoUpload}),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -39,7 +40,7 @@ export default function PieceItem({item}) {
   }
 
   const deletePieceItem = async () => {
-    console.log('[PieceItem] before', isAutoSave)
+    console.log('[PieceItem] before', isAutoUpload)
 
     const res = await fetch(`http://localhost:3000/api/pieces/${item.id}`, {
       method: 'DELETE',
@@ -53,7 +54,7 @@ export default function PieceItem({item}) {
 
   const onUpload = async (ev: MouseEvent<HTMLElement>) => {
     if (ev.shiftKey) {
-      onChangeIsAutoSave()
+      onChangeIsAutoUpload()
       return
     }
 
@@ -71,10 +72,10 @@ export default function PieceItem({item}) {
     await deletePieceItem()
   }
 
-  async function onChangeIsAutoSave() {
-    const newIsAutoSave = !isAutoSave
-    setIsAutoSave(newIsAutoSave)
-    await updatePieceItem({isAutoSave: newIsAutoSave})
+  async function onChangeIsAutoUpload() {
+    const newIsAutoUpload = !isAutoUpload
+    setIsAutoUpload(newIsAutoUpload)
+    await updatePieceItem({isAutoUpload: newIsAutoUpload})
   }
 
   return (
@@ -84,16 +85,7 @@ export default function PieceItem({item}) {
       size="sm"
       variant="outline"
     >
-      <Image
-        objectFit="cover"
-        maxW="120px"
-        w="120px"
-        maxH="80px"
-        flex="0 0 120px"
-        src={`http://localhost:3000/api/pieces/${item.id}/preview?${item.hash}`}
-        alt={item.name}
-      />
-
+      <PieceItemImage item={item}></PieceItemImage>
       <Box
         flex="1 0 0%"
         minW="calc(100% - 120px - 124px);"
@@ -108,6 +100,7 @@ export default function PieceItem({item}) {
             <Code colorPalette="green">{item.type}</Code>
             <PieceItemDate date={item.updatedAt}></PieceItemDate>
             <PieceItemCurrentAssetId item={item}></PieceItemCurrentAssetId>
+            <PieceItemRole item={item}></PieceItemRole>
             <PieceItemStatus item={item}></PieceItemStatus>
           </Flex>
           {/*
@@ -129,7 +122,7 @@ export default function PieceItem({item}) {
           <Box>
             <HoverCardRoot size="sm" lazyMount>
               <HoverCardTrigger asChild>
-                <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoSave ? 'green' : 'gray'}>
+                <PieceItemButton onClick={onUpload} title="Upload/Create Asset" colorPalette={item.isAutoUpload ? 'green' : 'gray'}>
                   <MdUpload></MdUpload>
                 </PieceItemButton>
               </HoverCardTrigger>
@@ -137,10 +130,10 @@ export default function PieceItem({item}) {
                 <HoverCardArrow />
                 <Box>
                   <Field>
-                    <Switch size="xs" colorPalette="green" checked={isAutoSave} onChange={onChangeIsAutoSave}>
+                    <Switch size="xs" colorPalette="green" checked={isAutoUpload} onChange={onChangeIsAutoUpload}>
                       auto-upload
                       {' '}
-                      {isAutoSave ? 'enabled' : 'disabled'}
+                      {isAutoUpload ? 'enabled' : 'disabled'}
                     </Switch>
                     <Text>
                       Automatically upload asset on change.

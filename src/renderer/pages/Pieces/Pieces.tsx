@@ -4,7 +4,7 @@ import {Box, Group, Stack} from '@chakra-ui/react'
 import {useEffect, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {MdOutlineAddPhotoAlternate} from 'react-icons/md'
-import PieceItem from './PieceItem'
+import PieceItem from './PieceItem/PieceItem'
 
 function Loading() {
   return (

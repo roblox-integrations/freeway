@@ -12,14 +12,14 @@ export class PieceUpload {
     //
   }
 
-  static fromObject(obj: CreatePieceUploadDto) {
+  static fromObject(obj: PieceUploadDto) {
     const piece = new PieceUpload()
     Object.assign(piece, obj)
     return piece
   }
 }
 
-export class CreatePieceUploadDto extends PartialType(PieceUpload) {
+export class PieceUploadDto extends PartialType(PieceUpload) {
   //
 }
 
@@ -32,11 +32,12 @@ export class Piece {
   public name: string
   public hash: string = ''
   public uploads: PieceUpload[] = []
-  public isAutoSave: boolean = false
+  public isAutoUpload: boolean = false
   public updatedAt: number = null
   public deletedAt: number = null
   public uploadedAt: number = null
   public isDirty: boolean = true
+  public isDraft: boolean = false
   public get fullPath() {
     return `${this.dir}/${this.name}`
   }
@@ -48,43 +49,17 @@ export class Piece {
   }
 
   toJSON() {
-    const {isDirty, ...object} = this
+    const {isDirty, isDraft, ...object} = this
     return object
   }
 
-  static fromObject(obj: CreatePieceDto) {
+  static fromObject(obj: NewPieceDto) {
     const piece = new Piece()
     Object.assign(piece, obj)
     return piece
   }
 }
 
-export class CreatePieceDto extends PartialType(Piece) {
+export class NewPieceDto extends PartialType(Piece) {
   //
 }
-
-export class PieceEditable extends Piece {
-  public data: any
-}
-
-/*
-class Entry {
-  id: string;
-  file: EntryFile;
-  assets: EntryAsset[];
-  assetedAt: number;
-  deletedAt: number;
-}
-
-class EntryFile {
-  hash: string;
-  path: string;
-}
-
-class EntryAsset {
-  hash: string;
-  operationId: string;
-  decalId: string;
-  assetId: string;
-}
-*/

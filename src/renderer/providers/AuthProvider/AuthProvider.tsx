@@ -14,7 +14,7 @@ function AuthProvider(props: Props) {
   const {children} = props
 
   const [user, setUser] = useState<User>()
-  const [loadingUserData, setLoadingUserData] = useState(true)
+  const [loadingUserData, setLoadingUserData] = useState(false)
   const navigate = useNavigate()
   // const { pathname } = useLocation()
 
@@ -48,6 +48,10 @@ function AuthProvider(props: Props) {
 */
 
   async function getUserData() {
+    if (loadingUserData) {
+      // return
+    }
+
     setLoadingUserData(true)
 
     try {
@@ -73,7 +77,7 @@ function AuthProvider(props: Props) {
 
   useCustomEventListener<any>('ready', async () => {
     console.log('[AuthProvider] ready getUserData')
-    await getUserData()
+    // await getUserData()
   })
 
   useCustomEventListener<any>('app:online', async () => {

@@ -35,14 +35,14 @@ export function getMime(filePath: string, defaultMime = 'application/octet-strea
   return lookup(filePath) || defaultMime
 }
 
-export interface RbxBase64File {
+export interface RbxBase64Image {
+  width: number
+  height: number
   base64: string
 }
 
-export interface RbxImageBase64 {
-  width: number
-  height: number
-  bitmap: string | number[]
+export interface RbxBase64File {
+  base64: string
 }
 
 export interface RbxMeshFace {
@@ -60,7 +60,7 @@ export interface RbxMesh {
   faces: RbxMeshFace[]
 }
 
-export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024): Promise<RbxImageBase64> {
+export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024): Promise<RbxBase64Image> {
   const image = await Jimp.read(filePath)
 
   if (Math.max(image.width, image.height) > fitSize) {
@@ -70,7 +70,7 @@ export async function getRbxImageBitmapBase64(filePath: string, fitSize = 1024):
   return {
     width: image.bitmap.width,
     height: image.bitmap.height,
-    bitmap: image.bitmap.data.toString('base64'),
+    base64: image.bitmap.data.toString('base64'),
   }
 }
 
@@ -87,15 +87,19 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
   const uv = []
   const vn = []
   const faces = []
+
   mesh.vertices.forEach((vert: any) => {
     v.push([vert.x, vert.y, vert.z])
   })
-  mesh.textureCoords.forEach((uvCoord: any) => {
-    uv.push([uvCoord.u, 1 - uvCoord.v])
+
+  mesh.textureCoords.forEach((uvCoords: any) => {
+    uv.push([uvCoords.u, 1 - uvCoords.v])
   })
+
   mesh.vertexNormals.forEach((normal: any) => {
     vn.push([normal.x, normal.y, normal.z])
   })
+
   mesh.faces.forEach((face: any) => {
     const verts = []
     face.vertices.forEach((vert: any) => {
@@ -112,21 +116,20 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
     vn,
     faces,
   }
-  // TODO ES: use json instead of base64? ↓
+
   result = translateVertices(result)
   const resultString = JSON.stringify(result)
   return {base64: Buffer.from(resultString).toString('base64')}
 }
 
-
 function calcBoundingBox(mesh: RbxMesh): number[][] {
   const v = mesh.v
   let xMin = Number.MAX_VALUE
-  let xMax = -Number.MAX_VALUE 
+  let xMax = -Number.MAX_VALUE
   let yMin = Number.MAX_VALUE
-  let yMax = -Number.MAX_VALUE 
+  let yMax = -Number.MAX_VALUE
   let zMin = Number.MAX_VALUE
-  let zMax = -Number.MAX_VALUE 
+  let zMax = -Number.MAX_VALUE
 
   v.forEach((v3: number[]) => {
     xMax = Math.max(xMax, v3[0])
@@ -135,27 +138,49 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
     yMin = Math.min(yMin, v3[1])
     zMax = Math.max(zMax, v3[2])
     zMin = Math.min(zMin, v3[2])
-  }) 
+  })
 
   return [[xMin, xMax], [yMin, yMax], [zMin, zMax]]
 }
 function translateVertices(mesh: RbxMesh): RbxMesh {
-
   // bounding box
-  if (mesh.v.length == 0) return mesh
+  if (mesh.v.length === 0)
+    return mesh
   const box = calcBoundingBox(mesh)
   // axisTranslate = 0 - min + (max-min)/2
-  let xTr = 0 - (box[0][0] + (box[0][1] - box[0][0])/2)
-  let yTr = 0 - (box[1][0] + (box[1][1] - box[1][0])/2)
-  let zTr = 0 - (box[2][0] + (box[2][1] - box[2][0])/2)
+  const xTr = 0 - (box[0][0] + (box[0][1] - box[0][0]) / 2)
+  const yTr = 0 - (box[1][0] + (box[1][1] - box[1][0]) / 2)
+  const zTr = 0 - (box[2][0] + (box[2][1] - box[2][0]) / 2)
 
   mesh.v.forEach((v3: number[]) => {
     v3[0] = v3[0] + xTr
     v3[1] = v3[1] + yTr
     v3[2] = v3[2] + zTr
-  }) 
+  })
   return mesh
 }
+
+export function fromRbxImage(rbxImage: RbxBase64Image) {
+  const buffer = Buffer.from(rbxImage.base64, 'base64')
+
+  return Jimp.fromBitmap({
+    data: buffer,
+    width: rbxImage.width,
+    height: rbxImage.height,
+  })
+}
+
+export async function writeRbxImage(rbxImage: RbxBase64Image, destFile: string) {
+  const image = fromRbxImage(rbxImage)
+  await image.write(destFile)
+}
+
+export async function writeRbxFile(rbxFile: RbxBase64File, destFile: string) {
+  const buffer = Buffer.from(rbxFile.base64, 'base64')
+  await fs.writeFile(destFile, buffer)
+}
+
+/*
 export async function getRbxImageBitmap255(filePath: string): Promise<RbxImageBase64> {
   const image = await Jimp.read(filePath)
 
@@ -187,6 +212,7 @@ export async function getRbxImageBitmap01(filePath: string): Promise<RbxImageBas
 
   return {width, height, bitmap}
 }
+*/
 
 export async function getRbxFileBase64(filePath: string): Promise<RbxBase64File> {
   const base64 = await fs.readFile(filePath, 'base64')

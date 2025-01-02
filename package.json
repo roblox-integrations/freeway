@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "Freeway - Roblox desktop integration hub",
+  "description": "Freeway - fast assets iteration on Roblox",
   "main": "./out/main/index.js",
   "scripts": {
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",

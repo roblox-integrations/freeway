@@ -20,6 +20,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import {FileInterceptor} from '@nestjs/platform-express'
+import {UpsertPieceUploadDto} from "@main/piece/dto/upsert-piece-upload.dto";
 
 @Controller('api/pieces')
 export class PieceController {
@@ -93,6 +94,15 @@ export class PieceController {
     const piece = this.pieceService.getPieceById(id)
 
     await this.pieceService.update(piece, updatePieceDto)
+
+    return piece
+  }
+
+  @Post('/:id/uploads')
+  async upsertUpload(@Param('id') id: string, @Body() dto: UpsertPieceUploadDto) {
+    const piece = this.pieceService.getPieceById(id)
+
+    await this.pieceService.upsertUpload(piece, dto)
 
     return piece
   }

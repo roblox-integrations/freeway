@@ -3,6 +3,7 @@ import process from 'node:process'
 import {Window} from '@doubleshot/nest-electron'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
+import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum, PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceUploadQueue} from '@main/piece/queue'
@@ -237,6 +238,22 @@ export class PieceService {
     else {
       throw new UnprocessableEntityException(`Update piece file is not supported for given type ${piece.type}`)
     }
+  }
+
+  async upsertUpload(piece: Piece, dto: UpsertPieceUploadDto) {
+    const upload = piece.uploads.find(x => x.hash === dto.hash)
+    if (upload) {
+      upload.assetId = dto.assetId
+    }
+    else {
+      piece.uploads.push({assetId: dto.assetId, hash: dto.hash})
+    }
+
+    this.emitEvent(PieceEventEnum.updated, piece)
+
+    await this.provider.save()
+
+    return piece
   }
 
   async delete(piece: Piece) {

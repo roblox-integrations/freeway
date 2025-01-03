@@ -5,7 +5,7 @@ import {PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from './enum'
 export class PieceUpload {
   public hash: string
   public assetId: string
-  public decalId: string
+  public decalId?: string
   public operationId?: string
 
   constructor() {

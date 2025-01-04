@@ -71,7 +71,8 @@
     "react-router-dom": "^6.26.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "tempy": "^3.1.0"
+    "tempy": "^3.1.0", 
+    "@roblox-integrations/roblox-install": "0.0.10"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",

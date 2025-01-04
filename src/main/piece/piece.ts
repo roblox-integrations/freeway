@@ -37,7 +37,6 @@ export class Piece {
   public deletedAt: number = null
   public uploadedAt: number = null
   public isDirty: boolean = true
-  public isDraft: boolean = false
   public get fullPath() {
     return `${this.dir}/${this.name}`
   }
@@ -49,7 +48,7 @@ export class Piece {
   }
 
   toJSON() {
-    const {isDirty, isDraft, ...object} = this
+    const {isDirty, ...object} = this
     return object
   }
 

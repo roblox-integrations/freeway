@@ -158,19 +158,22 @@ export class PieceService {
   async create(dto: CreatePieceDto) {
     const name = dto.name
     const dir = this.options.watchDirectory
-
-    const piece = await this.provider.create(dir, name, PieceRoleEnum.virtual)
+    let piece: Piece
 
     if (dto.base64) {
+      piece = await this.provider.create(dir, name, PieceRoleEnum.virtual)
       try {
         await this.createPieceFileBase64(piece, dto)
         piece.role = PieceRoleEnum.asset
       }
       catch (err: any) {
         this.logger.error('Unable to write piece file', err)
-        await this.provider.hardDelete(piece) // revert back, delete created piece
+        this.provider.hardDelete(piece) // revert back, delete created piece
         throw new UnprocessableEntityException(`Unable to write piece file (${err.message})`)
       }
+    }
+    else {
+      piece = await this.provider.createPlaceholder({dir, name, role: PieceRoleEnum.asset})
     }
 
     if (piece.isAutoUpload) {

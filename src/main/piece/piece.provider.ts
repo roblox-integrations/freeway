@@ -2,11 +2,12 @@ import {join, parse} from 'node:path'
 import {filter as whereFilter, find as whereFind} from '@common/where'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
-import {getHash, now, randomString} from '@main/utils'
+import {getHash, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import fs from 'fs-extra'
 import {Piece} from './piece'
+import fse from "fs-extra";
 
 type PieceCriteria = any // PieceFieldCriteria | ((piece: Piece) => boolean)
 
@@ -96,7 +97,6 @@ export class PieceProvider {
     const hash = null
     const type = this.getTypeByName(name)
     const isDirty = false
-    const isDraft = true
 
     const newPiece = Piece.fromObject({
       id,
@@ -106,13 +106,42 @@ export class PieceProvider {
       type,
       hash,
       isDirty,
-      isDraft,
       isAutoUpload: this.options.isAutoUpload,
     })
 
     this.add(newPiece)
 
     return newPiece
+  }
+
+  async createPlaceholder({dir, name, role}: {dir: string, name: string, role: PieceRoleEnum}) {
+    const id = this.generateUniqId()
+    const uniqName = await this.generateUniqName(dir, name)
+    const type = this.getTypeByName(name)
+
+    let placeholderFile = join(RESOURCES_DIR, 'placeholder.png')
+    if (type === PieceTypeEnum.mesh) {
+      placeholderFile = join(RESOURCES_DIR, 'placeholder.obj')
+    }
+
+    const hash = await getHash(placeholderFile)
+
+    const piece = Piece.fromObject({
+      id,
+      dir,
+      name: uniqName,
+      role,
+      type,
+      hash,
+      isDirty: false,
+      isAutoUpload: this.options.isAutoUpload,
+    })
+
+    this.add(piece)
+
+    await fse.copy(placeholderFile, join(piece.dir, piece.name))
+
+    return piece
   }
 
   getTypeByName(name: string) {
@@ -167,6 +196,34 @@ export class PieceProvider {
         return id
       }
     }
+  }
+
+  private async generateUniqName(dir, name: string): Promise<string> {
+    const parsed = parse(name)
+    let i = 0
+    let current = name
+    while (true) {
+      const exists = await this.fileExists(join(dir, current))
+      if (!exists) {
+        return current
+      }
+      i++
+      current = join(parsed.dir, `${parsed.name}-${i}${parsed.ext}`)
+    }
+  }
+
+  private async fileExists(file) {
+    try {
+      await fs.access(file)
+      return true
+    }
+    catch (accessErr: any) {
+      if (accessErr.code !== 'ENOENT') {
+        throw accessErr
+      }
+    }
+
+    return false
   }
 
   hardDelete(piece: Piece) {

@@ -1,6 +1,9 @@
 import {Buffer} from 'node:buffer'
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
+import {join} from 'node:path'
+import process from 'node:process'
+import {is} from '@electron-toolkit/utils'
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
@@ -142,6 +145,7 @@ function calcBoundingBox(mesh: RbxMesh): number[][] {
 
   return [[xMin, xMax], [yMin, yMax], [zMin, zMax]]
 }
+
 function translateVertices(mesh: RbxMesh): RbxMesh {
   // bounding box
   if (mesh.v.length === 0)
@@ -229,3 +233,5 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
   }
   return result
 }
+
+export const RESOURCES_DIR = is.dev ? join(__dirname, '../../resources') : process.resourcesPath

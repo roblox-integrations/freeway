@@ -1,10 +1,10 @@
-import {Provider} from '@/components/ui/provider'
 import {ColorModeProvider} from '@/components/ui/color-mode'
+import {Provider} from '@/components/ui/provider'
+// import {useRoutePaths, useSession} from "@render/hooks";
+import {emitCustomEvent} from 'react-custom-events'
 import {HashRouter} from 'react-router-dom'
 import {AuthProvider} from './providers'
 import {Router} from './router'
-// import {useRoutePaths, useSession} from "@render/hooks";
-import {emitCustomEvent} from 'react-custom-events'
 
 function App() {
   window.electron.onIpcMessage((message) => {

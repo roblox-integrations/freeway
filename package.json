@@ -40,7 +40,9 @@
     "@nestjs/mapped-types": "^2.0.5",
     "@nestjs/microservices": "^10.4.6",
     "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/schedule": "^4.1.2",
     "@parcel/watcher": "^2.4.1",
+    "@roblox-integrations/roblox-install": "0.0.10",
     "axios": "^1.7.7",
     "chokidar": "^4.0.1",
     "class-transformer": "^0.5.1",
@@ -71,8 +73,7 @@
     "react-router-dom": "^6.26.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "tempy": "^3.1.0", 
-    "@roblox-integrations/roblox-install": "0.0.10"
+    "tempy": "^3.1.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.8.0",

@@ -1,7 +1,7 @@
 import {join, parse} from 'node:path'
 import process from 'node:process'
-import {Window} from '@doubleshot/nest-electron'
 import {ConfigurationPiece} from '@main/_config/configuration'
+import {ElectronService} from '@main/electron/electron.service'
 import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum, PieceRoleEnum, PieceStatusEnum, PieceTypeEnum} from '@main/piece/enum'
@@ -22,7 +22,7 @@ import {
 import {Injectable, Logger, NotFoundException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {EventEmitter2} from '@nestjs/event-emitter'
-import {app, BrowserWindow} from 'electron'
+import {app} from 'electron'
 import fse from 'fs-extra'
 import {temporaryFile} from 'tempy'
 import {Piece, PieceUpload} from './piece'
@@ -33,12 +33,12 @@ export class PieceService {
   private readonly options: ConfigurationPiece
 
   constructor(
-      @Window() private readonly mainWin: BrowserWindow,
-      private readonly robloxApiService: RobloxApiService,
-      private readonly provider: PieceProvider,
-      private readonly queue: PieceUploadQueue,
-      private readonly eventEmitter: EventEmitter2,
-      private readonly config: ConfigService,
+    private readonly robloxApiService: RobloxApiService,
+    private readonly provider: PieceProvider,
+    private readonly queue: PieceUploadQueue,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly config: ConfigService,
+    private readonly electron: ElectronService,
   ) {
     this.options = this.config.get<ConfigurationPiece>('piece')
   }
@@ -152,7 +152,7 @@ export class PieceService {
 
   emitEvent(name: string, data: any) {
     this.eventEmitter.emit(name, data)
-    this.mainWin.webContents.send('ipc-message', {name, data})
+    this.electron.getMainWindow()?.webContents.send('ipc-message', {name, data})
   }
 
   async create(dto: CreatePieceDto) {

@@ -15,41 +15,41 @@ async function bootstrap() {
   try {
     await electronApp.whenReady()
 
-    const app = await NestFactory.create(AppModule)
+    const nestApp = await NestFactory.create(AppModule)
 
-    const config = app.get(ConfigService)
+    const config = nestApp.get(ConfigService)
 
-    app.enableCors(config.get<ConfigurationCors>('cors'))
+    nestApp.enableCors(config.get<ConfigurationCors>('cors'))
 
-    app.useGlobalPipes(
+    nestApp.useGlobalPipes(
       new ValidationPipe({
         transform: true,
       }),
     )
 
-    app.use(json({limit: '250mb'}))
-    app.use(urlencoded({extended: true, limit: '250mb'}))
+    nestApp.use(json({limit: '250mb'}))
+    nestApp.use(urlencoded({extended: true, limit: '250mb'}))
 
     // global middleware
-    // app.use((req, res, next) => {
+    // nestApp.use((req, res, next) => {
     //   console.log('global middleware');
     //   next();
     // })
 
-    app.connectMicroservice<MicroserviceOptions>({
+    nestApp.connectMicroservice<MicroserviceOptions>({
       strategy: new ElectronIpcTransport('IpcTransport'),
     })
 
-    app.enableShutdownHooks()
-    await app.startAllMicroservices()
+    nestApp.enableShutdownHooks()
+    await nestApp.startAllMicroservices()
 
     const mainConfig = config.get<ConfigurationMain>('main')
-    await app.listen(mainConfig.port, mainConfig.host)
+    await nestApp.listen(mainConfig.port, mainConfig.host)
 
     const isDev = !electronApp.isPackaged
     electronApp.on('window-all-closed', async () => {
       if (process.platform !== 'darwin') {
-        await app.close()
+        await nestApp.close()
         electronApp.quit()
       }
     })
@@ -58,14 +58,14 @@ async function bootstrap() {
       if (process.platform === 'win32') {
         process.on('message', async (data) => {
           if (data === 'graceful-exit') {
-            await app.close()
+            await nestApp.close()
             electronApp.quit()
           }
         })
       }
       else {
         process.on('SIGTERM', async () => {
-          await app.close()
+          await nestApp.close()
           electronApp.quit()
         })
       }

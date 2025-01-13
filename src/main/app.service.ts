@@ -1,10 +1,10 @@
 import {join} from 'node:path'
 import process from 'node:process'
-import {Window} from '@doubleshot/nest-electron'
 import {is} from '@electron-toolkit/utils'
+import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
-import {BrowserWindow, net} from 'electron'
+import {app, BrowserWindow, net} from 'electron'
 import isOnline from 'is-online'
 
 @Injectable()
@@ -15,27 +15,21 @@ export class AppService implements OnModuleInit {
   private isRefreshing = false
 
   constructor(
-      @Window() private readonly mainWin: BrowserWindow,
-      private readonly oauthClient: RobloxOauthClient,
+    private readonly oauthClient: RobloxOauthClient,
+    private readonly electron: ElectronService,
   ) {
-    const webRequest = this.mainWin.webContents.session.webRequest
-    const filter = {urls: ['http://localhost:3000/oauth/callback*']}
-
-    webRequest.onBeforeRequest(filter, async ({url}) => {
-      try {
-        await this.oauthClient.callback(url)
-        await this.loadMain()
-      }
-      catch (err: any) {
-        this.mainWin.webContents.send('auth:err:load-tokens')
-        // TODO: show error
-        this.logger.error(err.message)
-        this.logger.error(err.stack)
-      }
-    })
   }
 
   async onModuleInit(): Promise<void> {
+    await this.electron.createWindow()
+
+    app.on('activate', () => {
+      // On macOS, it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0)
+        this.electron.createWindow()
+    })
+
     setInterval(() => {
       this.checkNetIsOnline()
     }, 1000)
@@ -51,7 +45,10 @@ export class AppService implements OnModuleInit {
     // refresh token set on start
     this.refreshTokens()
       .then(() => {
-        this.mainWin.webContents.send('ipc-message', {name: 'ready'})
+        const mainWin = this.electron.getMainWindow()
+        if (mainWin) {
+          mainWin.webContents.send('ipc-message', {name: 'ready'})
+        }
       })
   }
 
@@ -101,12 +98,12 @@ export class AppService implements OnModuleInit {
   set isOnline(isOnline: boolean) {
     if (isOnline && !this._isOnline) {
       this.logger.log('ONLINE')
-      this.mainWin.webContents.send('ipc-message', {name: 'app:online'})
+      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:online'})
     }
 
     if (!isOnline && this._isOnline) {
       this.logger.log('OFFLINE')
-      this.mainWin.webContents.send('ipc-message', {name: 'app:offline'})
+      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:offline'})
     }
 
     this._isOnline = isOnline
@@ -114,9 +111,5 @@ export class AppService implements OnModuleInit {
 
   get isOnline() {
     return this._isOnline
-  }
-
-  async loadMain() {
-    await this.mainWin.loadURL(AppService.getAppUrl())
   }
 }

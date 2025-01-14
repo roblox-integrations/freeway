@@ -5,7 +5,7 @@ import {PieceExtTypeMap} from '@main/piece/enum'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
-import {Injectable, Logger} from '@nestjs/common'
+import {Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import watcher, {AsyncSubscription} from '@parcel/watcher'
 import {ensureDir} from 'fs-extra'
@@ -13,7 +13,7 @@ import micromatch from 'micromatch'
 import {PieceService} from '../piece.service'
 
 @Injectable()
-export class PieceWatcher {
+export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
   protected isReady: boolean
   protected readonly logger = new Logger(PieceWatcher.name)
   protected readonly options: ConfigurationPiece

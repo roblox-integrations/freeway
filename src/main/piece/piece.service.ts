@@ -44,7 +44,7 @@ export class PieceService {
   }
 
   findMany(criteria: any): Piece[] {
-    return this.provider.findMany(criteria)
+    return this.provider.findMany({...criteria, ...{deletedAt: null, isDirty: false}})
   }
 
   getPieceById(id: string): Piece {
@@ -281,5 +281,9 @@ export class PieceService {
 
   getPieceMime(piece: Piece) {
     return getMime(piece.fullPath)
+  }
+
+  async syncSymlinks() {
+    return this.provider.syncSymlinks()
   }
 }

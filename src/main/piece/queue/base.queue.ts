@@ -3,7 +3,7 @@ import {PieceProvider} from '@main/piece/piece.provider'
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import pRetry from 'p-retry'
-import Result = Electron.Result;
+import Result = Electron.Result
 
 export interface BasePayload<Payload> {
   run: (task: Payload) => Promise<any>

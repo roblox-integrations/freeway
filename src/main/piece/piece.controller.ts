@@ -33,8 +33,7 @@ export class PieceController {
 
   @Get('/')
   async find(@Query() query: any) {
-    const criteria = {...query, ...{deletedAt: null}}
-    return this.pieceService.findMany(criteria)
+    return this.pieceService.findMany({...query})
   }
 
   @Post('/')
@@ -45,6 +44,12 @@ export class PieceController {
   @Get('/notify')
   async notify() {
     return this.pieceNotificationService.notify()
+  }
+
+  @Get('/symlinks-sync')
+  async symlinksSync() {
+    await this.pieceService.syncSymlinks()
+    return true
   }
 
   @UseInterceptors(FileInterceptor('file'))

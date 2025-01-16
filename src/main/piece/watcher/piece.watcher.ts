@@ -26,8 +26,8 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
   ) {
     this.options = this.config.get<ConfigurationPiece>('piece')
 
-    let globPattern = Array.from(PieceExtTypeMap.keys()).map(k => k.slice(1)).join('|')
-    globPattern = `**/*.!(${globPattern})`
+    let globPattern = Array.from(PieceExtTypeMap.keys()).map(k => `*${k}`).join('|')
+    globPattern = `**/!(${globPattern})`
 
     this.ignoreGlobs = [
       '**/!(*.*)', // ignore files and dirs without ext (file-name.ext)
@@ -142,6 +142,7 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
       }
       events.forEach((event: {type: 'create' | 'update' | 'delete', path: string}) => {
         if (!event.path?.startsWith(this.options.watchDirectory)) {
+          // in some cases parcel watcher grabs file events not in watchDirectory
           this.logger.debug(`Ignore event ${event.type} occurred for file ${event.path}`)
           return
         }

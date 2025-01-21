@@ -13,7 +13,7 @@ export interface PieceUploadPayload {
 export class PieceUploadQueue extends BaseQueue<PieceUploadPayload> {
   private readonly logger = new Logger(PieceUploadQueue.name)
   getOptions() {
-    return this.config.get<ConfigurationPiece>('piece').watcherQueue
+    return this.config.get<ConfigurationPiece>('piece').uploadQueue
   }
 
   onError(err: any, payload: PieceUploadPayload, _operation: Operation) {

@@ -7,10 +7,10 @@ import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
 import {Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
+import {EventEmitter2} from '@nestjs/event-emitter'
 import watcher, {AsyncSubscription} from '@parcel/watcher'
 import {ensureDir} from 'fs-extra'
 import micromatch from 'micromatch'
-import {PieceService} from '../piece.service'
 
 @Injectable()
 export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
@@ -20,7 +20,7 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
 
   constructor(
     private readonly config: ConfigService,
-    protected readonly service: PieceService,
+    private readonly eventEmitter: EventEmitter2,
     protected readonly provider: PieceProvider,
     protected readonly queue: PieceWatcherQueue,
   ) {
@@ -59,14 +59,10 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
       piece = await this.provider.createFromFile(dir, name)
     }
     else {
-      piece.dir = dir
-      piece.name = name
       await this.provider.updateFromFile(piece)
     }
 
-    if (piece.isAutoUpload) {
-      await this.service.queueUploadAsset(piece)
-    }
+    this.eventEmitter.emit(PieceEventEnum.initiated, piece)
   }
 
   async onChange(queueTask: PieceWatcherQueueTask) {
@@ -74,15 +70,11 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
     let piece = this.provider.findOne({dir, name})
     if (!piece) {
       piece = await this.provider.createFromFile(dir, name)
-      this.emitEvent(PieceEventEnum.created, piece)
+      this.eventEmitter.emit(PieceEventEnum.created, piece)
     }
     else {
       await this.provider.updateFromFile(piece)
-      this.emitEvent(PieceEventEnum.changed, piece)
-    }
-
-    if (piece.isAutoUpload) {
-      await this.service.queueUploadAsset(piece)
+      this.eventEmitter.emit(PieceEventEnum.changed, piece)
     }
 
     await this.provider.save() // queue?
@@ -97,11 +89,7 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
 
     this.provider.remove(piece)
 
-    this.emitEvent(PieceEventEnum.deleted, piece)
-  }
-
-  emitEvent(name: string, data: any) {
-    this.service.emitEvent(name, data)
+    this.eventEmitter.emit(PieceEventEnum.deleted, piece)
   }
 
   onReady() {

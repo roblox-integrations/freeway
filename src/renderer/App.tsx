@@ -8,6 +8,7 @@ import {Router} from './router'
 
 function App() {
   window.electron.onIpcMessage((message) => {
+    console.log(`[App] emit custom event ${message.name}`)
     emitCustomEvent(message.name || 'unknown-message', message.data)
   })
 

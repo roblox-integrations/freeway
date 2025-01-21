@@ -28,13 +28,16 @@ function Pieces() {
     setLoading(false)
   }
 
-  useCustomEventListener<any>('piece:updated', () => {
+  useCustomEventListener<any>('piece.created', () => {
     getApiPieces()
   })
-  useCustomEventListener<any>('piece:created', () => {
+  useCustomEventListener<any>('piece.updated', () => {
     getApiPieces()
   })
-  useCustomEventListener<any>('piece:deleted', () => {
+  useCustomEventListener<any>('piece.deleted', () => {
+    getApiPieces()
+  })
+  useCustomEventListener<any>('piece.changed', () => {
     getApiPieces()
   })
 

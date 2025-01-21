@@ -25,6 +25,6 @@ export class PieceWatcherQueue extends BaseQueue<PieceWatcherQueueTask> {
   }
 
   getOptions(): BaseOptions {
-    return this.config.get<ConfigurationPiece>('piece').uploadQueue
+    return this.config.get<ConfigurationPiece>('piece').watcherQueue
   }
 }

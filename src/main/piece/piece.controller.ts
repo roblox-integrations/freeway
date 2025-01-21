@@ -1,8 +1,10 @@
 import {createReadStream} from 'node:fs'
 import {CreatePieceDto} from '@main/piece/dto'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
-import {NewPieceDto} from '@main/piece/piece'
+import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceNotificationService} from '@main/piece/piece-notification.service'
+import {PieceSymlinkService} from '@main/piece/piece-symlink.service'
+import {PieceUploadService} from '@main/piece/piece-upload.service'
 import {PieceService} from '@main/piece/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
 import {
@@ -11,24 +13,22 @@ import {
   Delete,
   Get,
   Param,
-  ParseFilePipeBuilder,
   Patch,
   Post,
   Query,
   StreamableFile,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common'
-import {FileInterceptor} from '@nestjs/platform-express'
-import {UpsertPieceUploadDto} from "@main/piece/dto/upsert-piece-upload.dto";
 
 @Controller('api/pieces')
 export class PieceController {
   constructor(
     private readonly pieceService: PieceService,
+    private readonly pieceUploadService: PieceUploadService,
     private readonly pieceNotificationService: PieceNotificationService,
+    private readonly pieceSymlinkService: PieceSymlinkService,
     private readonly robloxApiService: RobloxApiService,
   ) {
+    //
   }
 
   @Get('/')
@@ -48,29 +48,8 @@ export class PieceController {
 
   @Get('/symlinks-sync')
   async symlinksSync() {
-    await this.pieceService.syncSymlinks()
+    await this.pieceSymlinkService.syncSymlinks()
     return true
-  }
-
-  @UseInterceptors(FileInterceptor('file'))
-  @Post('/upload')
-  uploadFileAndPassValidation(
-      @Body() body: NewPieceDto,
-      @UploadedFile(
-        new ParseFilePipeBuilder()
-          .addFileTypeValidator({
-            fileType: 'json',
-          })
-          .build({
-            fileIsRequired: false,
-          }),
-      )
-      file?: any, // Express.Multer.File,
-  ) {
-    return {
-      body,
-      file: file?.buffer.toString(),
-    }
   }
 
   @Get('/:id')
@@ -86,12 +65,10 @@ export class PieceController {
   @Get('/:id/preview')
   async getPreview(@Param('id') id: string): Promise<StreamableFile> {
     const piece = this.pieceService.getPieceById(id)
+    const type = this.pieceService.getPieceMime(piece)
 
     const file = createReadStream(this.pieceService.getPiecePreviewPath(piece))
-
-    return new StreamableFile(file, {
-      type: this.pieceService.getPieceMime(piece),
-    })
+    return new StreamableFile(file, {type})
   }
 
   @Patch('/:id')
@@ -122,7 +99,7 @@ export class PieceController {
   @Post('/:id/asset')
   async createAsset(@Param('id') id: string) {
     const piece = this.pieceService.getPieceById(id)
-    await this.pieceService.queueUploadAsset(piece)
+    await this.pieceUploadService.queueUploadAsset(piece)
     return piece
   }
 

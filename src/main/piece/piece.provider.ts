@@ -5,10 +5,7 @@ import {PieceExtTypeMap, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {getHash, now, randomString, RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import {studioContentPath} from '@roblox-integrations/roblox-install'
 import fse from 'fs-extra'
-import {glob} from 'glob'
-import pMap from 'p-map'
 import {Piece} from './piece'
 
 type PieceCriteria = any // PieceFieldCriteria | ((piece: Piece) => boolean)
@@ -95,7 +92,7 @@ export class PieceProvider {
   }
 
   async create(dir: string, name: string, role = PieceRoleEnum.asset) {
-    const id = this.generateUniqId()
+    const id = this._generateUniqId()
     const hash = null
     const type = this.getTypeByName(name)
     const isDirty = false
@@ -117,7 +114,7 @@ export class PieceProvider {
   }
 
   async createPlaceholder({dir, name, role}: {dir: string, name: string, role: PieceRoleEnum}) {
-    const id = this.generateUniqId()
+    const id = this._generateUniqId()
     const uniqName = await this.generateUniqName(dir, name)
     const type = this.getTypeByName(name)
 
@@ -153,7 +150,7 @@ export class PieceProvider {
 
   async createFromFile(dir: string, name: string, role = PieceRoleEnum.asset) {
     const file = join(dir, name)
-    const id = this.generateUniqId()
+    const id = this._generateUniqId()
     const hash = await getHash(file)
     const type = this.getTypeByName(name)
     const isDirty = false
@@ -170,8 +167,6 @@ export class PieceProvider {
     })
 
     this.add(piece)
-
-    await this.ensureSymlink(piece)
 
     return piece
   }
@@ -190,64 +185,11 @@ export class PieceProvider {
       piece.updatedAt = now()
     }
 
-    await this.ensureSymlink(piece)
-
     return piece
   }
 
-  async ensureSymlink(piece: Piece) {
-    const dest = this.getSymlinkDest(piece)
-    await fse.ensureSymlink(piece.fullPath, dest)
-  }
-
-  async removeSymlink(piece: Piece) {
-    const dest = this.getSymlinkDest(piece)
-    await fse.remove(dest)
-  }
-
-  async syncSymlinks() {
-    const fsSymlinks = await glob('piece-*-*.*', {cwd: studioContentPath()})
-
-    const pieces = this.findMany({deletedAt: null})
-
-    const actualSymlinks = pieces.map((p) => {
-      return this.getSymlinkName(p)
-    })
-
-    const toRemoveSymlinks = fsSymlinks.filter(x => !actualSymlinks.includes(x))
-    const toCreateSymlinks = actualSymlinks.filter(x => !fsSymlinks.includes(x))
-
-    await pMap(toRemoveSymlinks, async (symlinkName: string) => {
-      await fse.remove(join(studioContentPath(), symlinkName))
-    }, {concurrency: 5})
-
-    const piecesToCreateSymlink = pieces.filter((p: Piece) => {
-      return toCreateSymlinks.includes(this.getSymlinkName(p))
-    })
-
-    await pMap(piecesToCreateSymlink, async (piece: Piece) => {
-      return this.ensureSymlink(piece)
-    }, {concurrency: 5})
-  }
-
-  private generateUniqId() {
-    for (let i = 0; ; i++) {
-      const id = randomString(Math.floor(i / 10 + 4))
-      if (!this.findOne({id})) {
-        return id
-      }
-    }
-  }
-
-  private getSymlinkName(piece: Piece): string {
-    const parsed = parse(piece.name)
-    return `piece-${piece.id}-${piece.hash}${parsed.ext}`
-  }
-
-  private getSymlinkDest(piece: Piece): string {
-    const dir = studioContentPath()
-    const name = this.getSymlinkName(piece)
-    return join(dir, name)
+  findCurrentUpload(piece: Piece) {
+    return piece.uploads.find(x => x.hash === piece.hash)
   }
 
   private async generateUniqName(dir, name: string): Promise<string> {
@@ -264,14 +206,14 @@ export class PieceProvider {
     }
   }
 
-  private async fileExists(file) {
+  private async fileExists(file: string) {
     try {
       await fse.access(file)
       return true
     }
-    catch (accessErr: any) {
-      if (accessErr.code !== 'ENOENT') {
-        throw accessErr
+    catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        throw err
       }
     }
 
@@ -306,7 +248,15 @@ export class PieceProvider {
     await this.unlinkFile(piece)
     // this.remove(piece)
     this.hardDelete(piece)
-    await this.removeSymlink(piece)
     return piece
+  }
+
+  private _generateUniqId() {
+    for (let i = 0; ; i++) {
+      const id = randomString(Math.floor(i / 10 + 4))
+      if (!this.findOne({id})) {
+        return id
+      }
+    }
   }
 }

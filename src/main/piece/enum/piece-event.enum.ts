@@ -1,7 +1,9 @@
 export enum PieceEventEnum {
-  created = 'piece:created', // file created
-  changed = 'piece:changed', // file changed
-  deleted = 'piece:deleted', // file deleted
-  uploaded = 'piece:uploaded', // file uploaded
-  updated = 'piece:updated', // piece field updated
+  initiated = 'piece.initiated', // piece initiated, on app startup
+  created = 'piece.created', // file created
+  changed = 'piece.changed', // file changed
+  deleted = 'piece.deleted', // file deleted
+  uploaded = 'piece.uploaded', // file uploaded
+  enabledAutoUpload = 'piece.enabled-auto-upload', // isAutoUpload changed to true
+  updated = 'piece.updated', // piece field updated
 }

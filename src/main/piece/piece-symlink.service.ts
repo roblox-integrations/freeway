@@ -20,7 +20,9 @@ export class PieceSymlinkService {
 
   async ensureSymlink(piece: Piece) {
     const dest = this.getSymlinkDest(piece)
-    await fse.ensureSymlink(piece.fullPath, dest)
+    const fullPath = join(piece.dir, piece.name)
+    // await fse.ensureSymlink(fullPath, dest)
+    await fse.ensureLink(fullPath, dest)
   }
 
   async removeSymlink(piece: Piece) {

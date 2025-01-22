@@ -61,7 +61,7 @@ export class PieceSymlinkService {
   private getSymlinkDest(piece: Piece): string {
     const dir = studioContentPath()
     const name = this.getSymlinkName(piece)
-    return join(dir, name)
+    return join(dir, 'freeway', name)
   }
 
   @OnEvent(PieceEventEnum.initiated)

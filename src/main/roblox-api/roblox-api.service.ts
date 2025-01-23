@@ -68,8 +68,8 @@ export class RobloxApiService {
     })
 
     if (!response.ok) {
-      // let json = await response.json();
-      throw new Error('Cannot create asset (asset operation failed)')
+      const text = await response.text()
+      throw new Error(`Cannot create asset (asset operation failed. status: ${response.status}, json: ${text})`)
     }
 
     const json = await response.json()

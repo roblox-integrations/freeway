@@ -2,7 +2,7 @@ import {Operation, PBetterQueue} from '@common/queue/PBetterQueue'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {Injectable} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
-import pRetry from 'p-retry'
+import pRetry, {FailedAttemptError} from 'p-retry'
 import Result = Electron.Result
 
 export interface BasePayload<Payload> {
@@ -67,7 +67,7 @@ export abstract class BaseQueue<Payload extends BasePayload<Payload>> {
     return payload.run(payload)
   }
 
-  onError(_err: any, _payload: Payload, _operation: Operation) {
+  onError(_err: FailedAttemptError, _payload: Payload, _operation: Operation) {
     //
   }
 

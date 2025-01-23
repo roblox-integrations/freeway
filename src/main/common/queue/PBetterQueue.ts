@@ -1,4 +1,6 @@
+// @ts-expect-error ignore
 import type PriorityQueue from 'p-queue/dist/priority-queue'
+// @ts-expect-error ignore
 import type {RunFunction} from 'p-queue/dist/queue'
 import PQueue, {QueueAddOptions as PQueueAddOptions, Options as PQueueConstructorOptions, Queue} from 'p-queue'
 
@@ -72,7 +74,7 @@ export class PBetterQueue<QueueType extends Queue<RunFunction, OperationOptions>
     }
 
     if (operation.status === OperationStatus.delayed) {
-      this.mergeAddOperationNew(operation, payload, options)
+      this.mergeAddOperationDelayed(operation, payload, options)
     }
     else if (operation.status === OperationStatus.queued) {
       // timeout is already fired, no need to cancel it
@@ -113,8 +115,10 @@ export class PBetterQueue<QueueType extends Queue<RunFunction, OperationOptions>
     return operation
   }
 
-  mergeAddOperationNew(_operation: Operation, _payload: any, _options: Partial<OperationOptions>) {
+  mergeAddOperationDelayed(_operation: Operation, _payload: any, _options: Partial<OperationOptions>) {
     this.clearRunOperationTimeout(_operation)
+    // replace operation payload
+    _operation.payload = _payload
     this.setRunOperationTimeout(_operation)
   }
 

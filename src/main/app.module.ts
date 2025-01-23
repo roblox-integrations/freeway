@@ -12,7 +12,6 @@ import {TestModule} from './test/test.module'
 
 @Module({
   imports: [
-    ElectronModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -20,6 +19,7 @@ import {TestModule} from './test/test.module'
     EventEmitterModule.forRoot({
       wildcard: true,
     }),
+    ElectronModule,
     AuthModule,
     TestModule,
     RobloxApiModule,

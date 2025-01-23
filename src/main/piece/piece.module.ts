@@ -1,4 +1,4 @@
-import {PieceSymlinkService} from '@main/piece/piece-symlink.service'
+import {PieceLinkService} from '@main/piece/piece-link.service'
 import {RobloxApiModule} from '@main/roblox-api/roblox-api.module'
 import {Module} from '@nestjs/common'
 import {PieceNotificationService} from './piece-notification.service'
@@ -12,13 +12,13 @@ import {PieceWatcher} from './watcher'
 @Module({
   providers: [
     PieceProvider,
-    PieceService,
     PieceUploadService,
     PieceNotificationService,
     PieceUploadQueue,
     PieceWatcherQueue,
+    PieceLinkService,
+    PieceService,
     PieceWatcher,
-    PieceSymlinkService,
   ],
   controllers: [PieceController],
   imports: [RobloxApiModule],

@@ -180,7 +180,7 @@ export class PieceProvider {
       piece.updatedAt = now()
     }
 
-    if (piece.deletedAt !== null) {
+    if (piece.deletedAt) {
       piece.deletedAt = null
       piece.updatedAt = now()
     }

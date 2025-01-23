@@ -24,7 +24,7 @@ export function configuration() {
         retries: 2,
       },
       watcherQueue: {
-        delay: 200,
+        delay: 250,
         concurrency: 20,
         retries: 2,
       },

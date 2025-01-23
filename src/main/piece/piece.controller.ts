@@ -2,8 +2,8 @@ import {createReadStream} from 'node:fs'
 import {CreatePieceDto} from '@main/piece/dto'
 import {UpdatePieceDto} from '@main/piece/dto/update-piece.dto'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
+import {PieceLinkService} from '@main/piece/piece-link.service'
 import {PieceNotificationService} from '@main/piece/piece-notification.service'
-import {PieceSymlinkService} from '@main/piece/piece-symlink.service'
 import {PieceUploadService} from '@main/piece/piece-upload.service'
 import {PieceService} from '@main/piece/piece.service'
 import {RobloxApiService} from '@main/roblox-api/roblox-api.service'
@@ -25,7 +25,7 @@ export class PieceController {
     private readonly pieceService: PieceService,
     private readonly pieceUploadService: PieceUploadService,
     private readonly pieceNotificationService: PieceNotificationService,
-    private readonly pieceSymlinkService: PieceSymlinkService,
+    private readonly pieceLinkService: PieceLinkService,
     private readonly robloxApiService: RobloxApiService,
   ) {
     //
@@ -48,7 +48,7 @@ export class PieceController {
 
   @Get('/symlinks-sync')
   async symlinksSync() {
-    await this.pieceSymlinkService.syncSymlinks()
+    await this.pieceLinkService.syncLinks()
     return true
   }
 

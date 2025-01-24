@@ -1,6 +1,9 @@
 # see more https://electron-vite.org/guide/distribution#github-action-ci-cd
 name: Build/release Freeway app
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:

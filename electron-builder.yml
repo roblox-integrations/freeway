@@ -1,5 +1,5 @@
 appId: com.electron.app
-icon: 'resources/icon.ico'
+icon: 'resources/icon.png'
 productName: freeway
 directories:
   buildResources: build

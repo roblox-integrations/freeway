@@ -27,7 +27,7 @@ export class ElectronService {
       height,
       show: false,
       autoHideMenuBar: is.dev,
-      icon: join(__dirname, '../../resources/icon.ico'),
+      icon: join(__dirname, '../../resources/icon.png'),
       title: 'Roblox Integration Hub',
       frame: true,
       webPreferences: {

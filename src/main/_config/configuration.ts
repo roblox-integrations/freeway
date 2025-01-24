@@ -15,7 +15,7 @@ export function configuration() {
     },
     piece: {
       isAutoUpload: false,
-      output: 'metadata.json',
+      deletedTimeout: 60_000, // ms
       watchDirectory: join(app.getPath('home'), 'freeway/files'),
       metadataPath: join(app.getPath('home'), 'freeway/metadata.json'),
       uploadQueue: {
@@ -57,7 +57,7 @@ export interface ConfigurationMain {
 
 export interface ConfigurationPiece {
   isAutoUpload: boolean
-  output: string
+  deletedTimeout: number
   watchDirectory: string
   metadataPath: string
   uploadQueue: {

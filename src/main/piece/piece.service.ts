@@ -19,6 +19,7 @@ import {
 import {Injectable, Logger, NotFoundException, UnprocessableEntityException} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter'
+import {Interval} from '@nestjs/schedule'
 import {app} from 'electron'
 import fse from 'fs-extra'
 import {temporaryFile} from 'tempy'
@@ -64,11 +65,6 @@ export class PieceService {
     }
 
     return await getRbxFileBase64(piece.fullPath)
-  }
-
-  emitEvent(name: string, data: any) {
-    this.eventEmitter.emit(name, data)
-    this.electron.getMainWindow()?.webContents.send('ipc-message', {name, data})
   }
 
   async create(dto: CreatePieceDto) {
@@ -170,7 +166,7 @@ export class PieceService {
   }
 
   async delete(piece: Piece) {
-    const result = await this.provider.delete(piece)
+    const result = await this.provider.hardDeleteWithFile(piece)
     this.eventEmitter.emit(PieceEventEnum.deleted, piece)
     await this.provider.save()
     return result
@@ -193,11 +189,44 @@ export class PieceService {
     return getMime(piece.fullPath)
   }
 
-  _sendIpcMessageEvent(name, data) {
+  _sendIpcMessageEvent(name: string, data: any) {
     const win = this.electron.getMainWindow()
     if (win) {
       win.webContents.send('ipc-message', {name, data})
     }
+  }
+
+  async prunePieces() {
+    const deletedPieces = this.provider.findMany({deletedAt$gte: Date.now() - this.options.deletedTimeout / 1000})
+    deletedPieces.forEach((piece: Piece) => {
+      this.provider.hardDelete(piece)
+    })
+
+    const dirtyPieces = this.provider.findMany({isDirty: true, deletedAt: null})
+    dirtyPieces.forEach((piece: Piece) => {
+      this.provider.delete(piece)
+    })
+
+    const count = deletedPieces.length + dirtyPieces.length
+    if (count) {
+      this.logger.log(`Pruned pieces ${count} (deleted ${deletedPieces.length}, dirty: ${dirtyPieces.length})`)
+      await this.provider.save()
+    }
+    else {
+      // this.logger.debug(`No pieces to prune`)
+    }
+
+    return deletedPieces.length + dirtyPieces.length
+  }
+
+  @Interval(60_000) // every 60 seconds
+  async handleIntervalPrunePieces() {
+    await this.prunePieces()
+  }
+
+  @OnEvent(PieceEventEnum.watcherReady)
+  async handlePieceWatcherReady() {
+    await this.prunePieces()
   }
 
   @OnEvent(PieceEventEnum.initiated)

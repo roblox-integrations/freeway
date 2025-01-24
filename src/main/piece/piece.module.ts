@@ -22,6 +22,6 @@ import {PieceWatcher} from './watcher'
   ],
   controllers: [PieceController],
   imports: [RobloxApiModule],
-  exports: [PieceService],
+  exports: [PieceService, PieceUploadService, PieceLinkService],
 })
 export class PieceModule {}

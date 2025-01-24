@@ -30,6 +30,9 @@ export interface Operation {
 export type QueueConstructorOptions<QueueType extends Queue<RunFunction, QueueOptionsType>, QueueOptionsType extends OperationOptions> = {
   delay?: number
   process?: OperationProcess
+  onMergeAddOperationDelayed?: (_operation: Operation, _payload: any, _options: Partial<OperationOptions>) => void
+  onMergeAddOperationQueued?: (_operation: Operation, _payload: any, _options: Partial<OperationOptions>) => void
+  onMergeAddOperationRunning?: (_operation: Operation, _payload: any, _options: Partial<OperationOptions>) => void
 } & PQueueConstructorOptions<QueueType, QueueOptionsType>
 
 export type OperationOptions = {
@@ -41,10 +44,12 @@ export class PBetterQueue<QueueType extends Queue<RunFunction, OperationOptions>
   private operations: Map<OperationId, Operation>
   private readonly delay: number
   private readonly process: OperationProcess
+  private readonly options: QueueConstructorOptions<QueueType, OperationOptions>
 
   constructor(options?: QueueConstructorOptions<QueueType, OperationOptions>) {
     super(options)
 
+    this.options = options
     this.delay = options.delay || 0
     this.process = options.process
     this.operations = new Map()
@@ -116,18 +121,27 @@ export class PBetterQueue<QueueType extends Queue<RunFunction, OperationOptions>
   }
 
   mergeAddOperationDelayed(_operation: Operation, _payload: any, _options: Partial<OperationOptions>) {
-    this.clearRunOperationTimeout(_operation)
-    // replace operation payload
-    _operation.payload = _payload
-    this.setRunOperationTimeout(_operation)
+    if (this.options.onMergeAddOperationDelayed) {
+      this.options.onMergeAddOperationDelayed(_operation, _payload, _options)
+    }
+    else {
+      this.clearRunOperationTimeout(_operation)
+      // replace operation payload
+      _operation.payload = _payload
+      this.setRunOperationTimeout(_operation)
+    }
   }
 
   mergeAddOperationQueued(_operation: Operation, _payload: any, _options: Partial<OperationOptions>) {
-    //
+    if (this.options.onMergeAddOperationQueued) {
+      this.options.onMergeAddOperationQueued(_operation, _payload, _options)
+    }
   }
 
   mergeAddOperationRunning(_operation: Operation, _payload: any, _options: Partial<OperationOptions>) {
-    //
+    if (this.options.onMergeAddOperationRunning) {
+      this.options.onMergeAddOperationRunning(_operation, _payload, _options)
+    }
   }
 
   setRunOperationTimeout(operation: Operation) {

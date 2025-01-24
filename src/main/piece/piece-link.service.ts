@@ -23,7 +23,7 @@ export class PieceLinkService {
     //
   }
 
-  async ensureLinks(piece: Piece) {
+  async ensureLink(piece: Piece) {
     const dest = this.getLinkPath(piece)
     const fullPath = join(piece.dir, piece.name)
 
@@ -62,7 +62,7 @@ export class PieceLinkService {
     })
 
     await pMap(piecesToCreateLinks, async (piece: Piece) => {
-      return this.ensureLinks(piece)
+      return this.ensureLink(piece)
     }, {concurrency: 5})
   }
 
@@ -76,23 +76,26 @@ export class PieceLinkService {
     return join(LINKS_DEST_DIR, name)
   }
 
-  @OnEvent(PieceEventEnum.initiated)
-  async handlePieceInitiated(piece: Piece) {
-    await this.ensureLinks(piece)
+  @OnEvent(PieceEventEnum.watcherReady)
+  async handlePieceInitiated() {
+    await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.created)
-  async handlePieceCreated(piece: Piece) {
-    await this.ensureLinks(piece)
+  async handlePieceCreated(_piece: Piece) {
+    // await this.ensureLink(_piece)
+    await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.changed)
-  async handlePieceChanged(piece: Piece) {
-    await this.ensureLinks(piece)
+  async handlePieceChanged(_piece: Piece) {
+    // await this.ensureLink(_piece)
+    await this.syncLinks()
   }
 
   @OnEvent(PieceEventEnum.deleted)
-  async handlePieceDeleted(piece: Piece) {
-    await this.removeLinks(piece)
+  async handlePieceDeleted(_piece: Piece) {
+    // await this.removeLinks(_piece)
+    await this.syncLinks()
   }
 }

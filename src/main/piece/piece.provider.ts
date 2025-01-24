@@ -42,7 +42,7 @@ export class PieceProvider {
       data = data || '[]'
     }
     catch (readErr) {
-      console.error(readErr)
+      this.logger.error(readErr)
       throw new Error(`File ${this.options.metadataPath} does not exist`)
     }
 
@@ -50,7 +50,7 @@ export class PieceProvider {
       data = JSON.parse(data)
     }
     catch (parseErr) {
-      console.error(parseErr)
+      this.logger.error(parseErr)
       throw new Error(`Cannot parse JSON file ${this.options.metadataPath}`)
     }
 
@@ -70,7 +70,7 @@ export class PieceProvider {
       await fse.writeFile(this.options.metadataPath, data, {encoding: 'utf8'})
     }
     catch (writeErr) {
-      console.error(writeErr)
+      this.logger.error(writeErr)
       throw new Error(`File ${this.options.metadataPath} cannot write file`)
     }
   }
@@ -87,7 +87,7 @@ export class PieceProvider {
     this.data.push(piece)
   }
 
-  remove(piece: Piece): void {
+  delete(piece: Piece): void {
     piece.deletedAt = now()
   }
 
@@ -239,14 +239,13 @@ export class PieceProvider {
       }
       else {
         this.logger.error(`Unable to unlink piece file: ${piece.fullPath}`, err)
-        throw new UnprocessableEntityException(err)
+        throw new UnprocessableEntityException(`Unable to unlink piece file: ${piece.fullPath}`)
       }
     }
   }
 
-  async delete(piece: Piece) {
+  async hardDeleteWithFile(piece: Piece) {
     await this.unlinkFile(piece)
-    // this.remove(piece)
     this.hardDelete(piece)
     return piece
   }

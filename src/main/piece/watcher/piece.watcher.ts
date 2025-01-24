@@ -5,7 +5,7 @@ import {PieceExtTypeMap} from '@main/piece/enum'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
-import {Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
+import {Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import watcher, {AsyncSubscription} from '@parcel/watcher'
@@ -13,10 +13,12 @@ import {ensureDir} from 'fs-extra'
 import micromatch from 'micromatch'
 
 @Injectable()
-export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
+export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdown {
   protected isReady: boolean
   protected readonly logger = new Logger(PieceWatcher.name)
   protected readonly options: ConfigurationPiece
+  private subscription: AsyncSubscription = null
+  private readonly ignoreGlobs: string[] = []
 
   constructor(
     private readonly config: ConfigService,
@@ -37,77 +39,27 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
     ]
   }
 
-  async onModuleInit(): Promise<void> {
+  async onApplicationBootstrap(): Promise<void> {
     this.logger.log('### Starting piece watcher')
     await ensureDir(this.options.watchDirectory)
     await this.provider.load()
-    this.watch().then((_) => {}) // async manner
+    await this.startWatch()
+    await this.initialScan()
+    this.onReady()
   }
 
-  async onModuleDestroy() {
-    if (!this.subscription) {
-      return
-    }
-
-    await this.subscription.unsubscribe()
+  async onApplicationShutdown(): Promise<void> {
+    await this.stopWatch()
   }
-
-  async onInit(queueTask: PieceWatcherQueueTask) {
-    const {dir, name} = queueTask
-    let piece = this.provider.findOne({dir, name})
-    if (!piece) {
-      piece = await this.provider.createFromFile(dir, name)
-    }
-    else {
-      await this.provider.updateFromFile(piece)
-    }
-
-    this.eventEmitter.emit(PieceEventEnum.initiated, piece)
-  }
-
-  async onChange(queueTask: PieceWatcherQueueTask) {
-    const {dir, name} = queueTask
-    let piece = this.provider.findOne({dir, name})
-    if (!piece) {
-      piece = await this.provider.createFromFile(dir, name)
-      this.eventEmitter.emit(PieceEventEnum.created, piece)
-    }
-    else {
-      await this.provider.updateFromFile(piece)
-      this.eventEmitter.emit(PieceEventEnum.changed, piece)
-    }
-
-    await this.provider.save() // queue?
-  }
-
-  async onUnlink(queueTask: PieceWatcherQueueTask) {
-    const {dir, name} = queueTask
-    const piece = this.provider.findOne({dir, name})
-
-    if (!piece)
-      return
-
-    this.provider.remove(piece)
-
-    this.eventEmitter.emit(PieceEventEnum.deleted, piece)
-  }
-
-  onReady() {
-    this.logger.log('Initial scan completed, watching for changes...')
-    this.isReady = true
-  }
-
-  private subscription: AsyncSubscription = null
-  private readonly ignoreGlobs: string[] = []
 
   async initialScan() {
     let files = await fs.readdir(this.options.watchDirectory, {recursive: true})
     files = files.filter(x => !micromatch.isMatch(x, this.ignoreGlobs))
 
-    files.forEach((name) => {
+    const promises = files.map((name) => {
       const dir = this.options.watchDirectory
       const fullPath = join(this.options.watchDirectory, name) // make absolute path
-      this.queue.push(fullPath, {
+      return this.queue.push(fullPath, {
         fullPath,
         dir,
         name,
@@ -116,13 +68,20 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
         },
       })
     })
+
+    return await Promise.allSettled(promises)
   }
 
-  async watch() {
-    await this.initialScan()
+  async stopWatch() {
+    if (!this.subscription) {
+      return
+    }
 
-    this.onReady()
+    await this.subscription.unsubscribe()
+    this.logger.log(`Stopped watching dir ${this.options.watchDirectory}`)
+  }
 
+  async startWatch() {
     this.logger.log(`Start watching dir ${this.options.watchDirectory}`)
     this.subscription = await watcher.subscribe(this.options.watchDirectory, (err, events) => {
       if (err) {
@@ -162,5 +121,52 @@ export class PieceWatcher implements OnModuleDestroy, OnModuleInit {
         }
       })
     }, {ignore: this.ignoreGlobs})
+  }
+
+  async onInit(queueTask: PieceWatcherQueueTask) {
+    const {dir, name} = queueTask
+    let piece = this.provider.findOne({dir, name})
+    if (!piece) {
+      piece = await this.provider.createFromFile(dir, name)
+    }
+    else {
+      await this.provider.updateFromFile(piece)
+    }
+
+    this.eventEmitter.emit(PieceEventEnum.initiated, piece)
+  }
+
+  async onChange(queueTask: PieceWatcherQueueTask) {
+    const {dir, name} = queueTask
+    let piece = this.provider.findOne({dir, name})
+    if (!piece) {
+      piece = await this.provider.createFromFile(dir, name)
+      this.eventEmitter.emit(PieceEventEnum.created, piece)
+    }
+    else {
+      await this.provider.updateFromFile(piece)
+      this.eventEmitter.emit(PieceEventEnum.changed, piece)
+    }
+
+    await this.provider.save() // queue?
+  }
+
+  async onUnlink(queueTask: PieceWatcherQueueTask) {
+    const {dir, name} = queueTask
+    const piece = this.provider.findOne({dir, name})
+
+    if (!piece)
+      return
+
+    this.provider.delete(piece)
+
+    this.eventEmitter.emit(PieceEventEnum.deleted, piece)
+  }
+
+  onReady() {
+    this.logger.log('Initial scan completed...')
+    this.isReady = true
+
+    this.eventEmitter.emit(PieceEventEnum.watcherReady)
   }
 }

@@ -11,11 +11,13 @@ interface Props {
 function PublicRoute(props: Props) {
   const {children} = props
 
+/*
   const {isAuthenticated} = useSession()
 
   if (isAuthenticated) {
     return <Navigate to="/" />
   }
+*/
 
   return (
     <ErrorBoundary

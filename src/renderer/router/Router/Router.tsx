@@ -16,58 +16,76 @@ function Router() {
   } = useRoutePaths()
 
   return (
-    <Routes>
-      <Route
-        path={ROOT_PATH}
-        element={(
-          <PrivateRoute redirectTo={LOGIN_PATH}>
+    <>
+      <Routes>
+        <Route
+          path={ROOT_PATH}
+          element={(
             <NavBar />
+          )}
+        />
+        <Route
+          path={STATUS_PATH}
+          element={(
+            <NavBar />
+          )}
+        />
+        <Route
+          path={LOGIN_PATH}
+          element={(
+            <NavBar />
+          )}
+        />
+
+      </Routes>
+
+      <Routes>
+        <Route
+          path={ROOT_PATH}
+          element={(
             <Pieces />
-          </PrivateRoute>
-        )}
-      />
+          )}
+        />
 
-      <Route
-        path={LOGIN_PATH}
-        element={(
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        )}
-      />
-      <Route path={REGISTER_PATH} element={<Register />} />
+        <Route
+          path={LOGIN_PATH}
+          element={(
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          )}
+        />
+        <Route path={REGISTER_PATH} element={<Register />} />
 
-      <Route
-        path={STATUS_PATH}
-        element={(
-          <PrivateRoute redirectTo={LOGIN_PATH}>
-            <NavBar />
+        <Route
+          path={STATUS_PATH}
+          element={(
             <Status />
-          </PrivateRoute>
-        )}
-      />
+          )}
+        />
 
-      <Route
-        path={PIECES_PATH}
-        element={(
-          <PrivateRoute redirectTo={LOGIN_PATH}>
-            <NavBar />
-            <Pieces />
-          </PrivateRoute>
-        )}
-      />
+        <Route
+          path={PIECES_PATH}
+          element={(
+            <PrivateRoute redirectTo={LOGIN_PATH}>
+              <Pieces />
+            </PrivateRoute>
+          )}
+        />
 
-      <Route
-        path={PIECE_PATH}
-        element={(
-          <PrivateRoute permissions={['users.list', 'users.create']}>
-            <Users />
-          </PrivateRoute>
-        )}
-      />
+        <Route
+          path={PIECE_PATH}
+          element={(
+            <PrivateRoute permissions={['users.list', 'users.create']}>
+              <Users />
+            </PrivateRoute>
+          )}
+        />
 
-      <Route path="*" element={<h1>404 (oops)</h1>} />
-    </Routes>
+        <Route path="*" element={<h1>404 (oops)</h1>} />
+      </Routes>
+    </>
+
   )
 }
 

@@ -66,6 +66,9 @@ export default function NavBar() {
             </MenuRoot>
           </Flex>
         )}
+        {!isAuthenticated && (
+          <Button >Login</Button>
+        )}
       </Flex>
       <CanAccess>
         {isAuthenticated && open

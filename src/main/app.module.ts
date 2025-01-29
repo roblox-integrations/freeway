@@ -8,6 +8,7 @@ import {AppService} from './app.service'
 import {AuthModule} from './auth/auth.module'
 import {ElectronModule} from './electron/electron.module'
 import {PieceModule} from './piece/piece.module'
+import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
 import {TestModule} from './test/test.module'
 
@@ -26,6 +27,7 @@ import {TestModule} from './test/test.module'
     TestModule,
     RobloxApiModule,
     PieceModule,
+    PluginModule,
   ],
   controllers: [AppController],
   providers: [AppService],

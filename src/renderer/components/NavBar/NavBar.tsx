@@ -7,17 +7,18 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from '@/components/ui/menu'
-import {Box, Button, Flex, HStack, IconButton, Stack, useDisclosure} from '@chakra-ui/react'
+import {Box, Button, Flex, HStack, IconButton, Link, Stack, useDisclosure, Image} from '@chakra-ui/react'
 import {useRoutePaths, useSession} from '@render/hooks'
 import {useEffect} from 'react'
 import {MdClose, MdMenu} from 'react-icons/md'
 import {useLocation} from 'react-router-dom'
 import {CanAccess} from '../CanAccess'
 import NavBarLink from './NavBarLink'
+import imgUrl from '@/assets/logo.png'
 
 export default function NavBar() {
   const {isAuthenticated, user, signOut} = useSession()
-  const {STATUS_PATH, ROOT_PATH, PIECES_PATH} = useRoutePaths()
+  const {STATUS_PATH, ROOT_PATH, PIECES_PATH, LOGIN_PATH  } = useRoutePaths()
   const location = useLocation()
   const {open, onClose, onToggle} = useDisclosure()
 
@@ -38,16 +39,16 @@ export default function NavBar() {
           {open ? <MdClose /> : <MdMenu />}
         </IconButton>
         <HStack gap={6} alignItems="center">
-          <Box>Logo</Box>
+          <Box><Image src={imgUrl} height="8"></Image></Box>
           <HStack as="nav" gap={4} display={{base: 'none', md: 'flex'}}>
             <NavBarLink href={ROOT_PATH}>Home</NavBarLink>
             <NavBarLink href={STATUS_PATH}>Status</NavBarLink>
             <NavBarLink href={PIECES_PATH}>Pieces</NavBarLink>
           </HStack>
         </HStack>
-        {isAuthenticated && (
           <Flex alignItems="center" gap="2">
             <ColorModeButton></ColorModeButton>
+            {isAuthenticated && (
             <MenuRoot>
               <MenuTrigger asChild>
                 <Button variant="plain" p="0" outline="none">
@@ -64,14 +65,14 @@ export default function NavBar() {
                 <MenuItem value="signout" onClick={signOut} color="fg.error">Sign out</MenuItem>
               </MenuContent>
             </MenuRoot>
+            )}
+            {!isAuthenticated && (
+                <NavBarLink href={LOGIN_PATH}>Login</NavBarLink>
+            )}
           </Flex>
-        )}
-        {!isAuthenticated && (
-          <Button >Login</Button>
-        )}
       </Flex>
-      <CanAccess>
-        {isAuthenticated && open
+      <>
+        {open
           ? (
               <Box pb={4} display={{md: 'none'}}>
                 <Stack as="nav" gap={2}>
@@ -82,7 +83,7 @@ export default function NavBar() {
               </Box>
             )
           : null}
-      </CanAccess>
+      </>
     </Box>
   )
 }

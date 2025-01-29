@@ -22,7 +22,8 @@ export default function PieceItem({item}) {
   const [isAutoUpload, setIsAutoUpload] = useState(item.isAutoUpload)
 
   function onReveal() {
-    window.electron.reveal(item.filePath)
+    const path = `${item.dir}/${item.name}`
+    window.electron.reveal(path)
   }
 
   const updatePieceItem = async ({isAutoUpload}) => {

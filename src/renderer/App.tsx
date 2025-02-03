@@ -1,5 +1,6 @@
 import {ColorModeProvider} from '@/components/ui/color-mode'
 import {Provider} from '@/components/ui/provider'
+import {Toaster} from '@/components/ui/toaster'
 // import {useRoutePaths, useSession} from "@render/hooks";
 import {emitCustomEvent} from 'react-custom-events'
 import {HashRouter} from 'react-router-dom'
@@ -23,6 +24,7 @@ function App() {
           </AuthProvider>
         </HashRouter>
       </ColorModeProvider>
+      <Toaster />
     </Provider>
   )
 }

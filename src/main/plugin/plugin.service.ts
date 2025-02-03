@@ -1,4 +1,5 @@
 import path from 'node:path'
+import {is} from '@electron-toolkit/utils'
 import {RESOURCES_DIR} from '@main/utils'
 import {Injectable, Logger, OnApplicationBootstrap} from '@nestjs/common'
 import {studioPluginsPath} from '@roblox-integrations/roblox-install'
@@ -9,7 +10,12 @@ const STUDIO_PLUGIN_NAME = 'Freeway.rbxm'
 @Injectable()
 export class PluginService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
-    await this.installStudioPlugin()
+    if (!is.dev) {
+      // do not install plugin automatically on app start for now
+    }
+    else {
+      await this.installStudioPlugin()
+    }
   }
 
   private readonly logger = new Logger(PluginService.name)

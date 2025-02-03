@@ -17,7 +17,7 @@ import NavBarLink from './NavBarLink'
 
 export default function NavBar() {
   const {isAuthenticated, user, signOut} = useSession()
-  const {STATUS_PATH, ROOT_PATH, PIECES_PATH, LOGIN_PATH} = useRoutePaths()
+  const {STATUS_PATH, ROOT_PATH, LOGIN_PATH} = useRoutePaths()
   const location = useLocation()
   const {open, onClose, onToggle} = useDisclosure()
 
@@ -40,9 +40,8 @@ export default function NavBar() {
         <HStack gap={6} alignItems="center">
           <Box><Image src={imgUrl} height="8"></Image></Box>
           <HStack as="nav" gap={4} display={{base: 'none', md: 'flex'}}>
-            <NavBarLink href={ROOT_PATH}>Home</NavBarLink>
+            <NavBarLink href={ROOT_PATH}>Pieces</NavBarLink>
             <NavBarLink href={STATUS_PATH}>Status</NavBarLink>
-            <NavBarLink href={PIECES_PATH}>Pieces</NavBarLink>
           </HStack>
         </HStack>
         <Flex alignItems="center" gap="2">
@@ -75,9 +74,8 @@ export default function NavBar() {
           ? (
               <Box pb={4} display={{md: 'none'}}>
                 <Stack as="nav" gap={2}>
-                  <NavBarLink href={ROOT_PATH}>Home</NavBarLink>
+                  <NavBarLink href={ROOT_PATH}>Pieces</NavBarLink>
                   <NavBarLink href={STATUS_PATH}>Status</NavBarLink>
-                  <NavBarLink href={PIECES_PATH}>Pieces</NavBarLink>
                 </Stack>
               </Box>
             )

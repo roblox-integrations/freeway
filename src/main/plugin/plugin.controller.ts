@@ -1,16 +1,26 @@
-import {IpcOn} from '@doubleshot/nest-electron'
 import {PluginService} from '@main/plugin/plugin.service'
-import {Controller} from '@nestjs/common'
+import {Controller, Get, Post} from '@nestjs/common'
 
-@Controller('plugin')
+interface InstallPluginRequest {
+  result: boolean
+}
+
+@Controller('api/plugins')
 export class PluginController {
   constructor(
     private readonly service: PluginService,
   ) {
   }
 
-  @IpcOn('install-studio-plugin')
-  public async installStudioPlugin(): Promise<void> {
-    return await this.service.installStudioPlugin()
+  @Post('/install-studio-plugin')
+  public async installStudioPlugin(): Promise<InstallPluginRequest> {
+    return {
+      result: await this.service.installStudioPlugin(),
+    }
+  }
+
+  @Get('/status')
+  public async status() {
+    return this.service.getStatus()
   }
 }

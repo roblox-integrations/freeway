@@ -27,7 +27,7 @@
     "test:unit": "jest \\.spec.ts$"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.1.0",
+    "@chakra-ui/react": "^3.6.0",
     "@doubleshot/nest-electron": "^0.2.5",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
@@ -58,7 +58,7 @@
     "keytar": "^7.9.0",
     "micromatch": "^4.0.8",
     "mime-types": "^2.1.35",
-    "next-themes": "^0.4.3",
+    "next-themes": "^0.4.4",
     "nookies": "^2.5.2",
     "obj-file-parser": "0.6.2",
     "p-event": "^6.0.1",
@@ -71,7 +71,7 @@
     "react-custom-events": "^1.1.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^4.0.13",
-    "react-icons": "^5.3.0",
+    "react-icons": "^5.4.0",
     "react-router-dom": "^6.26.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

@@ -10,7 +10,7 @@ const STUDIO_PLUGIN_NAME = 'Freeway.rbxm'
 @Injectable()
 export class PluginService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
-    if (!is.dev) {
+    if (is.dev) {
       // do not install plugin automatically on app start for now
     }
     else {

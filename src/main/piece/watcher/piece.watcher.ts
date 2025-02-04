@@ -5,7 +5,7 @@ import {PieceExtTypeMap} from '@main/piece/enum'
 import {PieceEventEnum} from '@main/piece/enum/piece-event.enum'
 import {PieceProvider} from '@main/piece/piece.provider'
 import {PieceWatcherQueue, PieceWatcherQueueTask} from '@main/piece/queue'
-import {Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown} from '@nestjs/common'
+import {Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import watcher, {AsyncSubscription} from '@parcel/watcher'
@@ -13,8 +13,10 @@ import {ensureDir} from 'fs-extra'
 import micromatch from 'micromatch'
 
 @Injectable()
-export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdown {
+export class PieceWatcher implements OnModuleInit, OnModuleDestroy, OnApplicationBootstrap {
   protected isReady: boolean
+  protected isInitialScanned: boolean
+  protected isApplicationBootstrapped: boolean;
   protected readonly logger = new Logger(PieceWatcher.name)
   protected readonly options: ConfigurationPiece
   private subscription: AsyncSubscription = null
@@ -39,17 +41,41 @@ export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdo
     ]
   }
 
-  async onApplicationBootstrap(): Promise<void> {
-    this.logger.log('### Starting piece watcher')
+  async onModuleInit(): Promise<void> {
     await ensureDir(this.options.watchDirectory)
     await this.provider.load()
-    await this.startWatch()
-    await this.initialScan()
-    this.onReady()
+
+    // async manner
+    this.initialScan()
+      .then(() => {
+        this.logger.log('Initial scan completed...')
+      })
+
+    // async manner
+    this.startWatch()
+      .then(() => {
+        this.logger.log('Started watching...')
+      })
   }
 
-  async onApplicationShutdown(): Promise<void> {
+  async onApplicationBootstrap() {
+    this.isApplicationBootstrapped = true
+    if (this.isInitialScanned) {
+      this.checkIsReady()
+    }
+  }
+
+  async onModuleDestroy() {
+    // stopWatch in onModuleDestroy not onApplicationShutdown
+    // onApplicationShutdown never called (and therefor application never closed)
+    // because resources is not disposed by module.
+    // So we must dispose it here -- onModuleDestroy
     await this.stopWatch()
+    this.logger.log(`Stopped watching dir ${this.options.watchDirectory}`)
+
+    this.isReady = false
+    this.isInitialScanned = false
+    this.isApplicationBootstrapped = false
   }
 
   async initialScan() {
@@ -69,7 +95,12 @@ export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdo
       })
     })
 
-    return await Promise.allSettled(promises)
+    await Promise.allSettled(promises)
+    this.isInitialScanned = true
+
+    if (this.isApplicationBootstrapped) {
+      this.checkIsReady()
+    }
   }
 
   async stopWatch() {
@@ -78,7 +109,7 @@ export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdo
     }
 
     await this.subscription.unsubscribe()
-    this.logger.log(`Stopped watching dir ${this.options.watchDirectory}`)
+    this.subscription = null
   }
 
   async startWatch() {
@@ -163,10 +194,10 @@ export class PieceWatcher implements OnApplicationBootstrap, OnApplicationShutdo
     this.eventEmitter.emit(PieceEventEnum.deleted, piece)
   }
 
-  onReady() {
-    this.logger.log('Initial scan completed...')
-    this.isReady = true
-
-    this.eventEmitter.emit(PieceEventEnum.watcherReady)
+  checkIsReady() {
+    if (this.isInitialScanned && this.isApplicationBootstrapped) {
+      this.isReady = true
+      this.eventEmitter.emit(PieceEventEnum.watcherReady)
+    }
   }
 }

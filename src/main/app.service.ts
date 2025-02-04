@@ -1,10 +1,8 @@
-import {join} from 'node:path'
-import process from 'node:process'
-import {is} from '@electron-toolkit/utils'
 import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
-import {app, BrowserWindow, net} from 'electron'
+import {Interval} from '@nestjs/schedule'
+import {net} from 'electron'
 import isOnline from 'is-online'
 
 @Injectable()
@@ -23,24 +21,9 @@ export class AppService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.electron.createWindow()
 
-    app.on('activate', () => {
-      // On macOS, it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (BrowserWindow.getAllWindows().length === 0)
-        this.electron.createWindow()
-    })
-
-    setInterval(() => {
-      this.checkNetIsOnline()
-    }, 1000)
-
-    setInterval(() => {
+    this.checkNetIsOnline().then(() => {
       this.checkWebIsOnline()
-    }, 5000)
-
-    setInterval(() => {
-      this.refreshTokens()
-    }, 5000)
+    })
 
     // refresh token set on start
     this.refreshTokens()
@@ -52,18 +35,7 @@ export class AppService implements OnModuleInit {
       })
   }
 
-  public getTime(): number {
-    return new Date().getTime()
-  }
-
-  static getAppUrl() {
-    if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-      return process.env.ELECTRON_RENDERER_URL
-    }
-
-    return `file://${join(__dirname, '../renderer/index.html')}`
-  }
-
+  @Interval(1000)
   private async checkNetIsOnline() {
     this.isNetOnline = net.isOnline()
     if (!this.isNetOnline) {
@@ -71,12 +43,14 @@ export class AppService implements OnModuleInit {
     }
   }
 
+  @Interval(5000)
   private async checkWebIsOnline() {
     if (this.isNetOnline) {
       this.isOnline = await isOnline()
     }
   }
 
+  @Interval(10_000)
   private async refreshTokens() {
     if (!this.isOnline)
       return

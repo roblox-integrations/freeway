@@ -19,11 +19,12 @@ export class TestController {
       'date': new Date(),
       'process.resourcesPath': process.resourcesPath,
       'app.getAppPath()': app.getAppPath(),
+      'version': app.getVersion(),
       '__dirname': __dirname,
       'resourceDirDev': join(__dirname, '../../resources'),
       'resourceDirProd': process.resourcesPath,
       'studioContentPath': studioContentPath(),
-      'version': process.version,
+      'nodeVersion': process.version,
     }
   }
 }

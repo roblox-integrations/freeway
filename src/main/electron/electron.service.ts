@@ -3,11 +3,11 @@ import process from 'node:process'
 import {is} from '@electron-toolkit/utils'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 
-import {Injectable, Logger} from '@nestjs/common'
-import {BrowserWindow, shell} from 'electron'
+import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
+import {app, BrowserWindow, shell} from 'electron'
 
 @Injectable()
-export class ElectronService {
+export class ElectronService implements OnModuleInit {
   private logger = new Logger(ElectronService.name)
   private mainWindow?: BrowserWindow
 
@@ -15,6 +15,15 @@ export class ElectronService {
     private readonly oauthClient: RobloxOauthClient,
   ) {
     //
+  }
+
+  async onModuleInit(): Promise<void> {
+    app.on('activate', () => {
+      // On macOS, it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0)
+        this.createWindow()
+    })
   }
 
   async createWindow() {
@@ -56,7 +65,6 @@ export class ElectronService {
       }
       catch (err: any) {
         mainWindow.webContents.send('auth:err:load-tokens')
-        // TODO: show error
         this.logger.error(err.message)
         this.logger.error(err.stack)
       }

@@ -1,9 +1,14 @@
 import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
 import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
-import {Interval} from '@nestjs/schedule'
+import {Interval, Timeout} from '@nestjs/schedule'
 import {net} from 'electron'
+import electronUpdater, {UpdateInfo} from 'electron-updater'
 import isOnline from 'is-online'
+
+const autoUpdater = electronUpdater.autoUpdater
+autoUpdater.autoDownload = false
+autoUpdater.forceDevUpdateConfig = true
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -11,11 +16,13 @@ export class AppService implements OnModuleInit {
   private isNetOnline = false
   private _isOnline = false
   private isRefreshing = false
+  private updateInfo: UpdateInfo = null
 
   constructor(
     private readonly oauthClient: RobloxOauthClient,
     private readonly electron: ElectronService,
   ) {
+    //
   }
 
   async onModuleInit(): Promise<void> {
@@ -33,10 +40,42 @@ export class AppService implements OnModuleInit {
           mainWin.webContents.send('ipc-message', {name: 'ready'})
         }
       })
+
+    autoUpdater.on('update-available', (updateInfo) => {
+      this.updateInfo = updateInfo
+      this.logger.log('---- UPDATE AVAILABLE ----', updateInfo)
+      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:update-available', data: updateInfo})
+    })
+  }
+
+  get isUpdateAvailable() {
+    return this.updateInfo !== null
+  }
+
+  getUpdateInfo(): UpdateInfo {
+    return this.updateInfo
+  }
+
+  @Timeout(1_000)
+  protected async timeoutCheckForUpdate(): Promise<void> {
+    await this.checkForUpdate()
+  }
+
+  @Interval(120_000)
+  protected async intervalCheckForUpdate(): Promise<void> {
+    await this.checkForUpdate()
+  }
+
+  protected async checkForUpdate(): Promise<void> {
+    if (this.isUpdateAvailable) {
+      return
+    }
+
+    await autoUpdater.checkForUpdatesAndNotify()
   }
 
   @Interval(1000)
-  private async checkNetIsOnline() {
+  protected async checkNetIsOnline() {
     this.isNetOnline = net.isOnline()
     if (!this.isNetOnline) {
       this.isOnline = false
@@ -44,14 +83,14 @@ export class AppService implements OnModuleInit {
   }
 
   @Interval(5000)
-  private async checkWebIsOnline() {
+  protected async checkWebIsOnline() {
     if (this.isNetOnline) {
       this.isOnline = await isOnline()
     }
   }
 
   @Interval(10_000)
-  private async refreshTokens() {
+  protected async refreshTokens() {
     if (!this.isOnline)
       return
 

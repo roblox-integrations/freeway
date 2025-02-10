@@ -14,6 +14,7 @@ import {useEffect} from 'react'
 import {MdClose, MdMenu} from 'react-icons/md'
 import {useLocation} from 'react-router-dom'
 import NavBarLink from './NavBarLink'
+import NavbarUpdateAvailable from './NavbarUpdateAvailable'
 
 export default function NavBar() {
   const {isAuthenticated, user, signOut} = useSession()
@@ -45,6 +46,7 @@ export default function NavBar() {
           </HStack>
         </HStack>
         <Flex alignItems="center" gap="2">
+          <NavbarUpdateAvailable></NavbarUpdateAvailable>
           <ColorModeButton></ColorModeButton>
           {isAuthenticated && (
             <MenuRoot>

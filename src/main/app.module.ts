@@ -1,4 +1,4 @@
-import {Module} from '@nestjs/common'
+import {Module, RequestMethod} from '@nestjs/common'
 import {ConfigModule} from '@nestjs/config'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {ScheduleModule} from '@nestjs/schedule'
@@ -12,15 +12,22 @@ import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
 import {TestModule} from './test/test.module'
+import pino from 'pino';
 
 @Module({
   imports: [
     LoggerModule.forRoot({
       name: 'add some name to every JSON line',
-      level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
       prettyPrint: true,
       useLevelLabels: true,
-      // and all the others...
+      pinoHttp: {
+        stream: pino.destination({
+          dest: './my-file.log', // omit for stdout
+          minLength: 4096, // Buffer before writing
+          sync: false, // Asynchronous logging
+        }),
+      },
+      exclude: [{method: RequestMethod.ALL, path: '/api'}],
     }),
     ConfigModule.forRoot({
       isGlobal: true,

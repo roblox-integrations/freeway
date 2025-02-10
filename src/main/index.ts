@@ -6,6 +6,7 @@ import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
 import {app as electronApp} from 'electron'
 import {json, urlencoded} from 'express'
+import {Logger} from 'nestjs-pino'
 import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
 import {AppModule} from './app.module'
 
@@ -16,6 +17,8 @@ async function bootstrap() {
     await electronApp.whenReady()
 
     const nestApp = await NestFactory.create(AppModule)
+
+    nestApp.useLogger(nestApp.get(Logger))
 
     const config = nestApp.get(ConfigService)
 

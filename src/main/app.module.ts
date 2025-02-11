@@ -3,6 +3,7 @@ import {ConfigModule} from '@nestjs/config'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {ScheduleModule} from '@nestjs/schedule'
 import {LoggerModule} from 'nestjs-pino'
+import pino from 'pino'
 import {configuration} from './_config/configuration'
 import {AppController} from './app.controller'
 import {AppService} from './app.service'
@@ -12,22 +13,34 @@ import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
 import {TestModule} from './test/test.module'
-import pino from 'pino';
 
 @Module({
   imports: [
     LoggerModule.forRoot({
-      name: 'add some name to every JSON line',
-      prettyPrint: true,
+      prettyPrint: {
+        colorize: true,
+        translateTime: 'SYS:standard',
+        ignore: 'hostname,pid',
+      },
       useLevelLabels: true,
       pinoHttp: {
-        stream: pino.destination({
-          dest: './my-file.log', // omit for stdout
-          minLength: 4096, // Buffer before writing
-          sync: false, // Asynchronous logging
-        }),
+        transport: {
+          targets: [
+            {
+              target: 'pino-roll',
+              options: {file: './pino-roll.log', frequency: 'hourly', mkdir: true},
+            },
+            {
+              level: 'trace',
+              target: 'pino-pretty',
+              options: {},
+            },
+          ],
+        },
+        timestamp: pino.stdTimeFunctions.isoTime,
       },
-      exclude: [{method: RequestMethod.ALL, path: '/api'}],
+      exclude: '*',
+
     }),
     ConfigModule.forRoot({
       isGlobal: true,

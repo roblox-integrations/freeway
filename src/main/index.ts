@@ -16,7 +16,7 @@ async function bootstrap() {
   try {
     await electronApp.whenReady()
 
-    const nestApp = await NestFactory.create(AppModule)
+    const nestApp = await NestFactory.create(AppModule, {bufferLogs: true})
 
     nestApp.useLogger(nestApp.get(Logger))
 

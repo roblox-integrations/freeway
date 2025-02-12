@@ -13,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: ${productName}
+  executableName: Freeway
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

@@ -1,6 +1,7 @@
+import {setTimeout as delay} from 'node:timers/promises'
 import {ElectronService} from '@main/electron/electron.service'
 import {RobloxOauthClient} from '@main/roblox-api/roblox-oauth.client'
-import {Injectable, Logger, OnModuleInit} from '@nestjs/common'
+import {Injectable, Logger, OnModuleDestroy, OnModuleInit} from '@nestjs/common'
 import {Interval, Timeout} from '@nestjs/schedule'
 import {net} from 'electron'
 import electronUpdater, {UpdateInfo} from 'electron-updater'
@@ -11,22 +12,23 @@ autoUpdater.autoDownload = false
 autoUpdater.forceDevUpdateConfig = true
 
 @Injectable()
-export class AppService implements OnModuleInit {
+export class AppService implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger(AppService.name)
   private isNetOnline = false
   private _isOnline = false
   private isRefreshing = false
   private updateInfo: UpdateInfo = null
+  private flashFrameTimeout: number | undefined
 
   constructor(
     private readonly oauthClient: RobloxOauthClient,
-    private readonly electron: ElectronService,
+    private readonly electronService: ElectronService,
   ) {
     //
   }
 
   async onModuleInit(): Promise<void> {
-    await this.electron.createWindow()
+    await this.electronService.createWindow()
 
     this.checkNetIsOnline().then(() => {
       this.checkWebIsOnline()
@@ -35,7 +37,7 @@ export class AppService implements OnModuleInit {
     // refresh token set on start
     this.refreshTokens()
       .then(() => {
-        const mainWin = this.electron.getMainWindow()
+        const mainWin = this.electronService.getMainWindow()
         if (mainWin) {
           mainWin.webContents.send('ipc-message', {name: 'ready'})
         }
@@ -44,8 +46,12 @@ export class AppService implements OnModuleInit {
     autoUpdater.on('update-available', (updateInfo) => {
       this.updateInfo = updateInfo
       this.logger.log('---- UPDATE AVAILABLE ----', updateInfo)
-      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:update-available', data: updateInfo})
+      this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:update-available', data: updateInfo})
     })
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    clearTimeout(this.flashFrameTimeout)
   }
 
   get isUpdateAvailable() {
@@ -64,6 +70,13 @@ export class AppService implements OnModuleInit {
   @Interval(120_000)
   protected async intervalCheckForUpdate(): Promise<void> {
     await this.checkForUpdate()
+  }
+
+  @Interval(20_000)
+  protected async intervalFlashFrameCheckForUpdate(): Promise<void> {
+    this.electronService.getMainWindow()?.flashFrame(true)
+    await delay(10_000)
+    this.electronService.getMainWindow()?.flashFrame(false)
   }
 
   protected async checkForUpdate(): Promise<void> {
@@ -111,12 +124,12 @@ export class AppService implements OnModuleInit {
   set isOnline(isOnline: boolean) {
     if (isOnline && !this._isOnline) {
       this.logger.log('ONLINE')
-      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:online'})
+      this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:online'})
     }
 
     if (!isOnline && this._isOnline) {
       this.logger.log('OFFLINE')
-      this.electron.getMainWindow()?.webContents.send('ipc-message', {name: 'app:offline'})
+      this.electronService.getMainWindow()?.webContents.send('ipc-message', {name: 'app:offline'})
     }
 
     this._isOnline = isOnline

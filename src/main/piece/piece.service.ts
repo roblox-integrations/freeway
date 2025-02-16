@@ -3,6 +3,7 @@ import process from 'node:process'
 import {ConfigurationPiece} from '@main/_config/configuration'
 import {ElectronService} from '@main/electron/electron.service'
 import {CreatePieceDto, UpdatePieceDto} from '@main/piece/dto'
+import {now} from '@main/utils'
 import {UpsertPieceUploadDto} from '@main/piece/dto/upsert-piece-upload.dto'
 import {PieceEventEnum, PieceRoleEnum, PieceTypeEnum} from '@main/piece/enum'
 import {PieceProvider} from '@main/piece/piece.provider'
@@ -157,7 +158,7 @@ export class PieceService {
     else {
       piece.uploads.push({assetId: dto.assetId, hash: dto.hash})
     }
-
+    piece.updatedAt = now()
     this.eventEmitter.emit(PieceEventEnum.updated, piece)
 
     await this.provider.save()

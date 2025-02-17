@@ -1,6 +1,6 @@
 {
   "name": "freeway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Freeway - fast assets iteration on Roblox",

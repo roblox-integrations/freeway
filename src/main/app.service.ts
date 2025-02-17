@@ -81,9 +81,11 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
 
   @Interval(20_000)
   protected async intervalFlashFrameCheckForUpdate(): Promise<void> {
-    this.electronService.getMainWindow()?.flashFrame(true)
-    await delay(10_000)
-    this.electronService.getMainWindow()?.flashFrame(false)
+    if (this.isUpdateAvailable) {
+      this.electronService.getMainWindow()?.flashFrame(true)
+      await delay(10_000)
+      this.electronService.getMainWindow()?.flashFrame(false)
+    }
   }
 
   protected async checkForUpdate(): Promise<void> {

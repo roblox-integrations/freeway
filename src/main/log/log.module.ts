@@ -1,3 +1,4 @@
+import {join} from 'node:path'
 import {ConfigurationLog} from '@main/_config/configuration'
 import {Module} from '@nestjs/common'
 import {ConfigService} from '@nestjs/config'
@@ -31,9 +32,10 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file'
         if (conf.isFileTransportEnabled) {
           transports.push(new WinstonDailyRotateFile({
             level: 'info',
-            filename: 'application-%DATE%.log',
+            auditFile: join(conf.directory, 'audit.json'),
+            filename: '%DATE%.log',
             datePattern: 'YYYY-MM-DD-HH',
-            zippedArchive: true,
+            zippedArchive: false,
             maxSize: '20m',
             maxFiles: '7d',
             dirname: conf.directory,
@@ -42,7 +44,7 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file'
 
         return {
           transports,
-          // other options
+          // other options, @see https://www.npmjs.com/package/nest-winston
         }
       },
       inject: [ConfigService],

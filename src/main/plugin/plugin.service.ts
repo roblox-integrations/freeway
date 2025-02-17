@@ -1,8 +1,7 @@
 import path from 'node:path'
 import {is} from '@electron-toolkit/utils'
-import {RESOURCES_DIR} from '@main/utils'
+import {RESOURCES_DIR, STUDIO_PLUGINS_DIR} from '@main/utils'
 import {Injectable, Logger, OnApplicationBootstrap} from '@nestjs/common'
-import {studioPluginsPath} from '@roblox-integrations/roblox-install'
 import fse from 'fs-extra'
 
 const STUDIO_PLUGIN_NAME = 'Freeway.rbxm'
@@ -39,7 +38,7 @@ export class PluginService implements OnApplicationBootstrap {
   }
 
   getStudioPluginDest() {
-    return path.join(studioPluginsPath(), STUDIO_PLUGIN_NAME)
+    return path.join(STUDIO_PLUGINS_DIR, STUDIO_PLUGIN_NAME)
   }
 
   async getStatus() {

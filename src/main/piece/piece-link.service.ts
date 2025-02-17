@@ -3,17 +3,15 @@ import {platform} from '@electron-toolkit/utils'
 import {PieceEventEnum} from '@main/piece/enum'
 
 import {PieceProvider} from '@main/piece/piece.provider'
+import {STUDIO_LINKS_DIR} from '@main/utils'
 import {Injectable} from '@nestjs/common'
 import {OnEvent} from '@nestjs/event-emitter'
-import {studioContentPath} from '@roblox-integrations/roblox-install'
 import fse from 'fs-extra'
 import {glob} from 'glob'
 import pMap from 'p-map'
 import {Piece} from './piece'
 
 const LINK_NAME_GLOB = '*.*'
-const LINK_DIR = 'freeway'
-const LINKS_DEST_DIR = join(studioContentPath(), LINK_DIR)
 
 @Injectable()
 export class PieceLinkService {
@@ -42,7 +40,7 @@ export class PieceLinkService {
   }
 
   async syncLinks() {
-    const fsLinks = await glob(LINK_NAME_GLOB, {cwd: LINKS_DEST_DIR})
+    const fsLinks = await glob(LINK_NAME_GLOB, {cwd: STUDIO_LINKS_DIR})
 
     const pieces = this.provider.findMany({deletedAt: null, isDirty: false})
 
@@ -54,7 +52,7 @@ export class PieceLinkService {
     const toCreateLinks = actualLinks.filter(x => !fsLinks.includes(x))
 
     await pMap(toRemoveLinks, async (linksName: string) => {
-      await fse.remove(join(LINKS_DEST_DIR, linksName))
+      await fse.remove(join(STUDIO_LINKS_DIR, linksName))
     }, {concurrency: 5})
 
     const piecesToCreateLinks = pieces.filter((p: Piece) => {
@@ -73,7 +71,7 @@ export class PieceLinkService {
 
   private getLinkPath(piece: Piece): string {
     const name = this.getLinkName(piece)
-    return join(LINKS_DEST_DIR, name)
+    return join(STUDIO_LINKS_DIR, name)
   }
 
   @OnEvent(PieceEventEnum.watcherReady)

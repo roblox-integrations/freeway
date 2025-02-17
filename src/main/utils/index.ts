@@ -1,9 +1,10 @@
 import {Buffer} from 'node:buffer'
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
-import {join} from 'node:path'
+import {join, normalize} from 'node:path'
 import process from 'node:process'
 import {is} from '@electron-toolkit/utils'
+import {studioContentPath, studioPluginsPath} from '@roblox-integrations/roblox-install'
 import {Jimp} from 'jimp'
 import {lookup} from 'mime-types'
 import OBJFile from 'obj-file-parser'
@@ -85,7 +86,7 @@ export async function getRbxMeshBase64(filePath: string): Promise<RbxBase64File>
   const objFile = new OBJFile(fileContent)
   const obj = objFile.parse()
 
-  const mesh = obj.models[0] // TODO MI:  take the very first mesh _for now_, need a proper solution
+  const mesh = obj.models[0] // TODO MI: take the very first mesh _for now_, need a proper solution
   const v = []
   const uv = []
   const vn = []
@@ -234,4 +235,10 @@ export function randomString(length: number, characters = 'ABCDEFGHIJKLMNOPQRSTU
   return result
 }
 
-export const RESOURCES_DIR = is.dev ? join(__dirname, '../../resources') : process.resourcesPath
+export const RESOURCES_DIR = is.dev
+  ? join(__dirname, '../../resources')
+  : join(process.resourcesPath, 'app.asar.unpacked/resources')
+
+export const STUDIO_LINKS_DIR = join(join(studioContentPath(), 'freeway'))
+
+export const STUDIO_PLUGINS_DIR = normalize(studioPluginsPath())

@@ -11,6 +11,12 @@ const autoUpdater = electronUpdater.autoUpdater
 autoUpdater.autoDownload = false
 autoUpdater.forceDevUpdateConfig = true
 
+class UpdaterLogger extends Logger {
+  info(msg, ...args) {
+    return this.log(msg, ...args)
+  }
+}
+
 @Injectable()
 export class AppService implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger(AppService.name)
@@ -43,6 +49,7 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
         }
       })
 
+    autoUpdater.logger = new UpdaterLogger('AutoUpdater')
     autoUpdater.on('update-available', (updateInfo) => {
       this.updateInfo = updateInfo
       this.logger.log('---- UPDATE AVAILABLE ----', updateInfo)

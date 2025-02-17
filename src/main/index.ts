@@ -6,6 +6,7 @@ import {ConfigService} from '@nestjs/config'
 import {NestFactory} from '@nestjs/core'
 import {app as electronApp} from 'electron'
 import {json, urlencoded} from 'express'
+import {WINSTON_MODULE_NEST_PROVIDER} from 'nest-winston'
 import {ConfigurationCors, ConfigurationMain} from './_config/configuration'
 import {AppModule} from './app.module'
 
@@ -15,7 +16,11 @@ async function bootstrap() {
   try {
     await electronApp.whenReady()
 
-    const nestApp = await NestFactory.create(AppModule)
+    const nestApp = await NestFactory.create(AppModule, {
+      bufferLogs: true,
+    })
+
+    nestApp.useLogger(nestApp.get(WINSTON_MODULE_NEST_PROVIDER))
 
     const config = nestApp.get(ConfigService)
 

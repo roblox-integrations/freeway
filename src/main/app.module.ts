@@ -7,6 +7,7 @@ import {AppController} from './app.controller'
 import {AppService} from './app.service'
 import {AuthModule} from './auth/auth.module'
 import {ElectronModule} from './electron/electron.module'
+import {LogModule} from './log/log.module'
 import {PieceModule} from './piece/piece.module'
 import {PluginModule} from './plugin/plugin.module'
 import {RobloxApiModule} from './roblox-api/roblox-api.module'
@@ -21,6 +22,7 @@ import {TestModule} from './test/test.module'
     EventEmitterModule.forRoot({
       wildcard: true,
     }),
+    LogModule,
     ScheduleModule.forRoot(),
     AuthModule,
     TestModule,

@@ -35,6 +35,11 @@ export function configuration() {
       preflightContinue: false,
       optionsSuccessStatus: 204,
     },
+    log: {
+      directory: join(app.getPath('home'), 'freeway/logs'),
+      isFileTransportEnabled: true,
+      isConsoleTransportEnabled: true,
+    },
 
     /*
   database: {
@@ -53,6 +58,12 @@ export interface ConfigurationRoblox {
 export interface ConfigurationMain {
   port: number
   host: string
+}
+
+export interface ConfigurationLog {
+  isFileTransportEnabled: boolean
+  isConsoleTransportEnabled: boolean
+  directory: string
 }
 
 export interface ConfigurationPiece {
@@ -77,6 +88,7 @@ export interface ConfigurationCors extends CorsOptions {
 
 export interface Configuration {
   main: ConfigurationMain
+  log: ConfigurationLog
   roblox: ConfigurationRoblox
   cors: ConfigurationCors
   piece: ConfigurationPiece

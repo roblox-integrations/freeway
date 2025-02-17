@@ -18,7 +18,7 @@ import NavbarUpdateAvailable from './NavbarUpdateAvailable'
 
 export default function NavBar() {
   const {isAuthenticated, user, signOut} = useSession()
-  const {STATUS_PATH, ROOT_PATH, LOGIN_PATH} = useRoutePaths()
+  const {STATUS_PATH, ROOT_PATH} = useRoutePaths()
   const location = useLocation()
   const {open, onClose, onToggle} = useDisclosure()
 
@@ -66,9 +66,11 @@ export default function NavBar() {
               </MenuContent>
             </MenuRoot>
           )}
+{/*
           {!isAuthenticated && (
             <NavBarLink href={LOGIN_PATH}>Login</NavBarLink>
           )}
+*/}
         </Flex>
       </Flex>
       <>

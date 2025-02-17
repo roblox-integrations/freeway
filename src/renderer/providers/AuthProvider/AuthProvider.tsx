@@ -1,6 +1,6 @@
 import {AuthContext, User} from '@render/contexts'
 import {paths} from '@render/router'
-import {ReactNode, useEffect, useState} from 'react'
+import {ReactNode, useState} from 'react'
 import {useCustomEventListener} from 'react-custom-events'
 import {useNavigate} from 'react-router-dom'
 // import { api, setAuthorizationHeader } from '@render/services'
@@ -47,38 +47,38 @@ function AuthProvider(props: Props) {
   }, [navigate, pathname, token])
 */
 
-  async function getUserData() {
-    if (loadingUserData) {
-      // return
-    }
+  // async function getUserData() {
+  //   if (loadingUserData) {
+  //     // return
+  //   }
+  //
+  //   setLoadingUserData(true)
+  //
+  //   try {
+  //     const account = await window.electron.getAccount() as User
+  //     if (account) {
+  //       setUser(account)
+  //       console.log('[AuthProvider] getUserData()', account)
+  //       setIsAuthenticated(true)
+  //     }
+  //     else {
+  //       console.log('[AuthProvider] getUserData()', null)
+  //       setIsAuthenticated(false)
+  //     }
+  //   }
+  //   catch (error) {
+  //     console.error(error)
+  //     setIsAuthenticated(false)
+  //   }
+  //   finally {
+  //     setLoadingUserData(false)
+  //   }
+  // }
 
-    setLoadingUserData(true)
-
-    try {
-      const account = await window.electron.getAccount() as User
-      if (account) {
-        setUser(account)
-        console.log('[AuthProvider] getUserData()', account)
-        setIsAuthenticated(true)
-      }
-      else {
-        console.log('[AuthProvider] getUserData()', null)
-        setIsAuthenticated(false)
-      }
-    }
-    catch (error) {
-      console.error(error)
-      setIsAuthenticated(false)
-    }
-    finally {
-      setLoadingUserData(false)
-    }
-  }
-
-  useCustomEventListener<any>('ready', async () => {
-    console.log('[AuthProvider] ready getUserData')
-    // await getUserData()
-  })
+  // useCustomEventListener<any>('ready', async () => {
+  //   console.log('[AuthProvider] ready getUserData')
+  //   // await getUserData()
+  // })
 
   useCustomEventListener<any>('app:online', async () => {
     console.log('[app:online]')
@@ -88,10 +88,10 @@ function AuthProvider(props: Props) {
     console.log('[app:offline]')
   })
 
-  useEffect(() => {
-    console.log('[AuthProvider] effect getUserData')
-    getUserData()
-  }, [])
+  // useEffect(() => {
+  //   console.log('[AuthProvider] effect getUserData')
+  //   getUserData()
+  // }, [])
 
   return (
     <AuthContext.Provider

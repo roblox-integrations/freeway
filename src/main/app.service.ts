@@ -47,13 +47,13 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
     })
 
     // refresh token set on start
-    this.refreshTokens()
-      .then(() => {
-        const mainWin = this.electronService.getMainWindow()
-        if (mainWin) {
-          mainWin.webContents.send('ipc-message', {name: 'ready'})
-        }
-      })
+    // this.refreshTokens()
+    //   .then(() => {
+    //     const mainWin = this.electronService.getMainWindow()
+    //     if (mainWin) {
+    //       mainWin.webContents.send('ipc-message', {name: 'ready'})
+    //     }
+    //   })
 
     autoUpdater.logger = new UpdaterLogger('AutoUpdater')
     autoUpdater.on('update-available', (updateInfo) => {
@@ -117,7 +117,7 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  @Interval(10_000)
+  // @Interval(10_000) // disabled for now
   protected async refreshTokens() {
     if (!this.isOnline)
       return

@@ -1,11 +1,11 @@
 import {toaster} from '@/components/ui/toaster'
-import {Box, Button, Flex, Heading, Stack} from '@chakra-ui/react'
+import StatusData from '@/pages/Status/StatusData'
 
+import {Box, Button, Flex, Heading, Stack} from '@chakra-ui/react'
 import {useState} from 'react'
 
 function Status() {
   async function onClickBeep() {
-    // window.electron.beep()
     window.electronApi.ipcRenderer.send('app:beep')
   }
 
@@ -31,9 +31,8 @@ function Status() {
 
   return (
     <Box p={4}>
-      <Heading size="2xl">Status page</Heading>
-      <br />
-
+      <Heading size="2xl" mb={4}>Status</Heading>
+      <StatusData></StatusData>
       <Flex gap={2}>
         <Stack>
           <Button
@@ -46,7 +45,6 @@ function Status() {
             Install Studio Plugin
           </Button>
         </Stack>
-
         <Stack>
           <Button variant="outline" onClick={onClickBeep} w={200}>Beep (Test IPC)</Button>
         </Stack>

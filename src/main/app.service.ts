@@ -10,6 +10,12 @@ import isOnline from 'is-online'
 const autoUpdater = electronUpdater.autoUpdater
 autoUpdater.autoDownload = false
 autoUpdater.forceDevUpdateConfig = true
+autoUpdater.setFeedURL({
+  provider: 'github',
+  updaterCacheDirName: 'freeway',
+  owner: 'roblox-integrations',
+  repo: 'freeway',
+})
 
 class UpdaterLogger extends Logger {
   info(msg, ...args) {

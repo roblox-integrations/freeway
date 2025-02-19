@@ -1,4 +1,3 @@
-provider: github
+provider: generic
+url: https://example.com/auto-updates
 updaterCacheDirName: freeway
-owner: roblox-integrations
-repo: freeway

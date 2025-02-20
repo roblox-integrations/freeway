@@ -84,7 +84,7 @@ export default function NavbarUpdateAvailable() {
           <PopoverBody>
             <PopoverTitle fontWeight="medium">Update available</PopoverTitle>
             <Text mt={2}>
-              <span>A new</span>
+              <span>A new </span>
               <Link variant="underline" href={uriRelease} target="_blank">version {updateInfo.version}</Link>
               <span> is available.</span>
               <br />

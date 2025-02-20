@@ -1,6 +1,10 @@
 {
   "name": "freeway",
   "version": "0.0.3",
+  "author": {
+    "name": "Evgeny Sinitsyn",
+    "email": "cuhuak@gmail.com"
+  },
   "private": true,
   "type": "module",
   "description": "Freeway - fast assets iteration on Roblox",

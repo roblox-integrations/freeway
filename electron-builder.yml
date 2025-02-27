@@ -25,13 +25,9 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
+  provisioningProfile: mac/Freeway.provisionprofile
+  appId: com.github.freeway-rbx.freeway
+  notarize: true
 dmg:
   artifactName: ${productName}-${version}.${ext}
 linux:

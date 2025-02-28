@@ -37,7 +37,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "$APPLE_API_KEY_CONTENT" > key.p8  
-          DEBUG='*' npm run build:mac
+          npm run build:mac
         env:
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER}}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID}}

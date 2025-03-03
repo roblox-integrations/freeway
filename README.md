@@ -1,8 +1,8 @@
 # Freeway
 
-**Asset integration hub for Roblox Studio**
+**100x faster asset iteration on Roblox**
 
-Plugin development requires [nodejs](https://nodejs.org). Please install it first.
+App development requires [nodejs](https://nodejs.org). Please install it first.
 
 ## Development
 

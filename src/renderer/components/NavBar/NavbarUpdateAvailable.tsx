@@ -68,7 +68,7 @@ export default function NavbarUpdateAvailable() {
     return null
   }
 
-  const uriReleases = `https://github.com/roblox-integrations/freeway/releases`
+  const uriReleases = `https://github.com/freeway-rbx/freeway/releases`
   const uriRelease = `${uriReleases}/tag/${updateInfo.tag}`
 
   return (

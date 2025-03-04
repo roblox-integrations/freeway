@@ -13,7 +13,7 @@ autoUpdater.forceDevUpdateConfig = true
 autoUpdater.setFeedURL({
   provider: 'github',
   updaterCacheDirName: 'freeway',
-  owner: 'roblox-integrations',
+  owner: 'freeway-rbx',
   repo: 'freeway',
 })
 
